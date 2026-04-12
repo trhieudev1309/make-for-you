@@ -1,0 +1,33 @@
+﻿@model FUNews.Presentation.Pages.Staff.NewsArticles.IndexModel
+
+<div class="modal fade" id="createArticleModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Create News Article</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post" asp-page-handler="Create" id="createArticleForm">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body" id="createArticleBody">
+                    <partial name="Modals/_CreateFormBody" model="Model" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">
+                        Create
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

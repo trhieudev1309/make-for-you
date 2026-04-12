@@ -1,0 +1,173 @@
+html {
+    font-size: 14px;
+}
+/* ===== Animations ===== */
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+
+    75% {
+        transform: translateX(-5px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.animate-fade {
+    animation: fadeSlideUp 0.6s ease-out;
+}
+
+.animate-shake {
+    animation: shake 0.4s;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.dashboard-card {
+    transition: all 0.25s ease;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+.dashboard-tile {
+    border-radius: 14px;
+    transition: all 0.25s ease;
+    background: #ffffff;
+}
+
+    .dashboard-tile:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+    }
+
+.table-row-animate {
+    animation: fadeSlideUp 0.4s ease forwards;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.table-row-animate {
+    animation: fadeSlideUp 0.35s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade animation */
+.animate-fade {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dashboard card hover */
+.dashboard-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.08);
+    }
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

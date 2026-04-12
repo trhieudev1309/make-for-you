@@ -1,0 +1,58 @@
+﻿@using FUNews.Presentation.Constants
+@model FUNews.BusinessLogic.Entities.SystemAccount
+
+<div class="modal fade" id="createAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Create System Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="createAccountForm">
+                <div class="modal-body" id="createAccountBody">
+
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label>Name</label>
+                        <input asp-for="AccountName" class="form-control" />
+                        <span asp-validation-for="AccountName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input asp-for="AccountEmail" class="form-control" />
+                        <span asp-validation-for="AccountEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control" />
+                        <span class="text-danger" data-valmsg-for="password"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Role</label>
+                        <select asp-for="AccountRole" class="form-select">
+                            <option value="">-- Select role --</option>
+                            <option value="@AccountRoles.Lecturer">Lecturer</option>
+                            <option value="@AccountRoles.Staff">Staff</option>
+                        </select>
+                        <span asp-validation-for="AccountRole" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Create</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,157 @@
+﻿@page
+@model FUNews.Presentation.Pages.Staff.Tags.IndexModel
+
+@{
+    ViewData["Title"] = "Tag Management";
+}
+
+<div class="container mt-4 animate-fade">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-semibold mb-1">Tag Management</h2>
+            <p class="text-muted mb-0">
+                Manage and organize system tags.
+            </p>
+        </div>
+
+        <button class="btn btn-success"
+                onclick="openCreateModal()">
+            + Create Tag
+        </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="card border-0 shadow-sm mb-4 animate-fade" style="animation-delay: 0.1s;">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Keyword</label>
+                    <input asp-for="Keyword"
+                           class="form-control"
+                           placeholder="Search by tag name..." />
+                </div>
+
+                <div class="col-md-3">
+                    <button class="btn btn-primary me-2">Search</button>
+                    <a asp-page="./Index"
+                       class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow animate-fade" style="animation-delay: 0.2s;">
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:30%">Tag Name</th>
+                        <th>Note</th>
+                        <th style="width:25%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <tr class="table-row-animate">
+                            <td class="fw-semibold">@tag.TagName</td>
+                            <td>@tag.Note</td>
+                            <td class="text-end">
+
+                                <a class="btn btn-sm btn-outline-info me-1"
+                                   asp-page="./Articles"
+                                   asp-route-id="@tag.TagId">
+                                    Articles
+                                </a>
+
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                        onclick="openEditModal('@tag.TagId')">
+                                    Edit
+                                </button>
+
+                                <a class="btn btn-sm btn-outline-danger"
+                                   asp-page-handler="Delete"
+                                   asp-route-id="@tag.TagId"
+                                   onclick="return confirm('Delete this tag?');">
+                                    Delete
+                                </a>
+
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<div id="modalContainer"></div>
+
+@section Scripts {
+    <script>
+
+        function openCreateModal() {
+            $.get('?handler=Create', function (html) {
+                $('#modalContainer').html(html);
+                $('#createTagModal').modal('show');
+            });
+        }
+
+        $(document).on('submit', '#createTagForm', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '?handler=Create',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        $('#createTagBody').html(res);
+                        $.validator.unobtrusive.parse('#createTagForm');
+                    }
+                }
+            });
+        });
+
+        function openEditModal(id) {
+            $.get(`?handler=Edit&id=${id}`, function (html) {
+                $('#modalContainer').html(html);
+                $('#editTagModal').modal('show');
+            });
+        }
+
+        $(document).on('submit', '#editTagForm', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '?handler=Edit',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        $('#editTagBody').html(res);
+                        $.validator.unobtrusive.parse('#editTagForm');
+                    }
+                }
+            });
+        });
+
+    </script>
+
+    <partial name="_ValidationScriptsPartial" />
+}

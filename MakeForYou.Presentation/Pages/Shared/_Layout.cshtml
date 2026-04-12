@@ -1,0 +1,147 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var role = HttpContextAccessor.HttpContext?.Session.GetString("AccountRoleString");
+    var name = HttpContextAccessor.HttpContext?.Session.GetString("AccountName");
+    var isLoggedIn = !string.IsNullOrEmpty(role) && !string.IsNullOrEmpty(name);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FUNews</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FUNews.Presentation.styles.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+        }
+
+        .navbar .nav-link,
+        .navbar .navbar-brand {
+            color: #ffffff !important;
+        }
+
+        .navbar .nav-link:hover {
+            opacity: 0.85;
+        }
+
+        .role-badge {
+            font-size: 0.8rem;
+            padding: 0.35em 0.6em;
+        }
+
+        main {
+            min-height: calc(100vh - 140px);
+        }
+
+        footer {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-page="/Home/Index">
+                    FUNews
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            @if (isLoggedIn)
+                            {
+                                if (role == "Admin")
+                                {
+                                    <a class="nav-link" asp-page="Admin/Home/Index">Dashboard</a>
+                                }
+                                else if (role == "Staff")
+                                {
+                                    <a class="nav-link" asp-page="Staff/Home/Index">Dashboard</a>
+                                }
+                                else if (role == "Lecturer")
+                                {
+                                    <a class="nav-link" asp-page="Lecturer/Home/Index">Dashboard</a>
+                                }
+                            }
+                            else
+                            {
+                                <a class="nav-link" asp-page="/Home/Index">Home</a>
+                            }
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav align-items-center">
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item me-3 text-white">
+                                <span class="badge bg-light text-dark role-badge me-1">
+                                    @role
+                                </span>
+                                @name
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-sm btn-outline-light"
+                                   asp-page="/Auth/Login"
+                                   asp-page-handler="Logout">
+                                    Logout
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="btn btn-sm btn-outline-light"
+                                   asp-page="/Auth/Login">
+                                    Login
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-4">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top py-3 text-muted">
+        <div class="container text-center">
+            &copy; 2026 - FUNews
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

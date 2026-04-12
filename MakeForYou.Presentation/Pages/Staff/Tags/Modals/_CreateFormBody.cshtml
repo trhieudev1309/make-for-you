@@ -1,0 +1,20 @@
+﻿@model FUNews.Presentation.Pages.Staff.Tags.IndexModel
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div class="mb-3">
+    <label asp-for="CreateTag.TagName" class="form-label"></label>
+    <input asp-for="CreateTag.TagName" class="form-control" />
+    <span asp-validation-for="CreateTag.TagName" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="CreateTag.Note" class="form-label"></label>
+    <textarea asp-for="CreateTag.Note"
+              class="form-control"
+              rows="3"
+              placeholder="Optional description for this tag"></textarea>
+    <span asp-validation-for="CreateTag.Note" class="text-danger"></span>
+</div>
+
+<input type="hidden" asp-for="CreateTag.TagId" value="0" />

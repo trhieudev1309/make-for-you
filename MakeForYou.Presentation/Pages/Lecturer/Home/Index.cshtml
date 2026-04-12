@@ -1,0 +1,100 @@
+﻿@page
+@model FUNews.Presentation.Pages.Lecturer.Home.IndexModel
+@{
+    ViewData["Title"] = "News";
+}
+
+<style>
+    /* Page entrance animation */
+    .page-wrapper {
+        animation: fadeSlideIn 0.6s ease;
+    }
+
+    /* Card look */
+    .news-card {
+        border-radius: 12px;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+    }
+
+    /* Table hover animation */
+    table tbody tr {
+        transition: background-color 0.25s ease, transform 0.2s ease;
+    }
+
+        table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.004);
+        }
+
+    /* Button polish */
+    .btn {
+        border-radius: 8px;
+    }
+
+    .btn-sm {
+        padding: 4px 12px;
+    }
+
+    /* Header spacing */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="container mt-4 page-wrapper">
+    <div class="card news-card">
+        <div class="card-body">
+
+            <div class="page-header">
+                <h3 class="mb-0">News Articles</h3>
+            </div>
+
+            <form method="get" class="row g-2 mb-4">
+                <div class="col-md-6">
+                    <input class="form-control"
+                           asp-for="Keyword"
+                           placeholder="Search articles..." />
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary me-1">Search</button>
+                    <a asp-page="./Index"
+                       class="btn btn-outline-secondary">
+                        Reset
+                    </a>
+                </div>
+            </form>
+
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:45%">Title</th>
+                        <th>Category</th>
+                        <th style="width:20%">Created Date</th>
+                        <th style="width:15%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Articles)
+                    {
+                        <tr>
+                            <td>@item.NewsTitle</td>
+                            <td>@item.Category?.CategoryName</td>
+                            <td>@item.CreatedDate?.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a class="btn btn-sm btn-info"
+                                   asp-page="./Details"
+                                   asp-route-id="@item.NewsArticleId">
+                                    Read
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>

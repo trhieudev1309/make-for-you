@@ -1,0 +1,114 @@
+﻿@model FUNews.Presentation.Pages.Staff.NewsArticles.IndexModel
+
+<div class="modal fade" id="editArticleModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Edit News Article</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post"
+                  asp-page-handler="Edit"
+                  id="editArticleForm">
+                <div class="modal-body">
+
+                    <input type="hidden" asp-for="EditArticle.NewsArticleId" />
+                    <input type="hidden" asp-for="EditArticle.CreatedById" />
+                    <input type="hidden" asp-for="EditArticle.CreatedDate" />
+
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditArticle.NewsTitle" class="form-label"></label>
+                        <input asp-for="EditArticle.NewsTitle" class="form-control" />
+                        <span asp-validation-for="EditArticle.NewsTitle" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditArticle.Headline" class="form-label"></label>
+                        <input asp-for="EditArticle.Headline" class="form-control" />
+                        <span asp-validation-for="EditArticle.Headline" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditArticle.CategoryId" class="form-label"></label>
+                        <select asp-for="EditArticle.CategoryId" class="form-select">
+                            <option value="">-- Select category --</option>
+                            @foreach (var c in Model.Categories)
+                            {
+                                <option value="@c.CategoryId">
+                                    @c.CategoryName
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="EditArticle.CategoryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditArticle.NewsContent" class="form-label"></label>
+                        <textarea asp-for="EditArticle.NewsContent"
+                                  class="form-control"
+                                  rows="5"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditArticle.NewsSource" class="form-label"></label>
+                        <input asp-for="EditArticle.NewsSource" class="form-control" />
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="EditArticle.NewsStatus"
+                               class="form-check-input"
+                               type="checkbox" />
+                        <label asp-for="EditArticle.NewsStatus"
+                               class="form-check-label">
+                            Active
+                        </label>
+                    </div>
+
+                    @if (Model.Tags != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <div class="row">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    var isChecked = Model.EditArticle.Tags != null &&
+                                    Model.EditArticle.Tags.Any(t => t.TagId == tag.TagId);
+
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="TagIds"
+                                                   value="@tag.TagId"
+                                                   @(isChecked ? "checked" : "") />
+                                            <label class="form-check-label">
+                                                @tag.TagName
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
