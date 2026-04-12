@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.105.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MakeForYou.Repositories\MakeForYou.Repositories.csproj" />
   </ItemGroup>
 
@@ -20,6 +16,13 @@
     <Folder Include="Models\" />
     <Folder Include="Seeders\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.23">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
