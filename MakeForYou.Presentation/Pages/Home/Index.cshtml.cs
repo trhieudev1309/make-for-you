@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace FUNews.Presentation.Pages.Home
+namespace MakeForYou.Presentation.Pages.Home
 {
     public class IndexModel : PageModel
     {
