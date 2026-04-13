@@ -1,4 +1,5 @@
 using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,11 +19,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-// DAO Registrations
+// Repository & service registrations
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-// Repository registrations
-
-// Services
 //builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();

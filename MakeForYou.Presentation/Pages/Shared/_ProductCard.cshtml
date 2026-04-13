@@ -1,0 +1,37 @@
+﻿@model MakeForYou.BusinessLogic.Entities.Product
+
+<article class="product-card reveal" role="article" aria-labelledby="product-title-@Model.ProductId">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img class="product-image" src="@Model.ImageUrl" alt="Image of @Model.Title" loading="lazy" />
+    }
+    else
+    {
+        <div class="product-image" style="background:#f3f1ee;display:flex;align-items:center;justify-content:center;color:var(--serif-muted)">
+            <span class="small-caps">No image</span>
+        </div>
+    }
+
+    <div class="card-body">
+        <h3 id="product-title-@Model.ProductId" class="product-title">@Model.Title</h3>
+        <p class="product-desc">@Model.Description</p>
+    </div>
+
+    <div class="card-footer">
+        <div class="d-flex align-items-center gap-2">
+            @if (Model.Category != null)
+            {
+                <span class="small-caps" aria-hidden="true">@Model.Category.Name</span>
+            }
+        </div>
+        <div class="text-end">
+            @if (Model.Price.HasValue)
+            {
+                <strong>@Model.Price.Value.ToString("C0")</strong>
+            }
+            <div class="text-muted-serif" style="font-size:0.85rem;">
+                @Model.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")
+            </div>
+        </div>
+    </div>
+</article>

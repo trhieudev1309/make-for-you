@@ -18,6 +18,9 @@ namespace MakeForYou.BusinessLogic
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
         public DbSet<Quotation> Quotations => Set<Quotation>();
 
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Category> Categories => Set<Category>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
