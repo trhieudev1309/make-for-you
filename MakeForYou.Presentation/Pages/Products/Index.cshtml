@@ -1,0 +1,100 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Products.IndexModel
+@{
+    ViewData["Title"] = "Products";
+}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
+
+<div class="serif-scope">
+  <div class="serif-container">
+    <div class="mb-4">
+      <div class="small-caps">Products</div>
+      <h1 class="serif-title">Curated Handmade Goods</h1>
+      <p class="text-muted-serif">Discover handcrafted goods from independent makers — editorial selection, honest pricing.</p>
+    </div>
+
+    <form method="get" class="row g-3 mb-4 align-items-end">
+        <div class="col-md-6">
+            <label class="visually-hidden" for="Keyword">Search</label>
+            <input id="Keyword" name="Keyword" value="@Model.Keyword" class="form-control" placeholder="Search products by title or description" />
+        </div>
+        <div class="col-md-4">
+            <label class="visually-hidden" for="CategoryId">Category</label>
+            <select id="CategoryId" name="CategoryId" class="form-select">
+                <option value="">All categories</option>
+                @foreach (var c in Model.Categories)
+                {
+                    if (Model.CategoryId == c.CategoryId)
+                    {
+                        <option value="@c.CategoryId" selected>@c.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@c.CategoryId">@c.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary serif w-100" type="submit">Search</button>
+        </div>
+    </form>
+
+    <section aria-label="Products">
+        <div class="product-grid">
+            @if (!Model.Products.Any())
+            {
+                <div class="col-12">
+                    <p class="text-muted-serif">No products found.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var p in Model.Products)
+                {
+                    @await Html.PartialAsync("_ProductCard", p)
+                }
+            }
+        </div>
+    </section>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  // Subtle, editorial reveal with gentle stagger. Respects prefers-reduced-motion.
+  (function () {
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const grid = document.querySelector('.serif-scope .product-grid');
+    if (!grid) return;
+
+    const items = Array.from(grid.querySelectorAll('.product-card.reveal'));
+    if (!items.length) return;
+
+    // If reduced motion, reveal immediately
+    if (prefersReduced) {
+      items.forEach(i => i.classList.add('is-visible'));
+      return;
+    }
+
+    // IntersectionObserver triggers staggered reveal when grid enters viewport
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // gentle stagger
+          items.forEach((el, idx) => {
+            const delay = idx * 80; // matches CSS --serif-stagger
+            setTimeout(() => el.classList.add('is-visible'), delay);
+          });
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.12 });
+
+    observer.observe(grid);
+  })();
+</script>
+}

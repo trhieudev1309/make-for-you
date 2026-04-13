@@ -1,0 +1,601 @@
+﻿:root {
+    /* design tokens (scoped when used under .serif-scope) */
+    --serif-background: #FAFAF8;
+    --serif-foreground: #1A1A1A;
+    --serif-muted: #6B6B6B;
+    --serif-accent: #B8860B;
+    --serif-border: #E8E4DF;
+    --serif-card: #FFFFFF;
+    --serif-shadow-sm: 0 1px 2px rgba(26,26,26,0.04);
+    --serif-shadow-md: 0 4px 12px rgba(26,26,26,0.06);
+    --serif-radius: 8px;
+    --serif-anim-duration: 480ms;
+    --serif-anim-ease: cubic-bezier(.2,.9,.2,1);
+    --serif-stagger: 80ms;
+}
+/* Reveal keyframe: subtle fade + up + micro-scale */
+@keyframes serif-fade-up {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.998);
+    }
+
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Initial hidden state for elements that will animate in */
+.serif-scope .reveal {
+    opacity: 0;
+    transform: translateY(12px) scale(0.998);
+    will-change: opacity, transform;
+}
+
+    /* When visible, play the keyframe */
+    .serif-scope .reveal.is-visible {
+        animation: serif-fade-up var(--serif-anim-duration) var(--serif-anim-ease) both;
+    }
+
+/* Card hover: slightly increase shadow and a hair of scale for tactile feedback */
+.serif-scope .product-card {
+    transition: box-shadow var(--serif-anim-duration) var(--serif-anim-ease), transform var(--serif-anim-duration) var(--serif-anim-ease);
+}
+
+    /* Very subtle scale on hover (keeps the design restrained) */
+    .serif-scope .product-card:hover {
+        box-shadow: var(--serif-shadow-md);
+        transform: scale(1.006);
+    }
+
+    /* Image zoom on hover (kept minimal) */
+    .serif-scope .product-card .product-image {
+        transition: transform var(--serif-anim-duration) var(--serif-anim-ease), filter var(--serif-anim-duration) var(--serif-anim-ease);
+        backface-visibility: hidden;
+    }
+
+    .serif-scope .product-card:hover .product-image {
+        transform: scale(1.03);
+        filter: contrast(1.02);
+    }
+
+/* Stagger support — JavaScript will set inline delays for best control */
+/* Provide a small fallback purely-css option for users without JS:
+   every nth-child staggered using a tiny offset — optional and subtle */
+.serif-scope .product-grid .product-card:nth-child(1) {
+    animation-delay: calc(var(--serif-stagger) * 0);
+}
+
+.serif-scope .product-grid .product-card:nth-child(2) {
+    animation-delay: calc(var(--serif-stagger) * 1);
+}
+
+.serif-scope .product-grid .product-card:nth-child(3) {
+    animation-delay: calc(var(--serif-stagger) * 2);
+}
+
+.serif-scope .product-grid .product-card:nth-child(4) {
+    animation-delay: calc(var(--serif-stagger) * 3);
+}
+
+.serif-scope .product-grid .product-card:nth-child(5) {
+    animation-delay: calc(var(--serif-stagger) * 4);
+}
+
+/* Reduced motion: disable animations and transitions completely */
+@media (prefers-reduced-motion: reduce) {
+    .serif-scope .reveal,
+    .serif-scope .product-card,
+    .serif-scope .product-card .product-image {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}
+/* Everything is scoped so other pages won't change */
+.serif-scope {
+  --bg: var(--serif-background);
+  --fg: var(--serif-foreground);
+  --muted: var(--serif-muted);
+  --accent: var(--serif-accent);
+  --border: var(--serif-border);
+  background-color: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.serif-container {
+  max-width: 64rem; /* 5xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 4rem 1rem; /* generous vertical spacing for editorial feel */
+}
+
+/* Typography */
+.serif-scope body,
+.serif-scope .serif-body {
+  font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.0625rem; /* slightly larger for readability */
+  line-height: 1.75;
+  color: var(--fg);
+  letter-spacing: 0.01em;
+}
+
+.serif-scope h1,
+.serif-scope h2,
+.serif-scope h3,
+.serif-scope h4,
+.serif-scope .serif-title {
+  font-family: "Playfair Display", Georgia, serif;
+  color: var(--fg);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+/* Small caps / section labels */
+.small-caps {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* product grid and card */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18.5rem, 1fr));
+  gap: 1.5rem; /* gap-6 */
+}
+
+.product-card {
+  background: var(--serif-card);
+  border: 1px solid var(--border);
+  border-radius: var(--serif-radius);
+  box-shadow: var(--serif-shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 200ms ease-out, transform 200ms ease-out;
+  min-height: 18rem;
+}
+
+/* intentional thin accent line at the top */
+.product-card::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent));
+  width: 100%;
+}
+
+/* image */
+.product-card .product-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+/* content */
+.product-card .card-body {
+  padding: 1rem;
+  flex: 1;
+}
+
+.product-card .product-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: var(--fg);
+}
+
+.product-card .product-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+/* footer */
+.product-card .card-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* input and select styles within scope */
+.serif-scope .form-control,
+.serif-scope .form-select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  min-height: 44px;
+  box-shadow: none;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  background: transparent;
+  color: var(--fg);
+}
+
+/* focus ring */
+.serif-scope .form-control:focus,
+.serif-scope .form-select:focus,
+.serif-scope .btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(184,134,11,0.12);
+  border-color: var(--accent);
+}
+
+/* primary button */
+.serif-scope .btn-primary.serif {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.serif-scope .btn-primary.serif:hover {
+  background: #D4A84B; /* accent-secondary */
+  box-shadow: var(--serif-shadow-md);
+}
+
+/* small utility */
+.text-muted-serif {
+  color: var(--muted);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .serif-scope .btn-primary.serif {
+    transition: none !important;
+  }
+}
+
+/* responsive tweaks */
+@media (max-width: 576px) {
+  .product-card .product-image {
+    height: 160px;
+  }
+  .serif-container {
+    padding: 2.5rem 1rem;
+  }
+}
+
+/* Layout adjustments so the anchor is a vertical flex container and elements distribute space */
+.product-card > a {
+    display: flex; /* ensure anchor is a flex column even if bootstrap classes are missing */
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Image should not flex-grow — sits at top with fixed height */
+.product-card .product-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    flex: 0 0 auto;
+}
+
+/* Make card body stretch to fill available space */
+.product-card .card-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Let description take available space inside body if needed */
+.product-card .product-desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    flex: 0 1 auto;
+}
+
+/* Push footer to the bottom of the card */
+.product-card .card-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: auto;
+}
+
+/* --- Product Details additions --- */
+/* Card for the hero gallery / product image */
+.product-hero-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  overflow: hidden;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* Large product image */
+.product-image-lg {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Smaller subtitle variant for inline product headings */
+.serif-subtitle {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--serif-foreground);
+}
+
+/* Meta / purchase card */
+.meta-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  padding: 1rem;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* About artisan card */
+.about-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  padding: 1rem;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* Modal image */
+.modal-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Rating star */
+.rating-star {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Tighter layout for the full description card */
+.full-desc {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--serif-border);
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* --- Details improvements: description, artisan profile, reviews --- */
+
+/* Overall details grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Responsive collapse to single column */
+@media (max-width: 991px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left column: image + large description */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Large product image card uses existing product-hero-card */
+.product-hero-card {
+  /* already defined, keep for consistency */
+}
+
+/* Expanded description block */
+.description-expanded {
+  background: transparent;
+  padding: 1.25rem 1rem;
+  line-height: 1.9;
+  font-size: 1.0625rem;
+  color: var(--serif-foreground);
+  max-width: 72ch; /* good measure for long reads */
+  white-space: pre-wrap;
+}
+
+/* Right column meta area */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+/* Artisan profile */
+.profile-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(184,134,11,0.12), rgba(212,168,75,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--serif-accent);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  border: 1px solid var(--serif-border);
+  flex: 0 0 auto;
+}
+
+/* Profile details stretch */
+.profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* Artisan stats row */
+.stats-grid {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  text-align: left;
+}
+.stat .value {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.125rem;
+  color: var(--serif-foreground);
+}
+.stat .label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--serif-accent);
+}
+
+/* CTA group pin at top of right column */
+.cta-group {
+  display: grid;
+  gap: 0.6rem;
+}
+
+/* Reviews area */
+.reviews-section {
+  margin-top: 2.25rem;
+}
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* default: 3 items across */
+  gap: 1rem;
+  grid-auto-rows: minmax(0, 1fr); /* make rows share available height */
+  max-height: 52vh; /* constrain height so grid can scroll vertically; adjust as needed */
+  overflow-y: auto;
+  padding-right: 0.5rem; /* breathing room for scrollbar */
+  align-items: stretch;
+}
+.review-card {
+  border: 1px solid var(--serif-border);
+  background: var(--serif-card);
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: var(--serif-shadow-sm);
+  min-height: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1 1 18rem; /* grow to fill, shrink if necessary, base 18rem */
+  min-width: 18rem;
+  justify-content: space-between; /* push meta to the bottom so card content fills vertical space */
+}
+
+/* Responsive column counts:
+   - <= 1200px: 2 columns
+   - <= 768px: 1 column and disable internal scrolling (stacked flow) */
+@media (max-width: 1200px) {
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+/* Scrollbar styling (subtle, editorial) */
+.reviews-grid::-webkit-scrollbar {
+  width: 10px;
+}
+.reviews-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.reviews-grid::-webkit-scrollbar-thumb {
+  background: rgba(26,26,26,0.08);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.review-quote {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  color: var(--serif-foreground);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.review-meta {
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--serif-muted);
+  font-size: 0.85rem;
+}
+
+/* Decorative large opening quote mark for cards */
+.review-card::before {
+  content: "“";
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 2.25rem;
+  color: rgba(184,134,11,0.14);
+  position: relative;
+  left: 0;
+  top: -6px;
+}
+
+/* Minor utilities used on details */
+.kicker {
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--serif-accent);
+}
+.small-muted {
+  color: var(--serif-muted);
+  font-size: 0.95rem;
+}

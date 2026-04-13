@@ -17,6 +17,9 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? AverageRating { get; set; }
         public int? TotalReviews { get; set; }
 
+        // Products authored by this seller
+        public ICollection<Product>? Products { get; set; }
+
         public ICollection<PortfolioItem>? PortfolioItems { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Review>? Reviews { get; set; }
