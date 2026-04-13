@@ -1,4 +1,4 @@
-using MakeForYou.BusinessLogic.Entites;
+using MakeForYou.BusinessLogic.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MakeForYou.BusinessLogic
