@@ -1,4 +1,6 @@
 using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic.Services.Implement;
+using MakeForYou.BusinessLogic.Services.Interfaces;
 using MakeForYou.Repositories.Interfaces;
 using MakeForYou.Repositories.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +24,8 @@ builder.Services.AddSession();
 
 // Repository & service registrations
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-//builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
