@@ -274,3 +274,328 @@
     padding: 2.5rem 1rem;
   }
 }
+
+/* Layout adjustments so the anchor is a vertical flex container and elements distribute space */
+.product-card > a {
+    display: flex; /* ensure anchor is a flex column even if bootstrap classes are missing */
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Image should not flex-grow — sits at top with fixed height */
+.product-card .product-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    flex: 0 0 auto;
+}
+
+/* Make card body stretch to fill available space */
+.product-card .card-body {
+    padding: 1rem;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Let description take available space inside body if needed */
+.product-card .product-desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    flex: 0 1 auto;
+}
+
+/* Push footer to the bottom of the card */
+.product-card .card-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: auto;
+}
+
+/* --- Product Details additions --- */
+/* Card for the hero gallery / product image */
+.product-hero-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  overflow: hidden;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* Large product image */
+.product-image-lg {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Smaller subtitle variant for inline product headings */
+.serif-subtitle {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--serif-foreground);
+}
+
+/* Meta / purchase card */
+.meta-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  padding: 1rem;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* About artisan card */
+.about-card {
+  border-radius: 12px;
+  border: 1px solid var(--serif-border);
+  padding: 1rem;
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* Modal image */
+.modal-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Rating star */
+.rating-star {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Tighter layout for the full description card */
+.full-desc {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--serif-border);
+  background: var(--serif-card);
+  box-shadow: var(--serif-shadow-sm);
+}
+
+/* --- Details improvements: description, artisan profile, reviews --- */
+
+/* Overall details grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Responsive collapse to single column */
+@media (max-width: 991px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left column: image + large description */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Large product image card uses existing product-hero-card */
+.product-hero-card {
+  /* already defined, keep for consistency */
+}
+
+/* Expanded description block */
+.description-expanded {
+  background: transparent;
+  padding: 1.25rem 1rem;
+  line-height: 1.9;
+  font-size: 1.0625rem;
+  color: var(--serif-foreground);
+  max-width: 72ch; /* good measure for long reads */
+  white-space: pre-wrap;
+}
+
+/* Right column meta area */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+/* Artisan profile */
+.profile-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(184,134,11,0.12), rgba(212,168,75,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--serif-accent);
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  border: 1px solid var(--serif-border);
+  flex: 0 0 auto;
+}
+
+/* Profile details stretch */
+.profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* Artisan stats row */
+.stats-grid {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  text-align: left;
+}
+.stat .value {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.125rem;
+  color: var(--serif-foreground);
+}
+.stat .label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--serif-accent);
+}
+
+/* CTA group pin at top of right column */
+.cta-group {
+  display: grid;
+  gap: 0.6rem;
+}
+
+/* Reviews area */
+.reviews-section {
+  margin-top: 2.25rem;
+}
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* default: 3 items across */
+  gap: 1rem;
+  grid-auto-rows: minmax(0, 1fr); /* make rows share available height */
+  max-height: 52vh; /* constrain height so grid can scroll vertically; adjust as needed */
+  overflow-y: auto;
+  padding-right: 0.5rem; /* breathing room for scrollbar */
+  align-items: stretch;
+}
+.review-card {
+  border: 1px solid var(--serif-border);
+  background: var(--serif-card);
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: var(--serif-shadow-sm);
+  min-height: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1 1 18rem; /* grow to fill, shrink if necessary, base 18rem */
+  min-width: 18rem;
+  justify-content: space-between; /* push meta to the bottom so card content fills vertical space */
+}
+
+/* Responsive column counts:
+   - <= 1200px: 2 columns
+   - <= 768px: 1 column and disable internal scrolling (stacked flow) */
+@media (max-width: 1200px) {
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+/* Scrollbar styling (subtle, editorial) */
+.reviews-grid::-webkit-scrollbar {
+  width: 10px;
+}
+.reviews-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.reviews-grid::-webkit-scrollbar-thumb {
+  background: rgba(26,26,26,0.08);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.review-quote {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  color: var(--serif-foreground);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.review-meta {
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--serif-muted);
+  font-size: 0.85rem;
+}
+
+/* Decorative large opening quote mark for cards */
+.review-card::before {
+  content: "“";
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 2.25rem;
+  color: rgba(184,134,11,0.14);
+  position: relative;
+  left: 0;
+  top: -6px;
+}
+
+/* Minor utilities used on details */
+.kicker {
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--serif-accent);
+}
+.small-muted {
+  color: var(--serif-muted);
+  font-size: 0.95rem;
+}

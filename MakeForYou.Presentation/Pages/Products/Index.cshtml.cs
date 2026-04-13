@@ -1,5 +1,5 @@
 using MakeForYou.BusinessLogic.Entities;
-using MakeForYou.BusinessLogic.Repositories;
+using MakeForYou.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

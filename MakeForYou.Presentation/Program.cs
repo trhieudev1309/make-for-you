@@ -1,5 +1,6 @@
 using MakeForYou.BusinessLogic;
-using MakeForYou.BusinessLogic.Repositories;
+using MakeForYou.Repositories.Interfaces;
+using MakeForYou.Repositories.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

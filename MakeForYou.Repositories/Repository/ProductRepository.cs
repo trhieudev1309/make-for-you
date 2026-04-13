@@ -1,7 +1,9 @@
+using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace MakeForYou.BusinessLogic.Repositories
+namespace MakeForYou.Repositories.Repository
 {
     public class ProductRepository : IProductRepository
     {
@@ -17,6 +19,7 @@ namespace MakeForYou.BusinessLogic.Repositories
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Seller)
+                    .ThenInclude(s => s.User)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -42,6 +45,17 @@ namespace MakeForYou.BusinessLogic.Repositories
             return await _context.Categories
                 .OrderBy(c => c.Name)
                 .ToListAsync();
+        }
+
+        // New: load single product with related Seller (+ User) and Category
+        public async Task<Product?> FindByIdAsync(long id)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                    .ThenInclude(s => s.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ProductId == id);
         }
     }
 }
