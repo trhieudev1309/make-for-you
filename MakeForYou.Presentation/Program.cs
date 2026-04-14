@@ -3,6 +3,7 @@ using MakeForYou.BusinessLogic.Services.Implement;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using MakeForYou.Repositories.Interfaces;
 using MakeForYou.Repositories.Repository;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,9 +24,26 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
 // Repository & service registrations
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+//builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Configuration.GetSection("Email"); // Để đảm bảo ứng dụng đọc được file json
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opts =>
+    {
+        opts.LoginPath = "/Auth/Login";
+        opts.LogoutPath = "/Auth/Logout";
+        opts.AccessDeniedPath = "/Auth/AccessDenied";
+        opts.ExpireTimeSpan = TimeSpan.FromHours(8);
+        opts.SlidingExpiration = true;
+    });
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -43,6 +61,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
