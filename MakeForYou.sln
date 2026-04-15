@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36121.58
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11626.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MakeForYou.BusinessLogic", "MakeForYou.BusinessLogic\MakeForYou.BusinessLogic.csproj", "{88BC0F02-2C1D-4095-BDFB-1C2CAAD8A68F}"
 EndProject
