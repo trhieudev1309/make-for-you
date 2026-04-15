@@ -90,14 +90,20 @@
 
               <!-- Artisan summary -->
               <div class="profile-card mt-2">
-                <div class="profile-avatar" aria-hidden="true">
-                  @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName))
-                  {
-                      @Model.Product.Seller.User.FullName.Substring(0,1).ToUpper()
-                  }
-                </div>
+               <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none">
+    <div class="profile-avatar" aria-hidden="true" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName))
+        {
+            @Model.Product.Seller.User.FullName.Substring(0,1).ToUpper()
+        }
+    </div>
+</a>
                 <div class="profile-meta">
-                  <div class="serif-subtitle">@Model.Product.Seller?.User?.FullName</div>
+                  <div class="serif-subtitle">
+    <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none text-reset fw-bold" style="border-bottom: 1px solid transparent;" onmouseover="this.style.borderColor='var(--serif-gold)'" onmouseout="this.style.borderColor='transparent'">
+        @Model.Product.Seller?.User?.FullName
+    </a>
+</div>
                   <div class="small-muted">@Model.Product.Seller?.SkillDescription</div>
 
                   <div class="stats-grid">

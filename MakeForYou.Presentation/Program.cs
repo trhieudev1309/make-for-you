@@ -1,5 +1,6 @@
-using MakeForYou.BusinessLogic;
-using MakeForYou.Repositories.Interfaces;
+﻿using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic.Interfaces;
+using MakeForYou.BusinessLogic.Services;
 using MakeForYou.Repositories.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-// Repository & service registrations
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
 
 //builder.Services.AddScoped<AuthService>();
+
+// Repository & service registrations
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+// Đăng ký thêm Service của bạn ở đây
+builder.Services.AddScoped<IHomeService, HomeService>();
 
 var app = builder.Build();
 
