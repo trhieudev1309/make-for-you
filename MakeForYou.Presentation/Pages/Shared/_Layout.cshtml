@@ -14,53 +14,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - FUNews</title>
 
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Project styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FUNews.Presentation.styles.css" asp-append-version="true" />
 
+    <!-- Serif Design System Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap" />
+
+    <!-- 🔥 Serif Design Tokens -->
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+            :root {
+                --background: #FAFAF8;
+                --foreground: #1A1A1A;
+                --muted: #F5F3F0;
+                --muted-foreground: #6B6B6B;
+                --accent: #B8860B;
+                --accent-secondary: #D4A84B;
+                --border: #E8E4DF;
+                --card: #FFFFFF;
+            }
 
-        .navbar-brand {
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+            body {
+                background-color: var(--background);
+                color: var(--foreground);
+                font-family: "Source Sans 3", system-ui, sans-serif;
+                line-height: 1.75;
+            }
 
-        .navbar {
-            background: linear-gradient(90deg, #1e3c72, #2a5298);
-        }
+            .serif-heading {
+                font-family: "Playfair Display", Georgia, serif;
+                font-weight: normal;
+                letter-spacing: -0.02em;
+            }
 
-        .navbar .nav-link,
-        .navbar .navbar-brand {
-            color: #ffffff !important;
-        }
+            .small-caps {
+                font-family: "IBM Plex Mono", monospace;
+                font-size: 0.75rem;
+                font-weight: 500;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+            }
 
-        .navbar .nav-link:hover {
-            opacity: 0.85;
-        }
-
-        .role-badge {
-            font-size: 0.8rem;
-            padding: 0.35em 0.6em;
-        }
-
-        main {
-            min-height: calc(100vh - 140px);
-        }
-
-        footer {
-            background-color: #ffffff;
-        }
+            .rule {
+                height: 1px;
+                background: var(--border);
+            }
     </style>
+
+    <!-- Page-specific styles -->
+    @RenderSection("Styles", required: false)
 </head>
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-dark shadow-sm">
+        <!-- Serif Navbar -->
+        <nav class="navbar navbar-expand-sm shadow-sm"
+             style="background: var(--card); border-bottom: 1px solid var(--border);">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-page="/Home/Index">
+                <a class="navbar-brand serif-heading fs-3"
+                       style="color: var(--foreground);"
+                       asp-page="/Home/Index">
                     FUNews
                 </a>
 
@@ -97,16 +114,18 @@
                     <ul class="navbar-nav align-items-center">
                         @if (isLoggedIn)
                         {
-                            <li class="nav-item me-3 text-white">
-                                <span class="badge bg-light text-dark role-badge me-1">
+                            <li class="nav-item me-3">
+                                <span class="small-caps px-3 py-1 rounded"
+                                      style="background: var(--muted); color: var(--muted-foreground);">
                                     @role
                                 </span>
-                                @name
+                                <span class="ms-2 text-foreground">@name</span>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-sm btn-outline-light"
-                                   asp-page="/Auth/Login"
-                                   asp-page-handler="Logout">
+                                <a class="btn btn-sm"
+                                       style="color: var(--accent); border: 1px solid var(--border);"
+                                       asp-page="/Auth/Login"
+                                       asp-page-handler="Logout">
                                     Logout
                                 </a>
                             </li>
@@ -114,9 +133,10 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="btn btn-sm btn-outline-light"
-                                   asp-page="/Auth/Login">
-                                    Login
+                                <a class="btn btn-sm"
+                                       style="color: var(--accent); border: 1px solid var(--border);"
+                                       asp-page="/Auth/Login">
+                                    Sign In
                                 </a>
                             </li>
                         }
@@ -126,18 +146,21 @@
         </nav>
     </header>
 
-    <div class="container mt-4">
-        <main role="main" class="pb-3">
+    <div class="container mt-5">
+        <main role="main" class="pb-5">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top py-3 text-muted">
+    <footer class="border-top py-5 mt-5" style="border-color: var(--border); background: var(--card);">
         <div class="container text-center">
-            &copy; 2026 - FUNews
+            <p class="text-muted-foreground small mb-0">
+                &copy; 2026 — FUNews
+            </p>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
