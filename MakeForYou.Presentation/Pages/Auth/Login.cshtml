@@ -1,0 +1,85 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Auth.LoginModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container d-flex justify-content-center py-5">
+    <div class="card shadow-sm w-100" style="max-width: 440px;">
+        <div class="card-body p-4">
+
+            <h3 class="card-title mb-1 fw-bold">Sign In</h3>
+            <p class="text-muted mb-4">Welcome back to MakeForYou</p>
+
+            @* Redirected here after registration *@
+            @if (Model.JustRegistered)
+            {
+                <div class="alert alert-success" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>Account created! Please sign in.
+                </div>
+            }
+
+            @* Server-side error *@
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-circle me-2"></i>@Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="returnUrl" value="@Request.Query["returnUrl"]" />
+
+                {{!-- Email --}}
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label">Email <span class="text-danger">*</span></label>
+                    <input asp-for="Input.Email" class="form-control" placeholder="example@email.com" autofocus />
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                </div>
+
+                {{!-- Password --}}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between">
+                        <label asp-for="Input.Password" class="form-label">
+                            Password <span class="text-danger">*</span>
+                        </label>
+                        <a asp-page="/Auth/ForgotPassword" class="small">Forgot password?</a>
+                    </div>
+                    <div class="input-group">
+                        <input asp-for="Input.Password" type="password" class="form-control"
+                               placeholder="Your password" id="passwordInput" />
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                    Sign In
+                </button>
+            </form>
+
+            <hr class="my-3" />
+            <p class="text-center text-muted small mb-0">
+                Don't have an account? <a asp-page="/Auth/Register">Create one</a>
+            </p>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon  = document.getElementById('eyeIcon');
+            const isHidden = input.type === 'password';
+            input.type     = isHidden ? 'text' : 'password';
+            icon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+        }
+    </script>
+}

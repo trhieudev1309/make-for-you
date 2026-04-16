@@ -11,9 +11,4 @@
     <ProjectReference Include="..\MakeForYou.DataAccess\MakeForYou.DataAccess.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Repository\" />
-  </ItemGroup>
-
 </Project>
