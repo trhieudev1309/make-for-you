@@ -27,7 +27,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _http;
-        private readonly IEmailService _email;   
+        private readonly IEmailService _email;
 
         // Sử dụng \W để chấp nhận mọi ký tự không phải chữ và số (bao gồm cả #, ., _, ...)
         private static readonly Regex PasswordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$");
@@ -42,48 +42,40 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
         public async Task<RegisterRespond> RegisterAsync(RegisterRequest req)
         {
+            // 1. Password strength
             if (!PasswordRegex.IsMatch(req.Password))
-            {
-                return new RegisterRespond
-                {
-                    Success = false,
-                    Message = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character."
-                };
-            }
+                return Fail("Password must be 8–15 characters and include uppercase, lowercase, digit, and special character.");
 
+            // 2. Unique email
             if (await _userRepository.EmailExistsAsync(req.Email))
-            {
-                return Fail("Email already exists.");
-            }
+                return Fail("An account with this email already exists.");
 
+            // 3. Build User entity
             var user = new User
             {
-                FullName = req.FullName,
-                Email = req.Email,
+                FullName = req.FullName.Trim(),
+                Email = req.Email.ToLower().Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password, workFactor: 12),
-                Phone = req.Phone,
+                Phone = req.Phone?.Trim(),
                 Role = req.Role,
-                CreatedAt = DateTime.UtcNow,
-                Status = 0
+                Status = (int)UserStatus.Active,
+                CreatedAt = DateTime.UtcNow
             };
 
-            var createdUser = await _userRepository.CreateUserAsync(user);
+            // 4. Persist User first (generates UserId via DB)
+            var created = await _userRepository.CreateUserAsync(user);
 
-            if (createdUser != null)
+            // 5. Create role-specific profile in same transaction
+            await CreateRoleProfileAsync(created);
+
+            return new RegisterRespond
             {
-                await CreateRoleProfileAsync(createdUser);
-                return new RegisterRespond
-                {
-                    Success = true,
-                    Message = "Registration successful.",
-                    UserId = createdUser.UserId
-                };
-            }
-            else
-            {
-                return Fail("Failed to create user.");
-            }
+                Success = true,
+                Message = "Account created successfully.",
+                UserId = created.UserId
+            };
         }
+
 
         private async Task CreateRoleProfileAsync(MakeForYou.BusinessLogic.Entities.User user)
         {
@@ -158,7 +150,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private static LoginResponse LoginFail(string msg) =>
     new() { Success = false, Message = msg };
 
-        
+
 
         public async Task<AuthResult> ForgotPasswordAsync(ForgotPasswordRequest req)
         {
