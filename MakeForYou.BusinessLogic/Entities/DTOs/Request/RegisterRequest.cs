@@ -22,6 +22,9 @@ namespace MakeForYou.BusinessLogic.Entities.DTOs.Request
         [MaxLength(50), RegularExpression(@"^[0-9]{9,11}$", ErrorMessage = "Phone must be 9–11 digits.")]
         public string? Phone { get; set; }
 
+        [Required, Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
         // Buyer = 0, Seller = 1  (Admin cannot self-register)
         [Required, Range(0, 1, ErrorMessage = "Role must be Buyer (0) or Seller (1).")]
         public int Role { get; set; }
