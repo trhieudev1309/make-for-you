@@ -1,4 +1,6 @@
-using MakeForYou.BusinessLogic;
+﻿using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic.Interfaces;
+using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Implement;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using MakeForYou.Repositories.Interfaces;
@@ -23,7 +25,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
+
+
+//builder.Services.AddScoped<AuthService>();
+
 // Repository & service registrations
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+// Đăng ký thêm Service của bạn ở đây
+builder.Services.AddScoped<IHomeService, HomeService>();
 //builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
