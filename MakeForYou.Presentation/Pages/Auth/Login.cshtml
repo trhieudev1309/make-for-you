@@ -4,67 +4,153 @@
     ViewData["Title"] = "Sign In";
 }
 
-<div class="container d-flex justify-content-center py-5">
-    <div class="card shadow-sm w-100" style="max-width: 440px;">
-        <div class="card-body p-4">
+<!-- Page-specific styles -->
+<style>
+    .auth-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(26, 26, 26, 0.06);
+    }
 
-            <h3 class="card-title mb-1 fw-bold">Sign In</h3>
-            <p class="text-muted mb-4">Welcome back to MakeForYou</p>
+    .form-control {
+        border-color: var(--border);
+        border-radius: 6px;
+        padding: 0.85rem 1rem;
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
+    }
 
-            @* Redirected here after registration *@
-            @if (Model.JustRegistered)
-            {
-                <div class="alert alert-success" role="alert">
-                    <i class="bi bi-check-circle me-2"></i>Account created! Please sign in.
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15);
+        }
+
+    .btn-signin {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        padding: 0.85rem 1.5rem;
+        font-size: 1.05rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+        .btn-signin:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+</style>
+
+<div class="min-vh-100 d-flex align-items-center py-5">
+    <div class="container">
+        <div class="mx-auto" style="max-width: 440px;">
+
+            <div class="auth-card p-5 p-md-6">
+
+                <!-- Editorial Section Label -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
+                    <span class="small-caps">Welcome Back</span>
+                    <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
                 </div>
-            }
 
-            @* Server-side error *@
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-circle me-2"></i>@Model.ErrorMessage
-                </div>
-            }
-
-            <form method="post" novalidate>
-                @Html.AntiForgeryToken()
-
-                <input type="hidden" name="returnUrl" value="@Request.Query["returnUrl"]" />
-
-                {{!-- Email --}}
-                <div class="mb-3">
-                    <label asp-for="Input.Email" class="form-label">Email <span class="text-danger">*</span></label>
-                    <input asp-for="Input.Email" class="form-control" placeholder="example@email.com" autofocus />
-                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
-                </div>
-
-                {{!-- Password --}}
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between">
-                        <label asp-for="Input.Password" class="form-label">
-                            Password <span class="text-danger">*</span>
-                        </label>
-                        <a asp-page="/Auth/ForgotPassword" class="small">Forgot password?</a>
-                    </div>
-                    <div class="input-group">
-                        <input asp-for="Input.Password" type="password" class="form-control"
-                               placeholder="Your password" id="passwordInput" />
-                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                            <i class="bi bi-eye" id="eyeIcon"></i>
-                        </button>
-                    </div>
-                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <!-- Headline -->
+                <h1 class="serif-heading display-5 mb-2 text-center" style="color: var(--foreground);">
                     Sign In
-                </button>
-            </form>
+                </h1>
+                <p class="text-center mb-5" style="color: var(--muted-foreground);">
+                    Continue your creative journey with Make For You
+                </p>
 
-            <hr class="my-3" />
-            <p class="text-center text-muted small mb-0">
-                Don't have an account? <a asp-page="/Auth/Register">Create one</a>
+                <!-- Success Message -->
+                @if (Model.JustRegistered)
+                {
+                    <div class="alert mb-4" style="background:#F0EDE6; color:#1A1A1A; border:1px solid #E8E4DF;">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Account created successfully. Please sign in.
+                    </div>
+                }
+
+                <!-- Error Message -->
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert mb-4" style="background:#F8E8E8; color:#9F2B2B; border:1px solid #E8E4DF;">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <form method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@Request.Query["returnUrl"]" />
+
+                    <!-- Email -->
+                    <div class="mb-4">
+                        <label asp-for="Input.Email" class="form-label small-caps">Email Address</label>
+                        <input asp-for="Input.Email"
+                               class="form-control"
+                               placeholder="hello@example.com"
+                               autofocus />
+                        <span asp-validation-for="Input.Email" class="text-danger small mt-1"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between align-items-baseline mb-2">
+                            <label asp-for="Input.Password" class="form-label small-caps">Password</label>
+                            <a asp-page="/Auth/ForgotPassword"
+                                   class="small"
+                                   style="color: var(--muted-foreground); text-decoration: none;">
+                                Forgot password?
+                            </a>
+                        </div>
+                        
+                        <div class="input-group">
+                            <input asp-for="Input.Password"
+                                   type="password"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   id="passwordInput" />
+                            
+                            <button class="btn border"
+                                    type="button"
+                                    style="border-color: var(--border);"
+                                    onclick="togglePassword()">
+                                <i class="bi bi-eye" id="eyeIcon" style="font-size: 1.1rem;"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.Password" class="text-danger small mt-1"></span>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button type="submit" class="btn btn-signin w-100">
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="d-flex align-items-center gap-3 my-5">
+                    <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
+                    <span class="small-caps" style="color: var(--muted-foreground);">or</span>
+                    <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
+                </div>
+
+                <!-- Register Link -->
+                <p class="text-center" style="color: var(--muted-foreground);">
+                    Don’t have an account?
+                    <a asp-page="/Auth/Register"
+                           style="color: var(--accent); font-weight: 500; text-decoration: none;">
+                        Create one
+                    </a>
+                </p>
+
+            </div>
+
+            <!-- Footer note -->
+            <p class="text-center mt-5 small" style="color: var(--muted-foreground);">
+                &copy; 2026 — FUNews
             </p>
 
         </div>
@@ -76,10 +162,15 @@
     <script>
         function togglePassword() {
             const input = document.getElementById('passwordInput');
-            const icon  = document.getElementById('eyeIcon');
-            const isHidden = input.type === 'password';
-            input.type     = isHidden ? 'text' : 'password';
-            icon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+            const icon = document.getElementById('eyeIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
         }
     </script>
 }
