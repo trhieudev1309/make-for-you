@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: MakeForYou.Presentation/Dockerfile
     ports:
-      - "80:80"
+      - "80:8080"
     restart: always
