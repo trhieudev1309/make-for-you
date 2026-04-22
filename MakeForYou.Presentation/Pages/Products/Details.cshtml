@@ -6,232 +6,285 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 <link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
+
 <div class="serif-scope">
-  <div class="serif-container">
-    @if (Model.Product == null)
-    {
-        <div class="alert alert-warning" role="alert">Product not found.</div>
-    }
-    else
-    {
-        <!-- Breadcrumb -->
-        <nav aria-label="Breadcrumb" class="mb-3">
-            <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
-                <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Products</a></li>
-                <li class="breadcrumb-item text-muted small-caps" aria-current="page">@(Model.Product.Category?.Name ?? "Product")</li>
-            </ol>
-        </nav>
-
-        <!-- Header -->
-        <header class="mb-5">
-            <div class="kicker">Product</div>
-            <h1 class="serif-title">@Model.Product.Title</h1>
-            @if (!string.IsNullOrEmpty(Model.Product.Description))
-            {
-                <p class="small-muted" style="max-width:70ch;">
-                    @(Model.Product.Description?.Length > 220 ? Model.Product.Description.Substring(0, 220) + "…" : Model.Product.Description)
-                </p>
-            }
-        </header>
-
-        <div class="details-grid">
-          <!-- Left: Gallery + Description -->
-          <div class="left-column">
-            <div class="product-hero-card">
-              <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Open image in larger view">
-                @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
-                {
-                    <img src="@Model.Product.ImageUrl" alt="Image of @Model.Product.Title" loading="lazy" class="product-image-lg" />
-                }
-                else
-                {
-                    <div class="product-image-lg" style="display:flex;align-items:center;justify-content:center;background:#f3f1ee;color:var(--serif-muted);">
-                        <span class="small-caps">No image available</span>
-                    </div>
-                }
-              </button>
-            </div>
-
-            <!-- Full long read description card (secondary) -->
-            <section>
-              <div class="small-caps mb-3">Full description</div>
-              <article class="full-desc">
-                <div class="serif-body">@Model.Product.Description</div>
-              </article>
-            </section>
-          </div>
-
-          <!-- Right: Meta + Artisan -->
-          <aside class="right-column">
-            <div class="meta-card">
-              <div class="small-caps">Offer</div>
-              <div class="d-flex align-items-baseline justify-content-between">
-                <div>
-                  <div class="h3" style="font-family:Playfair Display, Georgia, serif;margin:0;">
-                    @if (Model.Product.Price.HasValue)
-                    {
-                        @Model.Product.Price.Value.ToString("C0")
-                    }
-                    else
-                    {
-                        <span class="text-muted-serif">Price on request</span>
-                    }
-                  </div>
-                  <div class="small-muted">Added @Model.Product.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
-                </div>
-                <div class="small-muted text-end">
-                  <div class="small-caps">Stock</div>
-                  <div>@((Model.Product.Seller?.AvailabilityStatus == 1) ? "Available" : "Check availability")</div>
-                </div>
-              </div>
-
-              <hr style="border-color:var(--serif-border);" />
-
-              <!-- Artisan summary -->
-              <div class="profile-card mt-2">
-               <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none">
-    <div class="profile-avatar" aria-hidden="true" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName))
+    <div class="serif-container">
+        @if (Model.Product == null)
         {
-            @Model.Product.Seller.User.FullName.Substring(0,1).ToUpper()
-        }
-    </div>
-</a>
-                <div class="profile-meta">
-                  <div class="serif-subtitle">
-    <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none text-reset fw-bold" style="border-bottom: 1px solid transparent;" onmouseover="this.style.borderColor='var(--serif-gold)'" onmouseout="this.style.borderColor='transparent'">
-        @Model.Product.Seller?.User?.FullName
-    </a>
-</div>
-                  <div class="small-muted">@Model.Product.Seller?.SkillDescription</div>
-
-                  <div class="stats-grid">
-                    <div class="stat">
-                      <div class="value">@((Model.Product.Seller?.AverageRating ?? 0).ToString())</div>
-                      <div class="label">Rating</div>
-                    </div>
-                    <div class="stat">
-                      <div class="value">@((Model.Product.Seller?.TotalReviews ?? 0))</div>
-                      <div class="label">Reviews</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="cta-group mt-3">
-                @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.Email))
-                {
-                    <a class="btn btn-primary serif" href="mailto:@Model.Product.Seller.User.Email?subject=@(Uri.EscapeDataString($"Inquiry about {Model.Product.Title}"))" role="button">Contact Artisan</a>
-                }
-                else
-                {
-                    <button class="btn btn-primary serif" disabled>Contact Unavailable</button>
-                }
-                <a asp-page="/Products/Index" class="btn btn-outline-secondary">Back to products</a>
-              </div>
-            </div>
-
-            <div class="about-card">
-              <div class="small-caps mb-2">About the artisan</div>
-              <p class="serif-body text-muted-serif" style="margin:0;">
-                @if (!string.IsNullOrEmpty(Model.Product.Seller?.Bio))
-                {
-                    @Model.Product.Seller.Bio
-                }
-                else
-                {
-                    <span>No biography provided.</span>
-                }
-              </p>
-            </div>
-          </aside>
-        </div>
-
-        <!-- Reviews -->
-        <section class="reviews-section">
-          <div class="reviews-header">
-            <div>
-              <div class="small-caps">Reviews</div>
-              <h2 class="serif-title" style="font-size:1.25rem;margin:0;">What customers say</h2>
-            </div>
-            <div class="small-muted">
-              @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
-              {
-                <div>@Model.Product.Seller.TotalReviews reviews</div>
-              }
-              else
-              {
-                <div>No reviews yet</div>
-              }
-            </div>
-          </div>
-
-          <div class="reviews-grid">
-            @* Try to list a few reviews if available via Seller.Reviews (if not loaded this will just show placeholders).
-               The repository can be extended to include seller reviews for full data. *@
-
-            @if (Model.Product.Seller?.TotalReviews > 0)
-            {
-                @* Minimal example card that shows seller stats (real review fetching is backend work) *@
-                <div class="review-card">
-                  <div class="review-quote">Excellent craftsmanship — the piece arrived beautifully wrapped and exactly as described. Highly recommend.</div>
-                  <div class="review-meta">
-                    <div class="small-muted">— Jane D.</div>
-                    <div class="small-muted">Mar 3, 2026</div>
-                  </div>
-                </div>
-
-                <div class="review-card">
-                  <div class="review-quote">Lovely finish and quick shipping. Will order again.</div>
-                  <div class="review-meta">
-                    <div class="small-muted">— Alex S.</div>
-                    <div class="small-muted">Feb 15, 2026</div>
-                  </div>
-                </div>
-            }
-            else
-            {
-                <div class="review-card">
-                  <div class="review-quote">No customer reviews yet. Be the first to leave feedback.</div>
-                  <div class="review-meta">
-                    <div class="small-muted">—</div>
-                    <div class="small-muted">—</div>
-                  </div>
-                </div>
-            }
-          </div>
-        </section>
-    }
-  </div>
-</div>
-
-<!-- Image modal (Bootstrap) -->
-<div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content" style="background:transparent;border:none;">
-      <div class="modal-body p-0">
-        @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
-        {
-            <img src="@Model.Product.ImageUrl" alt="Large image of @Model.Product.Title" class="modal-image" />
+            <div class="alert alert-warning" role="alert">Product not found.</div>
         }
         else
         {
-            <div style="height:420px;display:flex;align-items:center;justify-content:center;color:var(--serif-muted);">
-                <span class="small-caps">No image available</span>
+            <nav aria-label="Breadcrumb" class="mb-3">
+                <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
+                    <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Products</a></li>
+                    <li class="breadcrumb-item text-muted small-caps" aria-current="page">@(Model.Product.Category?.Name ?? "Product")</li>
+                </ol>
+            </nav>
+
+            <header class="mb-5">
+                <div class="kicker">Product</div>
+                <h1 class="serif-title">@Model.Product.Title</h1>
+                @if (!string.IsNullOrEmpty(Model.Product.Description))
+                {
+                    <p class="small-muted" style="max-width:70ch;">
+                        @(Model.Product.Description?.Length > 220 ? Model.Product.Description.Substring(0, 220) + "…" : Model.Product.Description)
+                    </p>
+                }
+            </header>
+
+            <div class="details-grid">
+                <div class="left-column">
+                    <div class="product-hero-card">
+                        <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Open image in larger view">
+                            @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                            {
+                                <img src="@Model.Product.ImageUrl" alt="Image of @Model.Product.Title" loading="lazy" class="product-image-lg" />
+                            }
+                            else
+                            {
+                                <div class="product-image-lg" style="display:flex;align-items:center;justify-content:center;background:#f3f1ee;color:var(--serif-muted);">
+                                    <span class="small-caps">No image available</span>
+                                </div>
+                            }
+                        </button>
+                    </div>
+
+                    <section>
+                        <div class="small-caps mb-3">Full description</div>
+                        <article class="full-desc">
+                            <div class="serif-body">@Model.Product.Description</div>
+                        </article>
+                    </section>
+                </div>
+
+                <aside class="right-column">
+                    <div class="meta-card">
+                        <div class="small-caps">Offer</div>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <div>
+                                <div class="h3" style="font-family:Playfair Display, Georgia, serif;margin:0;">
+                                    @if (Model.Product.Price.HasValue)
+                                    {
+                                        @Model.Product.Price.Value.ToString("C0")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted-serif">Price on request</span>
+                                    }
+                                </div>
+                                <div class="small-muted">Added @Model.Product.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                            </div>
+                            <div class="small-muted text-end">
+                                <div class="small-caps">Stock</div>
+                                <div>@((Model.Product.Seller?.AvailabilityStatus == 1) ? "Available" : "Check availability")</div>
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--serif-border);" />
+
+                        @* PHẦN SELECTION ĐÃ THÊM ICON BAG HEART *@
+                        <div class="cart-interaction-group mb-4">
+                            <div class="small-caps mb-2" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Selection</div>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="qty-selector d-flex align-items-center border rounded-pill px-3 py-1 bg-white">
+                                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(-1)"><i class="bi bi-dash"></i></button>
+                                        <input type="number" id="purchaseQty" value="1" min="1" class="text-center border-0" style="width: 40px; background:transparent; font-weight: 600;" readonly />
+                                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(1)"><i class="bi bi-plus"></i></button>
+                                    </div>
+                                    <button id="addToCartBtn" class="btn btn-mfy-solid flex-grow-1 rounded-pill fw-bold" 
+                                            style="background: var(--mfy-bark, #2D2926); color: white; padding: 10px;" 
+                                            onclick="handleAddToCart()">
+                                        Add to Basket
+                                    </button>
+                                </div>
+                                
+                                @* NÚT GIỎ HÀNG VỚI ICON BI-BAG-HEART *@
+                                <a href="/Cart/Index" class="btn btn-outline-dark rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2" style="padding: 8px;">
+                                    <i class="bi bi-bag-heart"></i> View My Basket
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="profile-card mt-2">
+                            <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none">
+                                <div class="profile-avatar" aria-hidden="true" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName))
+                                    {
+                                        @Model.Product.Seller.User.FullName.Substring(0,1).ToUpper()
+                                    }
+                                </div>
+                            </a>
+                            <div class="profile-meta">
+                                <div class="serif-subtitle">
+                                    <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none text-reset fw-bold" style="border-bottom: 1px solid transparent;" onmouseover="this.style.borderColor='var(--serif-gold)'" onmouseout="this.style.borderColor='transparent'">
+                                        @Model.Product.Seller?.User?.FullName
+                                    </a>
+                                </div>
+                                <div class="small-muted">@Model.Product.Seller?.SkillDescription</div>
+
+                                <div class="stats-grid">
+                                    <div class="stat">
+                                        <div class="value">@((Model.Product.Seller?.AverageRating ?? 0).ToString())</div>
+                                        <div class="label">Rating</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="value">@((Model.Product.Seller?.TotalReviews ?? 0))</div>
+                                        <div class="label">Reviews</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cta-group mt-3">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.Email))
+                                {
+                                    <a class="btn btn-primary serif" href="mailto:@Model.Product.Seller.User.Email?subject=@(Uri.EscapeDataString($"Inquiry about {Model.Product.Title}"))" role="button">Contact Artisan</a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-primary serif" disabled>Contact Unavailable</button>
+                                }
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary serif" href="/Auth/Login?returnUrl=/Products/@Model.Product.ProductId">Sign in to Contact</a>
+                            }
+                            <a asp-page="/Products/Index" class="btn btn-outline-secondary">Back to products</a>
+                        </div>
+
+                        <div class="about-card mt-4">
+                            <div class="small-caps mb-2">About the artisan</div>
+                            <p class="serif-body text-muted-serif" style="margin:0;">
+                                @(Model.Product.Seller?.Bio ?? "No biography provided.")
+                            </p>
+                        </div>
+                    </div>
+                </aside>
             </div>
+
+            <section class="reviews-section mt-5">
+                <div class="reviews-header">
+                    <div>
+                        <div class="small-caps">Reviews</div>
+                        <h2 class="serif-title" style="font-size:1.25rem;margin:0;">What customers say</h2>
+                    </div>
+                    <div class="small-muted">
+                        @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
+                        {
+                            <div>@Model.Product.Seller.TotalReviews reviews</div>
+                        }
+                        else
+                        {
+                            <div>No reviews yet</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="reviews-grid">
+                    @if (Model.Product.Seller?.TotalReviews > 0)
+                    {
+                        <div class="review-card">
+                            <div class="review-quote">Excellent craftsmanship — the piece arrived beautifully wrapped and exactly as described. Highly recommend.</div>
+                            <div class="review-meta">
+                                <div class="small-muted">— Jane D.</div>
+                                <div class="small-muted">Mar 3, 2026</div>
+                            </div>
+                        </div>
+                        <div class="review-card">
+                            <div class="review-quote">Lovely finish and quick shipping. Will order again.</div>
+                            <div class="review-meta">
+                                <div class="small-muted">— Alex S.</div>
+                                <div class="small-muted">Feb 15, 2026</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="review-card">
+                            <div class="review-quote">No customer reviews yet. Be the first to leave feedback.</div>
+                            <div class="review-meta">
+                                <div class="small-muted">—</div>
+                                <div class="small-muted">—</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
         }
-      </div>
     </div>
-  </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background:transparent;border:none;">
+            <div class="modal-body p-0 text-center">
+                @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
+                {
+                    <img src="@Model.Product.ImageUrl" alt="Large image of @Model.Product.Title" style="max-width: 100%; border-radius: 12px;" />
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-<script>
-  (function () {
-    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) return;
-    // minimal behavior; bootstrap modal handles focus and animations
-  })();
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function changeQty(amt) {
+            let input = document.getElementById('purchaseQty');
+            let val = parseInt(input.value) + amt;
+            if (val >= 1) input.value = val;
+        }
+
+        async function handleAddToCart() {
+            const btn = document.getElementById('addToCartBtn');
+            const productId = @Model.Product?.ProductId;
+            const quantity = document.getElementById('purchaseQty').value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+
+            try {
+                const response = await fetch(`?handler=AddToCart&productId=${productId}&quantity=${quantity}`, {
+                    method: 'POST',
+                    headers: { "RequestVerificationToken": token }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const badge = document.getElementById('cartBadgeCount');
+                    if (badge) badge.innerText = result.newCount;
+
+                    Swal.fire({
+                        title: 'Added to Basket',
+                        text: 'Your handcrafted treasure has been reserved.',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#2D2926',
+                        cancelButtonColor: '#C8855A',
+                        confirmButtonText: 'Go to Basket',
+                        cancelButtonText: 'Keep Browsing'
+                    }).then((swalResult) => {
+                        if (swalResult.isConfirmed) {
+                            window.location.href = '/Cart/Index';
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Cart Error:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Add to Basket';
+            }
+        }
+    </script>
 }
