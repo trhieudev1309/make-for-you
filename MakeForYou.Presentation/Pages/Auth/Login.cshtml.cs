@@ -47,7 +47,7 @@ namespace MakeForYou.Presentation.Pages.Auth
             {
                 (int)UserRole.Seller => RedirectToPage("/Seller/Dashboard"),
                 (int)UserRole.Admin => RedirectToPage("/Admin/Dashboard"),
-                _ => RedirectToPage("/Buyer/Dashboard")
+                _ => RedirectToPage("/Index")
             };
         }
     }
