@@ -2,11 +2,6 @@
 using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MakeForYou.Repositories.Repository
 {
@@ -68,6 +63,21 @@ namespace MakeForYou.Repositories.Repository
                                   .Where(t => t.UserId == userId && !t.IsUsed)
                                   .ToListAsync();
             tokens.ForEach(t => t.IsUsed = true);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetByIdAsync(long id)
+        {
+            return await _context.Users
+                .Include(u => u.Seller)
+                .Include(u => u.Buyer)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserId == id);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
     }

@@ -2,96 +2,162 @@
 @model MakeForYou.Presentation.Pages.IndexModel
 @{
     ViewData["Title"] = "MakeForYou – Handcrafted Marketplace";
-    Layout = null; 
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <style>
-        :root {
-            --mfy-ivory: #F9F7F2;
-            --mfy-white: #FFFFFF;
-            --mfy-clay: #C8855A;
-            --mfy-clay-dark: #A3623C;
-            --mfy-bark: #2D2926;
-            --mfy-border: #E8E2D9;
-            --serif: 'Playfair Display', serif;
-            --sans: 'Source Sans 3', sans-serif;
-            --mono: 'IBM Plex Mono', monospace;
+
+<style>
+    .quick-nav {
+        display: flex;
+        justify-content: center;
+        gap: 2.5rem;
+        padding: 0.75rem 0;
+        background: white;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+        .quick-nav a {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            text-decoration: none;
+            color: #888;
+            transition: 0.3s;
         }
 
-        body { font-family: var(--sans); background-color: var(--mfy-ivory); color: var(--mfy-bark); margin: 0; }
+            .quick-nav a:hover {
+                color: var(--mfy-clay);
+            }
 
-        /* ── LOGO MAKEFORYOU ── */
-        .mfy-logo { 
-            font-family: var(--serif); font-size: 1.8rem; font-weight: 700; 
-            color: var(--mfy-bark); text-decoration: none; 
-            display: flex; align-items: center; gap: 4px;
+    /* ── HERO BANNER ── */
+    .hero-banner {
+        border-radius: 24px;
+        overflow: hidden;
+        height: 480px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 5rem;
+        color: white;
+        background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=1400');
+        background-size: cover;
+        background-position: center;
+        animation: fadeIn 1s ease;
+    }
+
+    .hero-content {
+        max-width: 550px;
+    }
+
+        .hero-content h1 {
+            font-family: var(--serif);
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .mfy-logo .dot { width: 8px; height: 8px; background: var(--mfy-clay); border-radius: 50%; display: inline-block; margin-top: 10px; }
-        .mfy-logo span { font-weight: 400; font-style: italic; color: var(--mfy-clay); }
 
-        /* ── HEADER & NAVIGATION ── */
-        .mfy-header { background: white; border-bottom: 1px solid var(--mfy-border); position: sticky; top: 0; z-index: 1000; }
-        .quick-nav { display: flex; justify-content: center; gap: 2.5rem; padding: 0.75rem 0; background: white; overflow-x: auto; white-space: nowrap; }
-        .quick-nav a { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; text-decoration: none; color: #888; transition: 0.3s; }
-        .quick-nav a:hover { color: var(--mfy-clay); }
+    .btn-mfy-solid {
+        background: var(--mfy-clay);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(200, 133, 90, 0.3);
+    }
 
-        .search-container { flex-grow: 1; max-width: 500px; margin: 0 2rem; position: relative; }
-        .search-input { width: 100%; padding: 0.5rem 1.2rem; border-radius: 50px; border: 1px solid var(--mfy-border); background: var(--mfy-ivory); font-size: 0.9rem; transition: 0.3s; }
-        .search-input:focus { border-color: var(--mfy-clay); outline: none; background: white; box-shadow: 0 0 0 4px rgba(200, 133, 90, 0.1); }
-
-        /* ── HERO BANNER ── */
-        .hero-banner { 
-            border-radius: 24px; overflow: hidden; height: 480px; position: relative;
-            display: flex; align-items: center; padding: 5rem; color: white;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=1400');
-            background-size: cover; background-position: center;
-            animation: fadeIn 1s ease;
+        .btn-mfy-solid:hover {
+            background: var(--mfy-clay-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(200, 133, 90, 0.4);
+            color: white;
         }
-        .hero-content { max-width: 550px; }
-        .hero-content h1 { font-family: var(--serif); font-size: 4rem; font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        
-        .btn-mfy-solid { background: var(--mfy-clay); color: white; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; transition: 0.3s; box-shadow: 0 4px 15px rgba(200, 133, 90, 0.3); }
-        .btn-mfy-solid:hover { background: var(--mfy-clay-dark); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(200, 133, 90, 0.4); color: white; }
 
-        /* ── CUSTOMIZE SECTION ── */
-        .custom-section { 
-            background: #1A1A1A; color: white; padding: 6rem 0; border-radius: 32px; margin: 5rem 0; 
-            position: relative; overflow: hidden;
-        }
+    /* ── CUSTOMIZE SECTION ── */
+    .custom-section {
+        background: #1A1A1A;
+        color: white;
+        padding: 6rem 0;
+        border-radius: 32px;
+        margin: 5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
         .custom-section::after {
-            content: ""; position: absolute; top: 0; right: 0; width: 300px; height: 300px;
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
             background: radial-gradient(circle, rgba(200, 133, 90, 0.1) 0%, transparent 70%);
         }
-        .custom-tag { font-family: var(--mono); color: var(--mfy-clay); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.4em; margin-bottom: 1.2rem; display: block; }
 
-        /* ── PRODUCT CARDS ── */
-        .product-card { background: white; border: 1px solid var(--mfy-border); border-radius: 16px; overflow: hidden; height: 100%; transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
-        .product-card:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.1); border-color: var(--mfy-clay); }
-        .product-img { height: 280px; object-fit: cover; width: 100%; transition: 0.6s; }
-        .product-card:hover .product-img { transform: scale(1.05); }
+    .custom-tag {
+        font-family: var(--mono);
+        color: var(--mfy-clay);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4em;
+        margin-bottom: 1.2rem;
+        display: block;
+    }
 
-        @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    /* ── PRODUCT CARDS ── */
+    .product-card {
+        background: white;
+        border: 1px solid var(--mfy-border);
+        border-radius: 16px;
+        overflow: hidden;
+        height: 100%;
+        transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
 
-        /* Responsive */
-        @@media (max-width: 768px) {
-            .hero-banner { height: auto; padding: 3rem 1.5rem; text-align: center; }
-            .hero-content h1 { font-size: 2.5rem; }
-            .quick-nav { gap: 1.5rem; }
+        .product-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            border-color: var(--mfy-clay);
         }
-    </style>
-</head>
+
+    .product-img {
+        height: 280px;
+        object-fit: cover;
+        width: 100%;
+        transition: 0.6s;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.05);
+    }
+
+    
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-banner {
+            height: auto;
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .quick-nav {
+            gap: 1.5rem;
+        }
+    }
+</style>
 <body>
 
-<header class="mfy-header shadow-sm">
-    <div class="container py-3 d-flex align-items-center justify-content-between">
+@*<header class="mfy-header shadow-sm">
+     <div class="container py-3 d-flex align-items-center justify-content-between">
         <a href="/" class="mfy-logo">Make<span>For</span>You<div class="dot"></div></a>
         
         <div class="search-container d-none d-lg-block">
@@ -106,8 +172,9 @@
             <a href="#" class="fs-4 text-dark"><i class="bi bi-bag-heart"></i></a>
         </div>
     </div>
-    
-    <div class="container border-top d-none d-md-block">
+</header> *@
+    <div class="container py-3 d-flex align-items-center justify-content-between">
+    <div class="container d-none d-md-block">
         <nav class="quick-nav">
             <a href="/Products?categoryId=1">Home Decor</a>
             <a href="/Products?categoryId=2">Jewelry</a>
@@ -117,8 +184,7 @@
             <a href="/Products?categoryId=6">Gifts</a>
         </nav>
     </div>
-</header>
-
+    </div>
 <div class="container mt-5">
     <section class="hero-banner shadow-lg">
         <div class="hero-content">
@@ -144,7 +210,7 @@
             <h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.5rem;">Editor's Picks</h2>
             <p class="text-muted">Handpicked treasures from our artisan community.</p>
         </div>
-        <a href="/Products" class="text-clay text-decoration-none fw-bold border-bottom border-2 border-clay pb-1">See all creations</a>
+        <a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">See all creations</a>
     </div>
 
     <div class="row g-4 mb-5">
@@ -161,7 +227,7 @@
                             </div>
                         </div>
                         <div class="p-4">
-                            <span class="text-uppercase text-clay fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em;">@product.Category?.Name</span>
+                            <span class="text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--mfy-clay);">@product.Category?.Name</span>
                             <h5 class="fw-bold my-2 text-truncate" style="font-family: var(--serif);">@product.Title</h5>
                             <div class="small text-muted mb-4"><i class="bi bi-person-circle"></i> By @product.Seller?.User?.FullName</div>
                             <div class="d-flex justify-content-between align-items-center pt-3 border-top">
@@ -198,4 +264,3 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>

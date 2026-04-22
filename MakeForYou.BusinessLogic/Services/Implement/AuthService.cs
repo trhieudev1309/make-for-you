@@ -1,4 +1,8 @@
-﻿using MakeForYou.BusinessLogic.Entities;
+﻿using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.DTOs;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
@@ -8,17 +12,6 @@ using MakeForYou.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
-using BCrypt.Net;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -134,7 +127,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             await _http.HttpContext!.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
-                new AuthenticationProperties { IsPersistent = false }
+            new AuthenticationProperties { IsPersistent = false }
             );
 
             return new LoginResponse
