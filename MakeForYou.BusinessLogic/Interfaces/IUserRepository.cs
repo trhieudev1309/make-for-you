@@ -15,5 +15,6 @@ namespace MakeForYou.Repositories.Interfaces
         Task SavePasswordResetTokenAsync(PasswordResetToken token);
         Task<PasswordResetToken?> FindValidResetTokenAsync(string email, string tokenHash);
         Task InvalidateUserTokensAsync(long userId);
+        Task<User?> FindByIdAsync(long id);
     }
 }

@@ -70,5 +70,11 @@ namespace MakeForYou.Repositories.Repository
             tokens.ForEach(t => t.IsUsed = true);
             await _context.SaveChangesAsync();
         }
+
+        public Task<User?> FindByIdAsync(long id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+            return Task.FromResult(user);
+        }
     }
 }
