@@ -33,11 +33,18 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             // 2. Vì CartItemViewModel có thể chưa có SellerId, ta cần lấy thông tin Seller cho từng món
             // Để tối ưu, ta lấy thông tin Product từ Repo
-            var tasks = cartItems.Select(async item => new {
-                CartItem = item,
-                Product = await _productRepo.FindByIdAsync(item.ProductId)
-            });
-            var itemsWithProduct = await Task.WhenAll(tasks);
+            var itemsWithProduct = new List<dynamic>();
+
+            foreach (var item in cartItems)
+            {
+                var product = await _productRepo.FindByIdAsync(item.ProductId);
+
+                itemsWithProduct.Add(new
+                {
+                    CartItem = item,
+                    Product = product
+                });
+            }
 
             // 3. NHÓM THEO SELLERID
             var groupedBySeller = itemsWithProduct.GroupBy(x => x.Product.SellerId);
