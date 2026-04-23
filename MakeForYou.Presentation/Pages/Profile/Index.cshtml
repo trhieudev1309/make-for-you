@@ -1,0 +1,146 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Profile.IndexModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+
+<div class="serif-scope">
+  <div class="serif-container">
+    <nav aria-label="Breadcrumb" class="mb-3">
+      <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
+        <li class="breadcrumb-item"><a asp-page="/Home/Index" class="text-decoration-none text-reset small-caps">Home</a></li>
+        <li class="breadcrumb-item text-muted small-caps" aria-current="page">Profile</li>
+      </ol>
+    </nav>
+
+    <header class="mb-5">
+      <div class="small-caps">Account</div>
+      <h1 class="serif-title">My Profile</h1>
+      <p class="text-muted-serif">Manage your account information and preferences</p>
+    </header>
+
+    @if (Model.UserProfile != null)
+    {
+      <div class="row gy-4">
+        <!-- Left: Profile Info -->
+        <div class="col-lg-7">
+          <div class="meta-card">
+            <div class="small-caps mb-3">Personal Information</div>
+
+            <dl class="row mb-3">
+              <dt class="col-sm-4 small-caps">Full Name</dt>
+              <dd class="col-sm-8">@Model.UserProfile.FullName</dd>
+
+              <dt class="col-sm-4 small-caps">Email</dt>
+              <dd class="col-sm-8">@Model.UserProfile.Email</dd>
+
+              <dt class="col-sm-4 small-caps">Phone</dt>
+              <dd class="col-sm-8">
+                @if (!string.IsNullOrEmpty(Model.UserProfile.Phone))
+                {
+                  @Model.UserProfile.Phone
+                }
+                else
+                {
+                  <span class="text-muted-serif">Not provided</span>
+                }
+              </dd>
+
+              <dt class="col-sm-4 small-caps">Member Since</dt>
+              <dd class="col-sm-8">@Model.UserProfile.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy")</dd>
+            </dl>
+
+            <hr style="border-color:var(--serif-border);" />
+
+            <div class="d-grid gap-2 mt-3">
+              <a asp-page="/Profile/Edit" class="btn btn-primary serif">Edit Profile</a>
+              <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change Password</button>
+            </div>
+          </div>
+
+          <!-- Account Status Card -->
+          <div class="meta-card mt-3">
+            <div class="small-caps mb-2">Account Status</div>
+            <div class="d-flex align-items-center gap-2">
+              <span style="display:inline-block;width:10px;height:10px;background:var(--serif-accent);border-radius:50%;"></span>
+              <span class="serif-body">Active Account</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Avatar / Quick Stats -->
+        <aside class="col-lg-5">
+          <div class="about-card">
+            <div class="d-flex flex-column align-items-center text-center gap-3">
+              <div class="profile-avatar" style="width:120px;height:120px;font-size:2.5rem;">
+                @if (!string.IsNullOrEmpty(Model.UserProfile.FullName))
+                {
+                  @Model.UserProfile.FullName.Substring(0,1).ToUpper()
+                }
+              </div>
+              <div>
+                <h2 class="serif-title" style="font-size:1.35rem;margin:0;">@Model.UserProfile.FullName</h2>
+                <p class="text-muted-serif">@Model.UserProfile.Email</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Role Badge -->
+          @if (Model.UserProfile.Seller != null)
+          {
+            <div class="about-card mt-3">
+              <div class="small-caps mb-2">Seller</div>
+              <p class="serif-body text-muted-serif">You have seller status</p>
+              <a asp-page="/Sellers/Dashboard" class="btn btn-sm btn-outline-dark w-100">View Seller Dashboard</a>
+            </div>
+          }
+
+          @if (Model.UserProfile.Buyer != null)
+          {
+            <div class="about-card mt-3">
+              <div class="small-caps mb-2">Buyer</div>
+              <p class="serif-body text-muted-serif">You have buyer status</p>
+              <a href="/Orders" class="btn btn-sm btn-outline-dark w-100">View My Orders</a>
+            </div>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title serif-title" id="changePasswordLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" asp-page="/Profile/ChangePassword">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label small-caps">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" name="CurrentPassword" required />
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label small-caps">New Password</label>
+            <input type="password" class="form-control" id="newPassword" name="NewPassword" required />
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label small-caps">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" required />
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary serif">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

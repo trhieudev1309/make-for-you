@@ -1,9 +1,4 @@
 ﻿using MakeForYou.BusinessLogic.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MakeForYou.Repositories.Interfaces
 {
@@ -15,6 +10,8 @@ namespace MakeForYou.Repositories.Interfaces
         Task SavePasswordResetTokenAsync(PasswordResetToken token);
         Task<PasswordResetToken?> FindValidResetTokenAsync(string email, string tokenHash);
         Task InvalidateUserTokensAsync(long userId);
+        Task<User?> GetByIdAsync(long id);
+        Task UpdateAsync(User user);
         Task<User?> FindByIdAsync(long id);
     }
 }
