@@ -1,4 +1,4 @@
-﻿@page "{orderId:long}"
+﻿@page
 @model MakeForYou.Presentation.Pages.Checkout.SuccessModel
 @{
     ViewData["Title"] = "Order Success – MakeForYou";
@@ -13,7 +13,14 @@
     <h1 class="display-4 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">Thank you for your order!</h1>
     
     <p class="lead mb-4 text-muted">
-        Your order <span class="fw-bold text-dark">#@Model.OrderId</span> has been placed successfully. 
+        @if (Model.OrderIdList.Count > 1)
+        {
+            @:Your orders <span class="fw-bold text-dark">#@string.Join(", #", Model.OrderIdList)</span> have been placed successfully.
+        }
+        else
+        {
+            @:Your order <span class="fw-bold text-dark">#@Model.OrderIdList.FirstOrDefault()</span> has been placed successfully.
+        }
         <br />Our artisans are being notified to start crafting your unique pieces.
     </p>
 

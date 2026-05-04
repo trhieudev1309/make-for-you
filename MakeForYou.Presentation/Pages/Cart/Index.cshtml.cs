@@ -31,18 +31,23 @@ namespace MakeForYou.Presentation.Pages.Cart
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
 
-            // Lấy thông tin giỏ hàng hiện tại để biết số lượng cũ
             var items = await _cartService.GetCartAsync(userId);
             var item = items.FirstOrDefault(x => x.ProductId == productId);
 
             if (item != null)
             {
-                // Tính toán số lượng mới = cũ + thay đổi (1 hoặc -1)
                 int newQty = item.Quantity + change;
-                await _cartService.UpdateQuantityAsync(userId, productId, newQty);
+                if (newQty > 0)
+                {
+                    await _cartService.UpdateQuantityAsync(userId, productId, newQty);
+                }
             }
 
-            return new JsonResult(new { success = true });
+            // Lấy lại số lượng tổng mới để trả về cho Client
+            var updatedItems = await _cartService.GetCartAsync(userId);
+            int newTotalCount = updatedItems.Sum(x => x.Quantity);
+
+            return new JsonResult(new { success = true, newCount = newTotalCount });
         }
 
         public async Task<IActionResult> OnPostRemoveItemAsync(long productId)
@@ -51,7 +56,12 @@ namespace MakeForYou.Presentation.Pages.Cart
             long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
 
             await _cartService.RemoveItemAsync(userId, productId);
-            return new JsonResult(new { success = true });
+
+            // Tính toán lại số lượng tổng sau khi xóa
+            var updatedItems = await _cartService.GetCartAsync(userId);
+            int newTotalCount = updatedItems.Sum(x => x.Quantity);
+
+            return new JsonResult(new { success = true, newCount = newTotalCount });
         }
     }
 }

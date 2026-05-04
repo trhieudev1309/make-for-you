@@ -43,7 +43,7 @@ namespace MakeForYou.Presentation.Pages.Checkout
             if (string.IsNullOrEmpty(userIdStr)) return RedirectToPage("/Auth/Login");
             long userId = long.Parse(userIdStr);
 
-            // Task của Tiến: Tạo đơn hàng
+            // Tạo các đơn hàng (đã được group theo Seller bên trong Service)
             var orders = await _orderService.CreateOrderFromCartAsync(
                 userId,
                 OrderRequest.FullName,
@@ -52,8 +52,11 @@ namespace MakeForYou.Presentation.Pages.Checkout
 
             if (orders == null || !orders.Any()) return Page();
 
-            // Chuyển thẳng về Success sau khi lưu DB thành công
-            return RedirectToPage("/Checkout/Success", new { orderId = orders.First().OrderId });
+            // Lấy tất cả ID đơn hàng nối lại thành chuỗi "1,2,3"
+            var allOrderIds = string.Join(",", orders.Select(o => o.OrderId));
+
+            // Truyền chuỗi ID sang trang Success
+            return RedirectToPage("/Checkout/Success", new { orderIds = allOrderIds });
         }
     }
 }
