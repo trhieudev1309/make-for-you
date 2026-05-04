@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace MakeForYou.BusinessLogic.Entities
 {
@@ -33,5 +34,7 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<ChatMessage>? ChatMessages { get; set; }
         public ICollection<Quotation>? Quotations { get; set; }
+
+        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

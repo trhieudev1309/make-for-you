@@ -70,17 +70,44 @@
 <header class="mfy-header py-3 shadow-sm">
     <div class="container d-flex align-items-center justify-content-between">
         <a href="/" class="mfy-logo">Make<span>For</span>You</a>
+        
         <div class="flex-grow-1 mx-5 d-none d-lg-block">
             <form method="get" action="/Products">
                 <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="search-bar w-100" placeholder="Search for unique treasures...">
             </form>
         </div>
+
         <div class="d-flex align-items-center gap-4">
-            <button class="btn btn-link text-dark text-decoration-none fw-bold p-0">Sign in</button>
-            <div class="position-relative">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark text-decoration-none fw-bold p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        @User.Identity.Name
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                        <li><a class="dropdown-item" href="/@(User.IsInRole("Seller") ? "Seller" : "Buyer")/Dashboard">Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="/Auth/Logout">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item text-danger">Sign out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a href="/Auth/Login" class="text-dark text-decoration-none fw-bold">Sign in</a>
+            }
+
+            <a href="/Cart" class="position-relative text-dark text-decoration-none">
                 <i class="bi bi-bag fs-4"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-dark" style="font-size: 0.5rem;">0</span>
-            </div>
+                <span id="cartBadgeCount" class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-dark" 
+                      style="font-size: 0.55rem; padding: 0.35em 0.5em;">
+                    @Model.CartCount
+                </span>
+            </a>
         </div>
     </div>
 </header>

@@ -1,0 +1,45 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Checkout.IndexModel
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-md-7">
+            <h4 class="serif-title mb-4">Shipping Information</h4>
+            <form method="post">
+                <div class="mb-3">
+                    <label class="small-caps">Full Name</label>
+                    <input asp-for="OrderRequest.FullName" class="form-control rounded-pill" required />
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="small-caps">Phone Number</label>
+                        <input asp-for="OrderRequest.PhoneNumber" class="form-control rounded-pill" required />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="small-caps">Shipping Address</label>
+                    <textarea asp-for="OrderRequest.ShippingAddress" class="form-control rounded-3" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark w-100 rounded-pill py-3 fw-bold mt-4">
+                    PROCEED TO ONLINE PAYMENT
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm p-4 bg-light">
+                <h5 class="serif-title mb-3">Order Summary</h5>
+                @foreach(var item in Model.CartItems) {
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>@item.ProductName x @item.Quantity</span>
+                        <span>@item.TotalPrice.ToString("N0") VNĐ</span>
+                    </div>
+                }
+                <hr>
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total</span>
+                    <span class="text-clay">@Model.TotalAmount.ToString("N0") VNĐ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
