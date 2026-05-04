@@ -17,6 +17,7 @@
         }
         else
         {
+            <!-- Breadcrumb -->
             <nav aria-label="Breadcrumb" class="mb-3">
                 <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
                     <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Products</a></li>
@@ -24,6 +25,7 @@
                 </ol>
             </nav>
 
+            <!-- Header -->
             <header class="mb-5">
                 <div class="kicker">Product</div>
                 <h1 class="serif-title">@Model.Product.Title</h1>
@@ -36,6 +38,7 @@
             </header>
 
             <div class="details-grid">
+                <!-- Left: Gallery + Description -->
                 <div class="left-column">
                     <div class="product-hero-card">
                         <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Open image in larger view">
@@ -52,6 +55,7 @@
                         </button>
                     </div>
 
+                    <!-- Full long read description card (secondary) -->
                     <section>
                         <div class="small-caps mb-3">Full description</div>
                         <article class="full-desc">
@@ -60,6 +64,7 @@
                     </section>
                 </div>
 
+                <!-- Right: Meta + Artisan -->
                 <aside class="right-column">
                     <div class="meta-card">
                         <div class="small-caps">Offer</div>
@@ -168,23 +173,24 @@
                 </aside>
             </div>
 
-            <section class="reviews-section mt-5">
-                <div class="reviews-header">
-                    <div>
-                        <div class="small-caps">Reviews</div>
-                        <h2 class="serif-title" style="font-size:1.25rem;margin:0;">What customers say</h2>
+                <!-- Reviews -->
+                <section class="reviews-section">
+                    <div class="reviews-header">
+                        <div>
+                            <div class="small-caps">Reviews</div>
+                            <h2 class="serif-title" style="font-size:1.25rem;margin:0;">What customers say</h2>
+                        </div>
+                        <div class="small-muted">
+                            @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
+                            {
+                                <div>@Model.Product.Seller.TotalReviews reviews</div>
+                            }
+                            else
+                            {
+                                <div>No reviews yet</div>
+                            }
+                        </div>
                     </div>
-                    <div class="small-muted">
-                        @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
-                        {
-                            <div>@Model.Product.Seller.TotalReviews reviews</div>
-                        }
-                        else
-                        {
-                            <div>No reviews yet</div>
-                        }
-                    </div>
-                </div>
 
                 <div class="reviews-grid">
                     @if (Model.Product.Seller?.TotalReviews > 0)

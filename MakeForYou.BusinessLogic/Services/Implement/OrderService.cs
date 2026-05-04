@@ -1,4 +1,5 @@
 ﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 
@@ -24,7 +25,24 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _cartRepo = cartRepo;
             _productRepo = productRepo; // Gán giá trị vào biến private
         }
+        public Task<List<Order>> GetOrdersByUserAsync(long buyerId) =>
+    _orderRepo.FindByBuyerIdAsync(buyerId);
 
+        public Task<Order?> GetOrderDetailAsync(long orderId, long buyerId) =>
+            _orderRepo.GetOrderWithDetailsAsync(orderId, buyerId);
+
+        public async Task<Order> CreateOrderAsync(long buyerId, long sellerId, string description)
+        {
+            var order = new Order
+            {
+                BuyerId = buyerId,
+                SellerId = sellerId,
+                OrderDescription = description,
+                Status = (int)MakeForYou.BusinessLogic.Enums.OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            return await _orderRepo.AddAsync(order);
+        }
         public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address)
         {
             // 1. Lấy toàn bộ giỏ hàng

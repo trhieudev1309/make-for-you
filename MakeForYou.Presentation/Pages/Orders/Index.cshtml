@@ -1,0 +1,69 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Orders.IndexModel
+@using MakeForYou.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container py-5" style="max-width: 860px;">
+
+    <div class="mb-4">
+        <h2 style="font-family: var(--serif); font-weight: 700;">My Orders</h2>
+        <p class="text-muted">Track and manage all your custom orders.</p>
+    </div>
+
+    @if (!Model.Orders.Any())
+    {
+        <div class="card border-0 shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="bi bi-bag-x fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold">No orders yet</h5>
+                <p class="text-muted">Once you place a custom order it will appear here.</p>
+                <a asp-page="/Products/Index" class="btn btn-dark rounded-pill px-4">Browse Products</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var order in Model.Orders)
+            {
+                <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <div class="text-muted small mb-1">Order #@order.OrderId</div>
+                                <h6 class="fw-bold mb-1">@(order.Seller?.User?.FullName ?? "Artisan")</h6>
+                                <div class="text-muted small">@order.Seller?.SkillDescription</div>
+                            </div>
+                            <span class="badge rounded-pill @MakeForYou.Presentation.Pages.Orders.IndexModel.BadgeClass(order.Status) px-3 py-2">
+                                @((OrderStatus)order.Status)
+                            </span>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex gap-4 small text-muted">
+                                <span><i class="bi bi-calendar3 me-1"></i>@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span>
+                                @if (order.AgreedPrice.HasValue)
+                                {
+                                    <span><i class="bi bi-cash me-1"></i>@order.AgreedPrice.Value.ToString("N0") VNĐ</span>
+                                }
+                                else
+                                {
+                                    <span class="fst-italic">Price pending</span>
+                                }
+                                <span><i class="bi bi-chat-dots me-1"></i>@(order.Quotations?.Count ?? 0) quote(s)</span>
+                            </div>
+                            <a asp-page="/Orders/Detail" asp-route-id="@order.OrderId"
+                               class="btn btn-outline-dark btn-sm rounded-pill px-4">
+                                View Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

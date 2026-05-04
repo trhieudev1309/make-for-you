@@ -13,7 +13,32 @@ namespace MakeForYou.Repositories.Repository
         {
             _context = context;
         }
+        // Order history — all orders for a buyer, newest first
+        public async Task<List<Order>> FindByBuyerIdAsync(long buyerId) =>
+            await _context.Orders
+                     .Where(o => o.BuyerId == buyerId)
+                     .Include(o => o.Seller).ThenInclude(s => s.User)
+                     .Include(o => o.Quotations)
+                     .OrderByDescending(o => o.CreatedAt)
+                     .ToListAsync();
 
+        // Order detail — enforces ownership (buyerId must match)
+        public async Task<Order?> GetOrderWithDetailsAsync(long orderId, long buyerId) =>
+            await _context.Orders
+                     .Where(o => o.OrderId == orderId && o.BuyerId == buyerId)
+                     .Include(o => o.Seller).ThenInclude(s => s.User)
+                     .Include(o => o.Quotations)
+                     .Include(o => o.Reviews)
+                     .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
+                         .ThenInclude(m => m.Sender)
+                     .FirstOrDefaultAsync();
+
+        public async Task<Order> AddAsync(Order order)
+        {
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+            return order;
+        }
         public async Task<Order> CreateOrderAsync(Order order, List<OrderItem> items)
         {
             // Bắt đầu giao dịch (Transaction)

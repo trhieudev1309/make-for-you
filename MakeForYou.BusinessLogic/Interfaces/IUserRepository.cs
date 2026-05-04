@@ -12,5 +12,6 @@ namespace MakeForYou.Repositories.Interfaces
         Task InvalidateUserTokensAsync(long userId);
         Task<User?> GetByIdAsync(long id);
         Task UpdateAsync(User user);
+        Task<User?> FindByIdAsync(long id);
     }
 }
