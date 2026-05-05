@@ -15,23 +15,26 @@ namespace MakeForYou.Repositories.Repository
         }
         // Order history — all orders for a buyer, newest first
         public async Task<List<Order>> FindByBuyerIdAsync(long buyerId) =>
-            await _context.Orders
-                     .Where(o => o.BuyerId == buyerId)
-                     .Include(o => o.Seller).ThenInclude(s => s.User)
-                     .Include(o => o.Quotations)
-                     .OrderByDescending(o => o.CreatedAt)
-                     .ToListAsync();
+       await _context.Orders
+                .Where(o => o.BuyerId == buyerId)
+                .Include(o => o.Seller).ThenInclude(s => s.User)
+                .Include(o => o.Quotations)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
 
         // Order detail — enforces ownership (buyerId must match)
         public async Task<Order?> GetOrderWithDetailsAsync(long orderId, long buyerId) =>
-            await _context.Orders
-                     .Where(o => o.OrderId == orderId && o.BuyerId == buyerId)
-                     .Include(o => o.Seller).ThenInclude(s => s.User)
-                     .Include(o => o.Quotations)
-                     .Include(o => o.Reviews)
-                     .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
-                         .ThenInclude(m => m.Sender)
-                     .FirstOrDefaultAsync();
+    await _context.Orders
+             .Where(o => o.OrderId == orderId && o.BuyerId == buyerId)
+             .Include(o => o.Seller).ThenInclude(s => s.User)
+             .Include(o => o.Quotations)
+             .Include(o => o.Reviews)
+             .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
+                 .ThenInclude(m => m.Sender)
+             .Include(o => o.OrderItems)          // ← add this
+                 .ThenInclude(i => i.Product)     // ← and this
+             .FirstOrDefaultAsync();
 
         public async Task<Order> AddAsync(Order order)
         {

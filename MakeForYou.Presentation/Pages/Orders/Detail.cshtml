@@ -1,8 +1,12 @@
 ﻿@page "{id:long}"
 @model MakeForYou.Presentation.Pages.Orders.DetailModel
 @using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.Presentation.Pages.Orders
 @{
     ViewData["Title"] = $"Order #{Model.Order?.OrderId}";
+    var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
+    var latestQuote = Model.Order?.Quotations?.OrderByDescending(q => q.CreatedAt).FirstOrDefault();
+    var displayPrice = Model.Order?.AgreedPrice ?? acceptedQuote?.ProposedPrice ?? latestQuote?.ProposedPrice;
 }
 
 <div class="container py-5" style="max-width: 860px;">
@@ -16,7 +20,9 @@
         <!-- Breadcrumb -->
         <nav class="mb-4">
             <ol class="breadcrumb small">
-                <li class="breadcrumb-item"><a asp-page="/Orders/Index" class="text-decoration-none">My Orders</a></li>
+                <li class="breadcrumb-item">
+                    <a asp-page="/Orders/Index" class="text-decoration-none">My Orders</a>
+                </li>
                 <li class="breadcrumb-item active">Order #@Model.Order.OrderId</li>
             </ol>
         </nav>
@@ -25,61 +31,148 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
             <div>
                 <h2 class="fw-bold mb-1" style="font-family: var(--serif);">Order #@Model.Order.OrderId</h2>
-                <div class="text-muted small">Placed on @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
+                <div class="text-muted small">
+                    Placed on @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")
+                </div>
             </div>
-            <span class="badge rounded-pill @MakeForYou.Presentation.Pages.Orders.DetailModel.BadgeClass(Model.Order.Status) px-3 py-2 fs-6">
-                <i class="bi @MakeForYou.Presentation.Pages.Orders.DetailModel.StatusIcon(Model.Order.Status) me-1"></i>
+            <span class="badge rounded-pill @DetailModel.BadgeClass(Model.Order.Status) px-3 py-2 fs-6">
+                <i class="bi @DetailModel.StatusIcon(Model.Order.Status) me-1"></i>
                 @((OrderStatus)Model.Order.Status)
             </span>
         </div>
 
         <div class="row g-4">
 
-            <!-- LEFT COLUMN -->
+            <!-- ── LEFT COLUMN ── -->
             <div class="col-lg-8">
 
-                <!-- Order description -->
+                <!-- What you ordered -->
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-file-text me-2 text-muted"></i>Order Description</h6>
-                        <p class="mb-0 text-muted">
-                            @(string.IsNullOrEmpty(Model.Order.OrderDescription) ? "No description provided." : Model.Order.OrderDescription)
-                        </p>
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-bag me-2 text-muted"></i>What You Ordered
+                        </h6>
+
+                        <!-- Artisan row -->
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3"
+                             style="background: #F9F7F2; border: 1px solid #E8E2D9;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                 style="width:40px;height:40px;background:#2D2926;">
+                                @(Model.Order.Seller?.User?.FullName?.Substring(0, 1).ToUpper())
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">@Model.Order.Seller?.User?.FullName</div>
+                                <div class="text-muted small">@Model.Order.Seller?.SkillDescription</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small text-muted">Custom order</div>
+                                <div class="fw-bold">
+                                    @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Price pending")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items if available -->
+                        @if (Model.Order.OrderItems != null && Model.Order.OrderItems.Any())
+                        {
+                            <table class="table table-borderless small mb-0 mt-2">
+                                <thead>
+                                    <tr class="text-muted border-bottom">
+                                        <th class="ps-0">Item</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end pe-0">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Order.OrderItems)
+                                    {
+                                        <tr>
+                                            <!-- AFTER -->
+                                            <td class="ps-0">@item.Product?.Title</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">@item.Price.ToString("N0") VNĐ</td>
+                                            <td class="text-end pe-0 fw-semibold">@((item.Price * item.Quantity).ToString("N0")) VNĐ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
+                        {
+                            <div class="small text-muted fw-semibold mb-1 mt-2">Note</div>
+                            <p class="mb-0 small text-muted" style="white-space: pre-wrap;">@Model.Order.OrderDescription</p>
+                        }
                     </div>
                 </div>
 
-                <!-- Quotations -->
+                <!-- Cost breakdown -->
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-tag me-2 text-muted"></i>Quotations</h6>
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-receipt me-2 text-muted"></i>Cost Breakdown
+                        </h6>
+
                         @if (Model.Order.Quotations == null || !Model.Order.Quotations.Any())
                         {
-                            <p class="text-muted mb-0 fst-italic">No quotations yet. The artisan will send one shortly.</p>
+                            <p class="text-muted fst-italic mb-0">
+                                No price quoted yet. The artisan will send a quotation shortly.
+                            </p>
                         }
                         else
                         {
-                            <div class="d-flex flex-column gap-3">
-                                @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
-                                {
-                                    <div class="p-3 rounded-3" style="background: var(--mfy-ivory, #F9F7F2); border: 1px solid #E8E2D9;">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <div class="fw-bold fs-5">
-                                                    @(q.ProposedPrice.HasValue ? q.ProposedPrice.Value.ToString("N0") + " VNĐ" : "Price TBD")
-                                                </div>
-                                                <div class="text-muted small">@q.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
-                                            </div>
-                                            <span class="badge @(q.Status == 1 ? "bg-success" : "bg-secondary") rounded-pill">
-                                                @(q.Status == 1 ? "Accepted" : "Pending")
-                                            </span>
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(q.Message))
-                                        {
-                                            <p class="mt-2 mb-0 small text-muted">@q.Message</p>
-                                        }
-                                    </div>
-                                }
-                            </div>
+                            <table class="table table-borderless mb-0 small">
+                                <thead>
+                                    <tr class="text-muted border-bottom">
+                                        <th class="ps-0">Description</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-end pe-0">Amount</th>
+                                        <th class="text-end pe-0">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
+                                    {
+                                        var isAccepted = q.Status == 1;
+                                        <tr class="@(isAccepted ? "table-success" : "")">
+                                            <td class="ps-0">
+                                                @if (!string.IsNullOrEmpty(q.Message))
+                                                {
+                                                    @q.Message
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fst-italic">Custom work</span>
+                                                }
+                                            </td>
+                                            <td class="text-center text-muted">
+                                                @q.CreatedAt.ToLocalTime().ToString("MMM d")
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                @(q.ProposedPrice.HasValue
+                                                    ? q.ProposedPrice.Value.ToString("N0") + " VNĐ"
+                                                    : "—")
+                                            </td>
+                                            <td class="text-end pe-0">
+                                                <span class="badge rounded-pill @(isAccepted ? "bg-success" : "bg-secondary")">
+                                                    @(isAccepted ? "Accepted" : "Pending")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="border-top fw-bold">
+                                        <td class="ps-0" colspan="2">Total</td>
+                                        <td class="text-end">
+                                            @(displayPrice.HasValue
+                                                ? displayPrice.Value.ToString("N0") + " VNĐ"
+                                                : "—")
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         }
                     </div>
                 </div>
@@ -87,7 +180,9 @@
                 <!-- Chat messages -->
                 <div class="card border-0 shadow-sm" style="border-radius: 16px;">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-chat-dots me-2 text-muted"></i>Messages</h6>
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-chat-dots me-2 text-muted"></i>Messages
+                        </h6>
                         @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
                         {
                             <p class="text-muted mb-0 fst-italic">No messages yet.</p>
@@ -95,14 +190,21 @@
                         else
                         {
                             <div class="d-flex flex-column gap-3" style="max-height: 360px; overflow-y: auto;">
-                                @foreach (var msg in Model.Order.ChatMessages)
+                                @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.SentAt))
                                 {
                                     var isMine = msg.SenderId == Model.Order.BuyerId;
                                     <div class="d-flex @(isMine ? "justify-content-end" : "justify-content-start")">
-                                        <div class="p-3 rounded-3 small" style="max-width: 75%; background: @(isMine ? "#2D2926" : "#F0EDE8"); color: @(isMine ? "white" : "inherit");">
-                                            <div class="fw-bold mb-1" style="font-size: 0.7rem; opacity: 0.7;">@msg.Sender?.FullName</div>
+                                        <div class="p-3 rounded-3 small"
+                                             style="max-width:75%;
+                                            background:@(isMine ? "#2D2926" : "#F0EDE8");
+                                            color:@(isMine ? "white" : "inherit");">
+                                            <div class="fw-bold mb-1" style="font-size:0.7rem;opacity:0.7;">
+                                                @msg.Sender?.FullName
+                                            </div>
                                             @msg.MessageContent
-                                            <div class="mt-1 text-end" style="font-size: 0.65rem; opacity: 0.55;">@msg.SentAt.ToLocalTime().ToString("HH:mm")</div>
+                                            <div class="mt-1 text-end" style="font-size:0.65rem;opacity:0.55;">
+                                                @msg.SentAt.ToLocalTime().ToString("HH:mm")
+                                            </div>
                                         </div>
                                     </div>
                                 }
@@ -110,32 +212,53 @@
                         }
                     </div>
                 </div>
-            </div>
 
-            <!-- RIGHT COLUMN -->
+            </div><!-- /col-lg-8 -->
+            <!-- ── RIGHT COLUMN ── -->
             <div class="col-lg-4">
 
-                <!-- Summary card -->
+                <!-- Order summary -->
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">Order Summary</h6>
+
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>Order #</span>
+                            <span class="fw-bold text-dark">@Model.Order.OrderId</span>
+                        </div>
                         <div class="d-flex justify-content-between small text-muted mb-2">
                             <span>Status</span>
                             <span class="fw-bold text-dark">@((OrderStatus)Model.Order.Status)</span>
                         </div>
                         <div class="d-flex justify-content-between small text-muted mb-2">
-                            <span>Agreed price</span>
+                            <span>Placed</span>
                             <span class="fw-bold text-dark">
-                                @(Model.Order.AgreedPrice.HasValue ? Model.Order.AgreedPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")
                             </span>
                         </div>
+
                         @if (Model.Order.CompletedAt.HasValue)
                         {
                             <div class="d-flex justify-content-between small text-muted mb-2">
                                 <span>Completed</span>
-                                <span class="fw-bold text-dark">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span>
+                                <span class="fw-bold text-dark">
+                                    @Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")
+                                </span>
                             </div>
                         }
+
+                        <hr class="my-3" />
+
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">Subtotal</span>
+                            <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold mt-2 pt-2 border-top">
+                            <span>Total</span>
+                            <span class="fs-6">
+                                @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -153,16 +276,22 @@
                                 <div class="text-muted small">@Model.Order.Seller?.SkillDescription</div>
                             </div>
                         </div>
+                        <div class="d-flex justify-content-between small text-muted mb-3">
+                            <span><i class="bi bi-star-fill text-warning me-1"></i>Rating</span>
+                            <span class="fw-bold text-dark">@(Model.Order.Seller?.AverageRating ?? 0)</span>
+                        </div>
                         @if (!string.IsNullOrEmpty(Model.Order.Seller?.User?.Email))
                         {
-                            <a href="mailto:@Model.Order.Seller.User.Email" class="btn btn-dark w-100 rounded-pill btn-sm">
+                            <a href="mailto:@Model.Order.Seller.User.Email"
+                                   class="btn btn-dark w-100 rounded-pill btn-sm">
                                 <i class="bi bi-envelope me-1"></i>Contact Artisan
                             </a>
                         }
                     </div>
                 </div>
 
-            </div>
+            </div><!-- /col-lg-4 -->
+
         </div>
     }
 </div>
