@@ -7,4 +7,6 @@ services:
       dockerfile: MakeForYou.Presentation/Dockerfile
     ports:
       - "80:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
     restart: always
