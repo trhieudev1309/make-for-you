@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MakeForYou.BusinessLogic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260421145901_AddCartItemTable")]
+    partial class AddCartItemTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,35 +145,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.OrderItem", b =>
-                {
-                    b.Property<long>("OrderItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderItemId"));
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderItemId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.PasswordResetToken", b =>
@@ -474,25 +448,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.OrderItem", b =>
-                {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.PasswordResetToken", b =>
                 {
                     b.HasOne("MakeForYou.BusinessLogic.Entities.User", "User")
@@ -588,8 +543,6 @@ namespace MakeForYou.BusinessLogic.Migrations
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
                 {
                     b.Navigation("ChatMessages");
-
-                    b.Navigation("OrderItems");
 
                     b.Navigation("Quotations");
 

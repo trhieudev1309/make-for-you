@@ -1,4 +1,4 @@
-using MakeForYou.BusinessLogic.Entities;
+﻿using MakeForYou.BusinessLogic.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MakeForYou.BusinessLogic
@@ -20,6 +20,11 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Category> Categories => Set<Category>();
+
+        public DbSet<CartItem> CartItems { get; set; }
+
+        public DbSet<OrderItem> OrderItems { get; set; }
+
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +104,20 @@ namespace MakeForYou.BusinessLogic
                 .WithMany(o => o.Quotations)
                 .HasForeignKey(q => q.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Quan hệ Order -> OrderItem (1 đơn hàng có nhiều món)
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Quan hệ Product -> OrderItem
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

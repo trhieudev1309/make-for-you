@@ -80,5 +80,11 @@ namespace MakeForYou.Repositories.Repository
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
+
+        public Task<User?> FindByIdAsync(long id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+            return Task.FromResult(user);
+        }
     }
 }

@@ -1,0 +1,401 @@
+﻿@page "{id:long}"
+@model MakeForYou.Presentation.Pages.Orders.DetailModel
+@using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.Presentation.Pages.Orders
+@{
+    ViewData["Title"] = $"Order #{Model.Order?.OrderId}";
+    var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
+    var latestQuote = Model.Order?.Quotations?.OrderByDescending(q => q.CreatedAt).FirstOrDefault();
+    var displayPrice = Model.Order?.AgreedPrice ?? acceptedQuote?.ProposedPrice ?? latestQuote?.ProposedPrice;
+    var isCartOrder = Model.Order?.OrderItems != null && Model.Order.OrderItems.Any();
+}
+
+<style>
+    :root {
+        --bark:   #2D2926;
+        --clay:   #C8855A;
+        --ivory:  #F9F7F2;
+        --border: #E8E2D9;
+        --sand:   #F0EDE8;
+        --serif:  'Playfair Display', serif;
+        --sans:   'Source Sans 3', sans-serif;
+    }
+
+    .od-wrap { max-width: 900px; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+
+    /* ── breadcrumb ── */
+    .od-breadcrumb { font-size: 0.8rem; color: #999; margin-bottom: 1.8rem; }
+    .od-breadcrumb a { color: #999; text-decoration: none; }
+    .od-breadcrumb a:hover { color: var(--clay); }
+
+    /* ── page header ── */
+    .od-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+    .od-title { font-family: var(--serif); font-size: 2rem; font-weight: 700; color: var(--bark); margin: 0 0 .25rem; }
+    .od-date  { font-size: 0.85rem; color: #aaa; }
+
+    /* ── status badge ── */
+    .od-status { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1.1rem; border-radius: 50px; font-size: .82rem; font-weight: 700; letter-spacing: .03em; }
+
+    /* ── cards ── */
+    .od-card { background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(45,41,38,.06); padding: 1.75rem; margin-bottom: 1.5rem; }
+    .od-card-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #bbb; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
+    .od-card-title i { font-size: 1rem; }
+
+    /* ── artisan strip ── */
+    .od-artisan-strip { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.1rem; border-radius: 14px; background: var(--ivory); border: 1px solid var(--border); margin-bottom: 1.25rem; }
+    .od-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--bark); color: #fff; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .od-artisan-name  { font-weight: 700; font-size: .95rem; color: var(--bark); }
+    .od-artisan-skill { font-size: .8rem; color: #aaa; }
+    .od-strip-price   { margin-left: auto; text-align: right; }
+    .od-strip-price .label { font-size: .75rem; color: #bbb; }
+    .od-strip-price .val   { font-weight: 700; font-size: 1rem; color: var(--bark); }
+
+    /* ── order items ── */
+    .od-item { display: flex; align-items: center; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--border); }
+    .od-item:last-child { border-bottom: none; }
+    .od-item-img { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; background: var(--sand); flex-shrink: 0; }
+    .od-item-img-placeholder { width: 72px; height: 72px; border-radius: 14px; background: var(--sand); display: flex; align-items: center; justify-content: center; color: #ccc; flex-shrink: 0; }
+    .od-item-name  { font-weight: 700; font-size: .95rem; color: var(--bark); margin-bottom: .2rem; }
+    .od-item-meta  { font-size: .8rem; color: #aaa; }
+    .od-item-price { margin-left: auto; text-align: right; flex-shrink: 0; }
+    .od-item-price .unit  { font-size: .75rem; color: #bbb; }
+    .od-item-price .total { font-weight: 700; font-size: .95rem; color: var(--bark); }
+
+    /* ── note block ── */
+    .od-note { background: var(--ivory); border-left: 3px solid var(--clay); border-radius: 0 10px 10px 0; padding: .85rem 1rem; font-size: .875rem; color: #777; white-space: pre-wrap; }
+
+    /* ── cost breakdown table ── */
+    .od-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    .od-table thead th { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #bbb; padding: 0 0 .75rem; border-bottom: 1px solid var(--border); }
+    .od-table tbody td { padding: .75rem 0; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--bark); }
+    .od-table tbody tr:last-child td { border-bottom: none; }
+    .od-table tfoot td { padding: 1rem 0 0; font-weight: 700; font-size: 1rem; color: var(--bark); }
+    .od-quote-accepted td { background: #f0faf4; }
+    .od-quote-accepted td:first-child { border-radius: 10px 0 0 10px; padding-left: .75rem; }
+    .od-quote-accepted td:last-child  { border-radius: 0 10px 10px 0; padding-right: .75rem; }
+
+    /* ── messages ── */
+    .od-messages { display: flex; flex-direction: column; gap: .85rem; max-height: 380px; overflow-y: auto; padding-right: .25rem; }
+    .od-bubble-wrap { display: flex; }
+    .od-bubble-wrap.mine { justify-content: flex-end; }
+    .od-bubble { max-width: 72%; padding: .75rem 1rem; border-radius: 18px; font-size: .875rem; line-height: 1.5; }
+    .od-bubble.mine    { background: var(--bark); color: #fff; border-bottom-right-radius: 4px; }
+    .od-bubble.theirs  { background: var(--sand); color: var(--bark); border-bottom-left-radius: 4px; }
+    .od-bubble .sender { font-size: .68rem; font-weight: 700; opacity: .6; margin-bottom: .25rem; }
+    .od-bubble .time   { font-size: .65rem; opacity: .5; text-align: right; margin-top: .35rem; }
+
+    /* ── right-column summary ── */
+    .od-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: .875rem; margin-bottom: .6rem; }
+    .od-summary-row .lbl { color: #aaa; }
+    .od-summary-row .val { font-weight: 600; color: var(--bark); }
+    .od-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    .od-total-row { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1.05rem; color: var(--bark); padding-top: .75rem; border-top: 2px solid var(--bark); }
+
+    /* ── artisan side card ── */
+    .od-artisan-card-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--bark); color: #fff; font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .od-contact-btn { display: block; width: 100%; text-align: center; background: var(--bark); color: #fff; border: none; border-radius: 50px; padding: .6rem 1rem; font-size: .85rem; font-weight: 700; text-decoration: none; transition: background .2s; margin-top: 1.25rem; }
+    .od-contact-btn:hover { background: var(--clay); color: #fff; }
+
+    /* ── badge helpers ── */
+    .badge-secondary { background: #e0dbd6; color: #888; }
+    .badge-info      { background: #daeef8; color: #1a7fa3; }
+    .badge-primary   { background: #dce6f9; color: #2255b0; }
+    .badge-warning   { background: #fef3d0; color: #9a6800; }
+    .badge-success   { background: #d6f5e3; color: #1e7a45; }
+    .badge-danger    { background: #fce4e4; color: #b02020; }
+</style>
+
+<div class="od-wrap">
+
+    @if (Model.Order == null)
+    {
+        <div class="alert alert-warning rounded-3">Order not found.</div>
+    }
+    else
+    {
+        <!-- Breadcrumb -->
+        <nav class="od-breadcrumb">
+            <a asp-page="/Orders/Index">My Orders</a>
+            <span class="mx-2">/</span>
+            <span>Order #@Model.Order.OrderId</span>
+        </nav>
+
+        <!-- Header -->
+        <div class="od-header">
+            <div>
+                <h1 class="od-title">Order #@Model.Order.OrderId</h1>
+                <div class="od-date">Placed on @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
+            </div>
+            <span class="od-status @DetailModel.BadgeClass(Model.Order.Status)">
+                <i class="bi @DetailModel.StatusIcon(Model.Order.Status)"></i>
+                @((OrderStatus)Model.Order.Status)
+            </span>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- ══ LEFT ══ -->
+            <div class="col-lg-8">
+
+                <!-- What You Ordered -->
+                <div class="od-card">
+                    <div class="od-card-title">
+                        <i class="bi bi-bag"></i> What You Ordered
+                    </div>
+
+                    <!-- Artisan strip -->
+                    <div class="od-artisan-strip">
+                        <div class="od-avatar">
+                            @(Model.Order.Seller?.User?.FullName?.Substring(0,1).ToUpper())
+                        </div>
+                        <div>
+                            <div class="od-artisan-name">@Model.Order.Seller?.User?.FullName</div>
+                            <div class="od-artisan-skill">@Model.Order.Seller?.SkillDescription</div>
+                        </div>
+                        <div class="od-strip-price">
+                            <div class="label">@(isCartOrder ? "Cart order" : "Custom order")</div>
+                            <div class="val">
+                                @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Price pending")
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart items with images -->
+                    @if (isCartOrder)
+                    {
+                        <div>
+                            @foreach (var item in Model.Order.OrderItems)
+                            {
+                                <div class="od-item">
+                                    @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                    {
+                                        <img src="@item.Product.ImageUrl"
+                                             alt="@item.Product?.Title"
+                                             class="od-item-img" />
+                                    }
+                                    else
+                                    {
+                                        <div class="od-item-img-placeholder">
+                                            <i class="bi bi-image fs-4"></i>
+                                        </div>
+                                    }
+                                    <div class="flex-grow-1">
+                                        <div class="od-item-name">@item.Product?.Title</div>
+                                        <div class="od-item-meta">
+                                            Qty: @item.Quantity &nbsp;·&nbsp; @item.Price.ToString("N0") VNĐ each
+                                        </div>
+                                    </div>
+                                    <div class="od-item-price">
+                                        <div class="unit">Subtotal</div>
+                                        <div class="total">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
+                    {
+                        <div class="od-note">@Model.Order.OrderDescription</div>
+                    }
+                </div>
+
+                <!-- Cost Breakdown -->
+                <div class="od-card">
+                    <div class="od-card-title">
+                        <i class="bi bi-receipt"></i> Cost Breakdown
+                    </div>
+
+                    @if (isCartOrder)
+                    {
+                        <!-- Cart order: show item totals -->
+                        <table class="od-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Order.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.Product?.Title</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@item.Price.ToString("N0") VNĐ</td>
+                                        <td class="text-end fw-bold">@((item.Price * item.Quantity).ToString("N0")) VNĐ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3">Total</td>
+                                    <td class="text-end">
+                                        @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                    else if (Model.Order.Quotations == null || !Model.Order.Quotations.Any())
+                    {
+                        <p class="text-muted fst-italic mb-0" style="font-size:.875rem;">
+                            No price quoted yet. The artisan will send a quotation shortly.
+                        </p>
+                    }
+                    else
+                    {
+                        <!-- Custom order: show quotations -->
+                        <table class="od-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Description</th>
+                                    <th class="text-center">Date</th>
+                                    <th class="text-end">Amount</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
+                                {
+                                    var isAccepted = q.Status == 1;
+                                    <tr class="@(isAccepted ? "od-quote-accepted" : "")">
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(q.Message)) { @q.Message }
+                                            else { <span class="text-muted fst-italic">Custom work</span> }
+                                        </td>
+                                        <td class="text-center text-muted">
+                                            @q.CreatedAt.ToLocalTime().ToString("MMM d")
+                                        </td>
+                                        <td class="text-end fw-bold">
+                                            @(q.ProposedPrice.HasValue ? q.ProposedPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="od-status @(isAccepted ? "badge-success" : "badge-secondary")"
+                                                  style="padding:.25rem .75rem;font-size:.72rem;">
+                                                @(isAccepted ? "Accepted" : "Pending")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2">Total</td>
+                                    <td class="text-end">
+                                        @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
+
+                <!-- Messages -->
+                <div class="od-card">
+                    <div class="od-card-title">
+                        <i class="bi bi-chat-dots"></i> Messages
+                    </div>
+                    @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
+                    {
+                        <p class="text-muted fst-italic mb-0" style="font-size:.875rem;">No messages yet.</p>
+                    }
+                    else
+                    {
+                        <div class="od-messages">
+                            @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.SentAt))
+                            {
+                                var isMine = msg.SenderId == Model.Order.BuyerId;
+                                <div class="od-bubble-wrap @(isMine ? "mine" : "")">
+                                    <div class="od-bubble @(isMine ? "mine" : "theirs")">
+                                        <div class="sender">@msg.Sender?.FullName</div>
+                                        @msg.MessageContent
+                                        <div class="time">@msg.SentAt.ToLocalTime().ToString("HH:mm")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div><!-- /col-lg-8 -->
+
+            <!-- ══ RIGHT ══ -->
+            <div class="col-lg-4">
+
+                <!-- Order Summary -->
+                <div class="od-card">
+                    <div class="od-card-title">
+                        <i class="bi bi-clipboard-check"></i> Order Summary
+                    </div>
+
+                    <div class="od-summary-row">
+                        <span class="lbl">Order #</span>
+                        <span class="val">@Model.Order.OrderId</span>
+                    </div>
+                    <div class="od-summary-row">
+                        <span class="lbl">Status</span>
+                        <span class="od-status @DetailModel.BadgeClass(Model.Order.Status)"
+                              style="padding:.2rem .7rem;font-size:.75rem;">
+                            @((OrderStatus)Model.Order.Status)
+                        </span>
+                    </div>
+                    <div class="od-summary-row">
+                        <span class="lbl">Placed</span>
+                        <span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span>
+                    </div>
+                    @if (Model.Order.CompletedAt.HasValue)
+                    {
+                        <div class="od-summary-row">
+                            <span class="lbl">Completed</span>
+                            <span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span>
+                        </div>
+                    }
+
+                    <hr class="od-divider" />
+
+                    <div class="od-summary-row">
+                        <span class="lbl">Subtotal</span>
+                        <span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span>
+                    </div>
+                    <div class="od-total-row">
+                        <span>Total</span>
+                        <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                    </div>
+                </div>
+
+                <!-- Artisan -->
+                <div class="od-card">
+                    <div class="od-card-title">
+                        <i class="bi bi-person-badge"></i> Artisan
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="od-artisan-card-avatar">
+                            @(Model.Order.Seller?.User?.FullName?.Substring(0,1).ToUpper())
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="color:var(--bark);">@Model.Order.Seller?.User?.FullName</div>
+                            <div class="text-muted small">@Model.Order.Seller?.SkillDescription</div>
+                        </div>
+                    </div>
+
+                    <div class="od-summary-row">
+                        <span class="lbl"><i class="bi bi-star-fill text-warning me-1"></i>Rating</span>
+                        <span class="val">@(Model.Order.Seller?.AverageRating ?? 0)</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Order.Seller?.User?.Email))
+                    {
+                        <a href="mailto:@Model.Order.Seller.User.Email" class="od-contact-btn">
+                            <i class="bi bi-envelope me-1"></i>Contact Artisan
+                        </a>
+                    }
+                </div>
+
+            </div><!-- /col-lg-4 -->
+
+        </div>
+    }
+</div>

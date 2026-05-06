@@ -2,88 +2,54 @@
 @model MakeForYou.Presentation.Pages.Products.BrowseModel
 @{
     ViewData["Title"] = "Browse Creations – MakeForYou";
-    Layout = null;
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <style>
-        :root {
-            --mfy-ivory: #F9F7F2;
-            --mfy-clay: #C8855A;
-            --mfy-bark: #2D2926;
-            --mfy-border: #E8E2D9;
-            --serif: 'Playfair Display', serif;
-            --sans: 'Source Sans 3', sans-serif;
-        }
 
-        body { font-family: var(--sans); background-color: var(--mfy-ivory); color: var(--mfy-bark); overflow-x: hidden; }
+<style>
+    :root {
+        --mfy-ivory: #F9F7F2;
+        --mfy-clay: #C8855A;
+        --mfy-bark: #2D2926;
+        --mfy-border: #E8E2D9;
+        --serif: 'Playfair Display', serif;
+        --sans: 'Source Sans 3', sans-serif;
+    }
 
-        /* --- Elegant Header --- */
-        .mfy-header { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--mfy-border); position: sticky; top: 0; z-index: 1000; }
-        .mfy-logo { font-family: var(--serif); font-size: 1.8rem; font-weight: 700; color: var(--mfy-bark); text-decoration: none; }
-        .mfy-logo span { color: var(--mfy-clay); font-style: italic; font-weight: 400; }
+    body { font-family: var(--sans); background-color: var(--mfy-ivory); color: var(--mfy-bark); overflow-x: hidden; }
 
-        .search-bar { background: #F0EDE6; border: none; border-radius: 50px; padding: 0.6rem 1.5rem; font-size: 0.9rem; transition: 0.3s; }
-        .search-bar:focus { background: white; box-shadow: 0 0 0 4px rgba(200, 133, 90, 0.1); outline: none; }
+    /* --- Sidebar Clean Style --- */
+    .sidebar-title { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 2rem; display: block; color: #999; }
+    .cat-item { display: block; padding: 8px 0; color: var(--mfy-bark); text-decoration: none; font-size: 0.95rem; opacity: 0.7; transition: 0.3s; }
+    .cat-item:hover { opacity: 1; color: var(--mfy-clay); transform: translateX(5px); }
+    .cat-item.active { opacity: 1; color: var(--mfy-clay); font-weight: 600; }
 
-        /* --- Sidebar Clean Style --- */
-        .sidebar-title { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 2rem; display: block; color: #999; }
-        .cat-item { display: block; padding: 8px 0; color: var(--mfy-bark); text-decoration: none; font-size: 0.95rem; opacity: 0.7; transition: 0.3s; }
-        .cat-item:hover { opacity: 1; color: var(--mfy-clay); transform: translateX(5px); }
-        .cat-item.active { opacity: 1; color: var(--mfy-clay); font-weight: 600; }
+    .price-input { background: white; border: 1px solid var(--mfy-border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; width: 100%; }
 
-        .price-input { background: white; border: 1px solid var(--mfy-border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; width: 100%; }
+    /* --- Product Card - Pinterest Style --- */
+    .product-card { border: none; background: transparent; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); margin-bottom: 2rem; }
+    .img-container { position: relative; border-radius: 20px; overflow: hidden; background: white; margin-bottom: 15px; aspect-ratio: 4/5; }
+    .product-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
+    .product-card:hover .product-img { transform: scale(1.1); }
 
-        /* --- Product Card - Pinterest Style --- */
-        .product-card { border: none; background: transparent; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); margin-bottom: 2rem; }
-        .img-container { position: relative; border-radius: 20px; overflow: hidden; background: white; margin-bottom: 15px; aspect-ratio: 4/5; }
-        .product-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
-        .product-card:hover .product-img { transform: scale(1.1); }
+    .badge-ready { position: absolute; top: 15px; left: 15px; background: rgba(223, 240, 229, 0.9); color: #2D7A4D; font-size: 0.6rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.05em; }
+    
+    .product-info { padding: 0 5px; }
+    .sub-info { font-size: 0.8rem; color: #888; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .product-name { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; color: var(--mfy-bark); margin-bottom: 4px; line-height: 1.2; }
+    .seller-info { font-size: 0.85rem; color: #999; margin-bottom: 12px; }
+    .price-section { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+    .price-val { font-weight: 700; font-size: 1.1rem; color: var(--mfy-bark); }
 
-        .badge-ready { position: absolute; top: 15px; left: 15px; background: rgba(223, 240, 229, 0.9); color: #2D7A4D; font-size: 0.6rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; letter-spacing: 0.05em; }
-        
-        .product-info { padding: 0 5px; }
-        .sub-info { font-size: 0.8rem; color: #888; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .product-name { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; color: var(--mfy-bark); margin-bottom: 4px; line-height: 1.2; }
-        .seller-info { font-size: 0.85rem; color: #999; margin-bottom: 12px; }
-        .price-section { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .price-val { font-weight: 700; font-size: 1.1rem; color: var(--mfy-bark); }
+    .btn-action { background: var(--mfy-bark); color: white; border-radius: 50px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.3s; }
+    .btn-action:hover { background: var(--mfy-clay); color: white; box-shadow: 0 10px 20px rgba(200, 133, 90, 0.2); }
 
-        .btn-action { background: var(--mfy-bark); color: white; border-radius: 50px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.3s; }
-        .btn-action:hover { background: var(--mfy-clay); color: white; box-shadow: 0 10px 20px rgba(200, 133, 90, 0.2); }
+    /* --- Active Tags --- */
+    .active-tag { background: white; border: 1px solid var(--mfy-border); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px; }
+    .active-tag i { cursor: pointer; color: #ccc; }
+    .active-tag i:hover { color: var(--mfy-clay); }
 
-        /* --- Active Tags --- */
-        .active-tag { background: white; border: 1px solid var(--mfy-border); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px; }
-        .active-tag i { cursor: pointer; color: #ccc; }
-        .active-tag i:hover { color: var(--mfy-clay); }
-    </style>
-</head>
-<body>
-
-<header class="mfy-header py-3 shadow-sm">
-    <div class="container d-flex align-items-center justify-content-between">
-        <a href="/" class="mfy-logo">Make<span>For</span>You</a>
-        <div class="flex-grow-1 mx-5 d-none d-lg-block">
-            <form method="get" action="/Products">
-                <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="search-bar w-100" placeholder="Search for unique treasures...">
-            </form>
-        </div>
-        <div class="d-flex align-items-center gap-4">
-            <button class="btn btn-link text-dark text-decoration-none fw-bold p-0">Sign in</button>
-            <div class="position-relative">
-                <i class="bi bi-bag fs-4"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-dark" style="font-size: 0.5rem;">0</span>
-            </div>
-        </div>
-    </div>
-</header>
+    .search-bar { background: #F0EDE6; border: none; border-radius: 50px; padding: 0.6rem 1.5rem; font-size: 0.9rem; transition: 0.3s; }
+    .search-bar:focus { background: white; box-shadow: 0 0 0 4px rgba(200, 133, 90, 0.1); outline: none; }
+</style>
 
 <div class="container py-5">
     <div class="row">
@@ -112,38 +78,38 @@
                     <p class="text-muted small">Found @Model.Products.Count items for "@(Model.SearchTerm ?? "All")"</p>
                 </div>
                 <div class="dropdown">
-    <button class="btn btn-link text-dark text-decoration-none fw-bold dropdown-toggle p-0" type="button" data-bs-toggle="dropdown">
-        Sort By: 
-        @(Model.SortOrder switch {
-            "price_asc" => "Price: Low to High",
-            "price_desc" => "Price: High to Low",
-            "name_asc" => "Name: A-Z",
-            _ => "Newsest"
-        })
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-        <li>
-            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=newest">
-                Newsest
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_asc">
-                Price: Low to High
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_desc">
-                Price: High to Low
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=name_asc">
-                Name: A-Z
-            </a>
-        </li>
-    </ul>
-</div>
+                    <button class="btn btn-link text-dark text-decoration-none fw-bold dropdown-toggle p-0" type="button" data-bs-toggle="dropdown">
+                        Sort By: 
+                        @(Model.SortOrder switch {
+                            "price_asc" => "Price: Low to High",
+                            "price_desc" => "Price: High to Low",
+                            "name_asc" => "Name: A-Z",
+                            _ => "Newest"
+                        })
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li>
+                            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=newest">
+                                Newest
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_asc">
+                                Price: Low to High
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_desc">
+                                Price: High to Low
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=name_asc">
+                                Name: A-Z
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <div class="mb-5">
@@ -184,7 +150,3 @@
         </main>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

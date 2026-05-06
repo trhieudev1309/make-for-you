@@ -20,7 +20,7 @@ namespace MakeForYou.Presentation.Pages.Auth
         public IActionResult OnGet(bool registered = false)
         {
             if (User.Identity?.IsAuthenticated == true)
-                return RedirectToPage("/Home/Index");
+                return RedirectToPage("/Index");
 
             JustRegistered = registered;
             return Page();
@@ -45,7 +45,7 @@ namespace MakeForYou.Presentation.Pages.Auth
 
             return result.Role switch
             {
-                (int)UserRole.Seller => RedirectToPage("/Seller/Dashboard"),
+                (int)UserRole.Seller => RedirectToPage("/Index"),
                 (int)UserRole.Admin => RedirectToPage("/Admin/Dashboard"),
                 _ => RedirectToPage("/Index")
             };
