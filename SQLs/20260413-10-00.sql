@@ -148,3 +148,9 @@ LEFT JOIN dbo.Categories c ON p.CategoryId = c.CategoryId
 ORDER BY p.CreatedAt DESC;
 
 SET NOCOUNT OFF;
+
+UPDATE Users 
+SET Role = 2, Status = 0 
+WHERE UserId = 10008;
+
+UPDATE Products SET Status = 1;

@@ -1,0 +1,79 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Admin.Products.CreateModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thêm sản phẩm mới";
+    ViewData["ActivePage"] = "Products";
+}
+
+<div class="card p-4 shadow-sm border-0">
+    <div class="mb-4">
+        <h2 class="serif-heading fw-bold" style="color: var(--mfy-bark)">Thêm sản phẩm nghệ thuật</h2>
+        <p class="text-muted">Admin có thể gán sản phẩm này cho một nghệ nhân cụ thể trong hệ thống.</p>
+    </div>
+
+    <form method="post">
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Tên sản phẩm</label>
+                <input asp-for="Product.Title" class="form-control shadow-sm" placeholder="VD: Alpaca Infinity Scarf" required />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Nghệ nhân sở hữu (Seller)</label>
+                <select asp-for="Product.SellerId" class="form-select shadow-sm" required>
+                    <option value="">-- Chọn nghệ nhân --</option>
+                    @foreach (var seller in Model.Sellers)
+                    {
+                        @* Hiển thị ID và Bio ngắn để Admin phân biệt *@
+                        <option value="@seller.SellerId">ID: @seller.SellerId - @(seller.Bio?.Length > 30 ? seller.Bio.Substring(0, 30) + "..." : seller.Bio)</option>
+                    }
+                </select>
+                <span asp-validation-for="Product.SellerId" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Danh mục sản phẩm</label>
+                <select asp-for="Product.CategoryId" class="form-select shadow-sm" required>
+                    <option value="">-- Chọn danh mục --</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <option value="@cat.CategoryId">@cat.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="Product.CategoryId" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Giá bán (VNĐ)</label>
+                <div class="input-group">
+                    <input asp-for="Product.Price" type="number" class="form-control shadow-sm" required />
+                    <span class="input-group-text">VNĐ</span>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Link ảnh đại diện (URL)</label>
+                <input asp-for="Product.ImageUrl" class="form-control shadow-sm" placeholder="https://..." />
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Mô tả chi tiết</label>
+            <textarea asp-for="Product.Description" class="form-control shadow-sm" rows="4" placeholder="Viết vài dòng giới thiệu về sản phẩm này..."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top pt-4">
+            <a href="/Admin/Products" class="btn btn-light rounded-pill px-4">Hủy bỏ</a>
+            <button type="submit" class="btn btn-clay rounded-pill px-5 shadow-sm">
+                <i class="bi bi-check-lg me-2"></i>Lưu sản phẩm
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .btn-clay { background-color: var(--mfy-clay); color: white; border: none; }
+    .btn-clay:hover { background-color: #b0724a; color: white; }
+    .form-control:focus, .form-select:focus { border-color: var(--mfy-clay); box-shadow: 0 0 0 0.25rem rgba(200, 133, 90, 0.25); }
+</style>

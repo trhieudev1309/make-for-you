@@ -110,5 +110,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
         }
+
+        public Task<(List<Order> Orders, int TotalCount)> GetAllOrdersForAdminAsync(
+    string? search, int? status, int pageIndex, int pageSize)
+        {
+            return _orderRepo.GetAllOrdersFilteredAsync(search, status, pageIndex, pageSize);
+        }
     }
 }

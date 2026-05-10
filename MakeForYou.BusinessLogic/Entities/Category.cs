@@ -9,5 +9,7 @@ namespace MakeForYou.BusinessLogic.Entities
 
         [Required, MaxLength(100)]
         public string Name { get; set; } = null!;
+
+        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }
