@@ -144,12 +144,17 @@
                             </div>
                         </div>
 
+                        <!-- Replace the cta-group -->
                         <div class="cta-group mt-3">
                             @if (User.Identity?.IsAuthenticated == true)
                             {
-                                @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.Email))
+                                @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName) && Model.Product.SellerId != 0)
                                 {
-                                    <a class="btn btn-primary serif" href="mailto:@Model.Product.Seller.User.Email?subject=@(Uri.EscapeDataString($"Inquiry about {Model.Product.Title}"))" role="button">Contact Artisan</a>
+                                    <a class="btn btn-primary serif" 
+                                       href="javascript:void(0);" 
+                                       onclick="if(window.startChatWithArtisan('@Model.Product.SellerId', '@Html.Raw(Model.Product.Seller.User.FullName.Replace("'", "\\'"))')) { window.location.href='/Chat'; } return false;">
+                                        Contact Artisan
+                                    </a>
                                 }
                                 else
                                 {

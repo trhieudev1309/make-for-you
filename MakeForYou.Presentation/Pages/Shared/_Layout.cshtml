@@ -146,6 +146,13 @@
             <div class="d-flex align-items-center gap-3">
                 <a href="/Products" class="text-decoration-none text-dark">Browse</a>
                 
+                @if (isLoggedIn)
+                {
+                    <a href="/Chat" class="text-decoration-none text-dark" title="Messages">
+                        <i class="bi bi-chat-dots"></i> Messages
+                    </a>
+                }
+
                 @* Notification dropdown (site-wide) *@
                 @if (isLoggedIn)
                 {
@@ -428,5 +435,38 @@
             })();
         </script>
     }
+    <script>
+        // Global chat helper - available on all pages
+        window.startChatWithArtisan = function (artisanId, artisanName) {
+            const currentUserId = localStorage.getItem('_currentUserId');
+            if (!currentUserId) {
+                // Get from a data attribute or make a request to get user ID
+                console.warn('Current user ID not available');
+                return false;
+            }
+
+            const conversations = JSON.parse(localStorage.getItem(`chats_${currentUserId}`) || '[]');
+            const exists = conversations.find(c => c.artisanId === artisanId);
+
+            if (!exists) {
+                conversations.push({
+                    artisanId,
+                    artisanName,
+                    messages: []
+                });
+                localStorage.setItem(`chats_${currentUserId}`, JSON.stringify(conversations));
+            }
+
+            return true;
+        };
+
+    </script>
+        @if (isLoggedIn)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            <script>
+                localStorage.setItem('_currentUserId', '@userIdStr');
+            </script>
+        }
 </body>
 </html>

@@ -338,14 +338,14 @@
                     else
                     {
                         <div class="od-messages">
-                            @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.SentAt))
+                            @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.CreatedAt))
                             {
-                                var isMine = msg.SenderId == Model.Order.BuyerId;
+                                var isMine = msg.FromUserId == Model.Order.BuyerId;
                                 <div class="od-bubble-wrap @(isMine ? "mine" : "")">
                                     <div class="od-bubble @(isMine ? "mine" : "theirs")">
-                                        <div class="sender">@msg.Sender?.FullName</div>
-                                        @msg.MessageContent
-                                        <div class="time">@msg.SentAt.ToLocalTime().ToString("HH:mm")</div>
+                                        <div class="sender">@msg.FromUser?.FullName</div>
+                                        @msg.Message
+                                        <div class="time">@msg.CreatedAt.ToLocalTime().ToString("HH:mm")</div>
                                     </div>
                                 </div>
                             }

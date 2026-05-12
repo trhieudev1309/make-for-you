@@ -1,0 +1,336 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Chat.IndexModel
+@{
+    ViewData["Title"] = "Messages";
+}
+<link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
+
+<div class="serif-scope">
+    <div class="serif-container" style="height: 90vh; display: flex; flex-direction: column; padding: 0;">
+        <header class="mb-4 px-4 pt-4">
+            <div class="kicker">Communication</div>
+            <h1 class="serif-title">Messages</h1>
+            <div class="small-muted">Chat with artisans and buyers</div>
+        </header>
+
+        <!-- Full-height chat layout -->
+        <div style="display: flex; gap: 1rem; flex: 1; min-height: 0; padding: 0 1rem 1rem 1rem;">
+            
+            <!-- Conversations List (Left - Narrower) -->
+            <div style="width: 300px; display: flex; flex-direction: column;">
+                <div class="card h-100 d-flex flex-column" style="border: 1px solid var(--serif-border);">
+                    <div class="card-header bg-white border-bottom" style="border-color: var(--serif-border); flex-shrink: 0;">
+                        <h5 class="mb-0 small-caps">Conversations</h5>
+                    </div>
+                    <div id="conversationsList" class="flex-grow-1 overflow-auto" style="background: #fafaf8;">
+                        <div class="p-3 text-center text-muted">
+                            <small>No conversations yet</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat View (Right - Much Wider) -->
+            <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                <div class="card h-100 d-flex flex-column" style="border: 1px solid var(--serif-border);">
+                    
+                    <!-- Chat Header -->
+                    <div id="chatHeader" class="card-header bg-white border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
+                        <div>
+                            <h5 class="mb-0" id="chatTitle">Select a conversation</h5>
+                            <small class="text-muted" id="chatSubtitle"></small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearChat()">Close</button>
+                    </div>
+
+                    <!-- Messages Container (Vertical, Full Height) -->
+                    <div id="messagesContainer" class="flex-grow-1 overflow-auto p-4" style="display:flex; flex-direction: column; gap: 0.75rem; background-color: #fafaf8; min-height: 0;">
+                        <div class="text-center text-muted" style="margin: auto;">
+                            <small>Select a conversation to start messaging</small>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Area -->
+                    <div id="chatInputArea" class="card-footer bg-white border-top p-3" style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
+                        <form id="chatForm" class="d-flex gap-2" onsubmit="return false;">
+                            <input id="messageInput" type="text" class="form-control rounded-pill" placeholder="Write a message…" autocomplete="off" />
+                            <button id="sendBtn" type="button" class="btn btn-mfy-solid rounded-pill" style="background: var(--mfy-clay, #C8855A); color:white; white-space: nowrap;">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="currentUserId" value="@Model.CurrentUserId" />
+<input type="hidden" id="selectedArtisanId" value="" />
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.11/dist/browser/signalr.min.js"></script>
+    <script>
+        (function () {
+            const currentUserId = document.getElementById('currentUserId').value;
+            const conversationsList = document.getElementById('conversationsList');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatInputArea = document.getElementById('chatInputArea');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const selectedArtisanIdEl = document.getElementById('selectedArtisanId');
+            const chatTitle = document.getElementById('chatTitle');
+            const chatSubtitle = document.getElementById('chatSubtitle');
+
+            // conversations: key=userId -> { userId, fullName, messages: [], lastMessage, lastMessageAt, lastFromUserId }
+            const conversations = new Map();
+            let connection;
+
+            function initSignalR() {
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/hubs/chat')
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on('ReceiveMessage', payload => {
+                    handleMessageReceived(payload);
+                });
+
+                connection.start()
+                    .then(() => {
+                        console.log('Chat connected');
+                        loadConversations();
+                    })
+                    .catch(err => console.error('Chat connection failed:', err));
+            }
+
+            // Load conversations (includes last message) from API
+            async function loadConversations() {
+                try {
+                    const res = await fetch('/api/chat/conversations', { credentials: 'same-origin' });
+                    if (!res.ok) throw new Error(`Failed to load conversations: ${res.status}`);
+
+                    const users = await res.json();
+                    conversations.clear();
+                    for (const user of users) {
+                        conversations.set(user.userId.toString(), {
+                            userId: user.userId.toString(),
+                            fullName: user.fullName,
+                            messages: [],
+                            lastMessage: user.lastMessage || null,
+                            lastMessageAt: user.lastMessageAt || null,
+                            lastFromUserId: user.lastFromUserId || null
+                        });
+                    }
+                    renderConversations();
+                } catch (err) {
+                    console.error('Failed to load conversations', err);
+                    conversationsList.innerHTML = '<div class="p-3 text-center text-danger"><small>Error loading conversations</small></div>';
+                }
+            }
+
+            function renderConversations() {
+                if (conversations.size === 0) {
+                    conversationsList.innerHTML = '<div class="p-3 text-center text-muted"><small>No conversations yet</small></div>';
+                    return;
+                }
+
+                const html = [];
+                for (const [userId, conv] of conversations) {
+                    const isSelected = selectedArtisanIdEl.value === userId;
+                    const lastMsg = conv.lastMessage || 'No messages';
+                    const lastMsgPreview = (lastMsg || '').toString().substring(0, 40) + ((lastMsg || '').toString().length > 40 ? '…' : '');
+                    const time = conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleString() : '';
+
+                    html.push(`
+                        <div class="conversation-item p-3 border-bottom cursor-pointer"
+                             style="background: ${isSelected ? '#f0ece8' : 'transparent'}; border-color: var(--serif-border); cursor: pointer; transition: background 0.2s ease;"
+                             onclick="selectConversation('${userId}', '${escapeHtml(conv.fullName)}')">
+                            <div style="flex: 1;">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div class="fw-bold small" style="color: var(--mfy-bark);">${escapeHtml(conv.fullName)}</div>
+                                    <div class="small text-muted">${escapeHtml(time)}</div>
+                                </div>
+                                <small class="text-muted">${escapeHtml(lastMsgPreview)}</small>
+                            </div>
+                        </div>
+                    `);
+                }
+                conversationsList.innerHTML = html.join('');
+            }
+
+            // Load messages for a conversation and update lastMessage
+            async function loadMessages(userId) {
+                try {
+                    const res = await fetch(`/api/chat/messages?otherUserId=${userId}`, { credentials: 'same-origin' });
+                    if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
+
+                    const msgs = await res.json();
+                    const conv = conversations.get(userId);
+                    if (conv) {
+                        conv.messages = msgs;
+                        const last = msgs.length ? msgs[msgs.length - 1] : null;
+                        if (last) {
+                            conv.lastMessage = last.message;
+                            conv.lastMessageAt = last.createdAt;
+                            conv.lastFromUserId = last.fromUserId;
+                        }
+                    }
+                    renderMessages(msgs);
+                    renderConversations();
+
+                    // Mark as read if appropriate (existing logic)
+                    if (msgs.length > 0) {
+                        const lastMsg = msgs[msgs.length - 1];
+                        if (lastMsg.fromUserId.toString() !== currentUserId) {
+                            try {
+                                await fetch('/api/chat/mark-read', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        fromUserId: lastMsg.fromUserId,
+                                        toUserId: currentUserId
+                                    }),
+                                    credentials: 'same-origin'
+                                });
+                            } catch (e) {
+                                console.error('Failed to mark as read', e);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to load messages', err);
+                    messagesContainer.innerHTML = '<div class="text-center text-danger"><small>Error loading messages</small></div>';
+                }
+            }
+
+            window.selectConversation = async function (userId, fullName) {
+                selectedArtisanIdEl.value = userId;
+                let conv = conversations.get(userId);
+
+                if (!conv) {
+                    conversations.set(userId, {
+                        userId,
+                        fullName,
+                        messages: [],
+                        lastMessage: null,
+                        lastMessageAt: null,
+                        lastFromUserId: null
+                    });
+                    conv = conversations.get(userId);
+                }
+
+                chatTitle.innerText = conv.fullName;
+                chatSubtitle.innerText = 'Direct message';
+                chatHeader.style.display = 'flex';
+                chatInputArea.style.display = 'block';
+
+                await loadMessages(userId);
+                renderConversations();
+
+                if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke('JoinChat', userId).catch(err => console.error('Join failed', err));
+                }
+            };
+
+            window.clearChat = function () {
+                selectedArtisanIdEl.value = '';
+                chatHeader.style.display = 'none';
+                chatInputArea.style.display = 'none';
+                messagesContainer.innerHTML = '<div class="text-center text-muted" style="margin: auto;"><small>Select a conversation to start messaging</small></div>';
+                messageInput.value = '';
+            };
+
+            function renderMessages(messages) {
+                if (!messages || messages.length === 0) {
+                    messagesContainer.innerHTML = '<div class="text-center text-muted" style="margin: auto;"><small>No messages yet</small></div>';
+                    return;
+                }
+
+                const html = [];
+                for (const msg of messages) {
+                    const isMe = msg.fromUserId.toString() === currentUserId;
+                    const time = new Date(msg.createdAt).toLocaleTimeString();
+                    html.push(`
+                        <div style="display: flex; justify-content: ${isMe ? 'flex-end' : 'flex-start'}; align-items: flex-end;">
+                            <div style="max-width: 60%; background: ${isMe ? '#2D2926' : '#e8e2d9'}; color: ${isMe ? 'white' : 'black'}; padding: 0.75rem 1rem; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem; font-weight: 500;">${escapeHtml(msg.fromUserName)}</div>
+                                <div style="word-wrap: break-word; white-space: pre-wrap;">${escapeHtml(msg.message)}</div>
+                                <div style="font-size: 0.65rem; opacity: 0.7; margin-top: 0.25rem; text-align: right;">${time}</div>
+                            </div>
+                        </div>
+                    `);
+                }
+                messagesContainer.innerHTML = html.join('');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function handleMessageReceived(payload) {
+                const userId = payload.fromUserId === currentUserId ? payload.toUserId : payload.fromUserId;
+                const key = userId.toString();
+                let conv = conversations.get(key);
+
+                if (!conv) {
+                    conv = {
+                        userId: key,
+                        fullName: payload.fromUserName || 'Conversation',
+                        messages: [],
+                        lastMessage: null,
+                        lastMessageAt: null,
+                        lastFromUserId: null
+                    };
+                    conversations.set(key, conv);
+                }
+
+                // Append message in memory
+                conv.messages.push({
+                    fromUserId: payload.fromUserId,
+                    toUserId: payload.toUserId,
+                    fromUserName: payload.fromUserName,
+                    message: payload.message,
+                    createdAt: payload.sentAt,
+                    isRead: false
+                });
+
+                // Update last message info
+                conv.lastMessage = payload.message;
+                conv.lastMessageAt = payload.sentAt;
+                conv.lastFromUserId = payload.fromUserId;
+
+                renderConversations();
+
+                if (selectedArtisanIdEl.value === key) {
+                    renderMessages(conv.messages);
+                }
+            }
+
+            sendBtn.addEventListener('click', async () => {
+                const text = messageInput.value.trim();
+                const userId = selectedArtisanIdEl.value;
+
+                if (!text || !userId) return;
+
+                try {
+                    await connection.invoke('SendMessage', userId, text);
+                    messageInput.value = '';
+                    messageInput.focus();
+                } catch (err) {
+                    console.error('Send failed', err);
+                    alert('Failed to send message. Please try again.');
+                }
+            });
+
+            messageInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') sendBtn.click();
+            });
+
+            function escapeHtml(unsafe) {
+                if (!unsafe) return '';
+                return unsafe.replace(/[&<"'>]/g, m => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+                }[m]));
+            }
+
+            initSignalR();
+        })();
+    </script>
+}
