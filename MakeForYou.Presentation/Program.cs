@@ -1,4 +1,6 @@
-﻿using MakeForYou.BusinessLogic;
+﻿using System.Security.Claims;
+using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic.Hubs; // <- add
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Implement;
@@ -25,15 +27,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-
-
-//builder.Services.AddScoped<AuthService>();
-
 // Repository & service registrations
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-// Đăng ký thêm Service của bạn ở đây
 builder.Services.AddScoped<IHomeService, HomeService>();
-//builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -42,11 +38,17 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// Notification DI
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// SignalR
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-
-
-builder.Configuration.GetSection("Email"); // Để đảm bảo ứng dụng đọc được file json
+builder.Configuration.GetSection("Email"); // Ensure email section read
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opts =>
@@ -105,5 +107,48 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Map the notifications hub
+app.MapHub<NotificationHub>("/hubs/notifications");
+
+// Minimal API endpoints for notifications (used by layout dropdown; require authentication)
+app.MapGet("/api/notifications", async (HttpContext http, INotificationService notificationService) =>
+{
+    var user = http.User;
+    var idClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(idClaim) || !long.TryParse(idClaim, out var userId))
+        return Results.Unauthorized();
+
+    var notes = await notificationService.GetUserNotificationsAsync(userId);
+    var payload = notes.Select(n => new
+    {
+        n.NotificationId,
+        n.Title,
+        n.Message,
+        n.OrderId,
+        n.IsRead,
+        CreatedAt = n.CreatedAt
+    });
+
+    return Results.Ok(payload);
+}).RequireAuthorization();
+
+app.MapPost("/api/notifications/markreadall", async (HttpContext http, INotificationService notificationService) =>
+{
+    var user = http.User;
+    var idClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(idClaim) || !long.TryParse(idClaim, out var userId))
+        return Results.Unauthorized();
+
+    var notes = await notificationService.GetUserNotificationsAsync(userId);
+    var unread = notes?.Where(n => !n.IsRead).ToList() ?? new List<MakeForYou.BusinessLogic.Entities.Notification>();
+
+    foreach (var n in unread)
+    {
+        await notificationService.MarkAsReadAsync(n.NotificationId);
+    }
+
+    return Results.Ok();
+}).RequireAuthorization();
 
 app.Run();

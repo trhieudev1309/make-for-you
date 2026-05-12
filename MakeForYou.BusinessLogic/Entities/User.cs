@@ -35,5 +35,7 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<ChatMessage>? SentMessages { get; set; }
         public ICollection<Quotation>? CreatedQuotations { get; set; }
+        public ICollection<Notification>? Notifications { get; set; }
+
     }
 }
