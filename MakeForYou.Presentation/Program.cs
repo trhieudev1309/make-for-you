@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Security.Claims; // Added for ClaimTypes
 using MakeForYou.BusinessLogic;
-using MakeForYou.BusinessLogic.Hubs; // <- add
+using MakeForYou.BusinessLogic.Hubs;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Implement;
@@ -22,6 +22,10 @@ builder.Services.AddRazorPages()
         options.Conventions.ConfigureFilter(
             new IgnoreAntiforgeryTokenAttribute());
     });
+
+// Add Controllers for API endpoints
+builder.Services.AddControllers();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDistributedMemoryCache();
@@ -42,11 +46,13 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 // Notification DI
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 // SignalR
 builder.Services.AddSignalR();
 
-builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Configuration.GetSection("Email"); // Ensure email section read
 
@@ -62,9 +68,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 
@@ -107,9 +110,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers(); // Added for API controller routing
 
-// Map the notifications hub
+// Map the hubs
 app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<MakeForYou.BusinessLogic.Hubs.ChatHub>("/hubs/chat");
 
 // Minimal API endpoints for notifications (used by layout dropdown; require authentication)
 app.MapGet("/api/notifications", async (HttpContext http, INotificationService notificationService) =>

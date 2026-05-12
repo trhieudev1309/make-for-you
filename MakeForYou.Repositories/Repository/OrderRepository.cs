@@ -30,8 +30,8 @@ namespace MakeForYou.Repositories.Repository
              .Include(o => o.Seller).ThenInclude(s => s.User)
              .Include(o => o.Quotations)
              .Include(o => o.Reviews)
-             .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
-                 .ThenInclude(m => m.Sender)
+             .Include(o => o.ChatMessages.OrderBy(m => m.CreatedAt))
+                 .ThenInclude(m => m.FromUser)
              .Include(o => o.OrderItems)          // ← add this
                  .ThenInclude(i => i.Product)     // ← and this
              .FirstOrDefaultAsync();

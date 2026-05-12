@@ -1,25 +1,25 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace MakeForYou.BusinessLogic.Entities
 {
     public class ChatMessage
     {
-        [Key]
         public long MessageId { get; set; }
 
-        public long OrderId { get; set; }
+        /// <summary>
+        /// User sending the message
+        /// </summary>
+        public long FromUserId { get; set; }
+        public User? FromUser { get; set; }
 
-        public long SenderId { get; set; }
+        /// <summary>
+        /// User receiving the message
+        /// </summary>
+        public long ToUserId { get; set; }
+        public User? ToUser { get; set; }
 
-        [ForeignKey(nameof(OrderId))]
-        public Order Order { get; set; } = null!;
+        public string Message { get; set; } = string.Empty;
 
-        [ForeignKey(nameof(SenderId))]
-        public User Sender { get; set; } = null!;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public string? MessageContent { get; set; }
-
-        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+        public bool IsRead { get; set; } = false;
     }
 }
