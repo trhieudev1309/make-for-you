@@ -15,5 +15,7 @@ namespace MakeForYou.BusinessLogic.Interfaces
         Task<List<Order>> FindByBuyerIdAsync(long buyerId);
         Task<Order?> GetOrderWithDetailsAsync(long orderId, long buyerId);
         Task<Order> AddAsync(Order order);
+        Task<(List<Order> Orders, int TotalCount)> GetAllOrdersFilteredAsync(
+        string? search, int? status, int pageIndex, int pageSize);
     }
 }

@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MakeForYou.BusinessLogic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508124224_AddStatusToProduct")]
+    partial class AddStatusToProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,73 +88,25 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MessageId"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<long>("FromUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
+                    b.Property<string>("MessageContent")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("OrderId")
+                    b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ToUserId")
+                    b.Property<long>("SenderId")
                         .HasColumnType("bigint");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("MessageId");
 
-                    b.HasIndex("FromUserId");
-
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("ToUserId");
+                    b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
-                {
-                    b.Property<long>("NotificationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("NotificationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("NotificationId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
@@ -489,42 +444,21 @@ namespace MakeForYou.BusinessLogic.Migrations
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.ChatMessage", b =>
                 {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "FromUser")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("FromUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Order", null)
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("OrderId");
-
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "ToUser")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ToUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FromUser");
-
-                    b.Navigation("ToUser");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
-                {
                     b.HasOne("MakeForYou.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("Notifications")
-                        .HasForeignKey("OrderId");
-
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("User");
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
@@ -666,8 +600,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                 {
                     b.Navigation("ChatMessages");
 
-                    b.Navigation("Notifications");
-
                     b.Navigation("OrderItems");
 
                     b.Navigation("Quotations");
@@ -692,11 +624,7 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     b.Navigation("CreatedQuotations");
 
-                    b.Navigation("Notifications");
-
                     b.Navigation("OrdersAsBuyer");
-
-                    b.Navigation("ReceivedMessages");
 
                     b.Navigation("Reviews");
 

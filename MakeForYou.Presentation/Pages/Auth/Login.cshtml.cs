@@ -46,7 +46,7 @@ namespace MakeForYou.Presentation.Pages.Auth
             return result.Role switch
             {
                 (int)UserRole.Seller => RedirectToPage("/Index"),
-                (int)UserRole.Admin => RedirectToPage("/Admin/Dashboard"),
+                (int)UserRole.Admin => RedirectToPage("/Admin/Index"),
                 _ => RedirectToPage("/Index")
             };
         }

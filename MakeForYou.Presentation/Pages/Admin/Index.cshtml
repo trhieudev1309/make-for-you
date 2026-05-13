@@ -1,0 +1,167 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Admin.IndexModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Báo cáo quản trị";
+}
+
+@* HEADER & FILTER *@
+<div class="mb-4">
+    <h2 class="serif-heading fw-bold mb-0 text-dark">Chào mừng trở lại, Admin!</h2>
+    <p class="text-muted small mb-0">Dữ liệu phân tích thực tế từ hệ thống dịch vụ MakeForYou.</p>
+</div>
+
+<div class="card border-0 shadow-sm p-3 mb-4 bg-white rounded-4">
+    <form method="get" class="row g-3 align-items-end" id="filterForm">
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1 text-uppercase">Phạm vi báo cáo</label>
+            <select asp-for="DateRange" class="form-select border-0 bg-light rounded-3 shadow-none fw-bold" id="rangeSelect">
+                <option value="7days">7 ngày qua</option>
+                <option value="today">Hôm nay</option>
+                <option value="month">Tháng này</option>
+                <option value="year">Năm nay</option>
+                <option value="custom">Tùy chọn ngày...</option>
+            </select>
+        </div>
+        <div id="customDateInputs" class="col-md-6 @(Model.DateRange == "custom" ? "" : "d-none")">
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="small fw-bold text-muted mb-1 text-uppercase">Từ ngày</label>
+                    <input type="date" asp-for="StartDate" class="form-control border-0 bg-light rounded-3 shadow-none">
+                </div>
+                <div class="col-6">
+                    <label class="small fw-bold text-muted mb-1 text-uppercase">Đến ngày</label>
+                    <input type="date" asp-for="EndDate" class="form-control border-0 bg-light rounded-3 shadow-none">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-clay w-100 rounded-3 shadow-sm py-2 fw-bold text-white">
+                <i class="bi bi-filter-left me-2"></i>Áp dụng
+            </button>
+        </div>
+    </form>
+</div>
+
+@* QUICK STATS *@
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white h-100 rounded-4">
+            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Doanh thu kỳ này</small>
+            <h4 class="fw-bold my-1">@Model.Stats.TotalRevenue.ToString("N0") đ</h4>
+            <div class="small">
+                <span class="@(Model.Stats.RevenueGrowth >= 0 ? "text-success" : "text-danger") fw-bold">
+                    <i class="bi @(Model.Stats.RevenueGrowth >= 0 ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>@Math.Abs(Model.Stats.RevenueGrowth)%
+                </span>
+                <span class="text-muted opacity-50 ms-1">vs kỳ trước</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white h-100 rounded-4">
+            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Đơn hoàn thành</small>
+            <h4 class="fw-bold my-1">@Model.Stats.TotalOrders</h4>
+            <div class="small">
+                <span class="@(Model.Stats.OrderGrowth >= 0 ? "text-success" : "text-danger") fw-bold">
+                    <i class="bi @(Model.Stats.OrderGrowth >= 0 ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>@Math.Abs(Model.Stats.OrderGrowth)%
+                </span>
+                <span class="text-muted opacity-50 ms-1">vs kỳ trước</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white h-100 rounded-4">
+            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Người dùng</small>
+            <h4 class="fw-bold my-1">@Model.Stats.TotalUsers</h4>
+            <span class="text-muted small">Tất cả định danh</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white h-100 rounded-4">
+            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Sản phẩm</small>
+            <h4 class="fw-bold my-1">@Model.Stats.TotalProducts</h4>
+            <span class="text-muted small">Đang kinh doanh</span>
+        </div>
+    </div>
+</div>
+
+@* BIỂU ĐỒ VÀ TOP NGHỆ NHÂN *@
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <h6 class="fw-bold mb-4">Biểu đồ doanh thu hoàn thành</h6>
+            <div style="height: 300px;"><canvas id="revenueChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <h6 class="fw-bold mb-4 text-uppercase text-muted small">Top Nghệ nhân tiêu biểu</h6>
+            @foreach (var seller in Model.Stats.TopSellers) {
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar-circle-sm me-3">@seller.Name[0]</div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold small">@seller.Name</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">@seller.OrderCount đơn hàng</div>
+                    </div>
+                    <div class="fw-bold text-clay small">@seller.Revenue.ToString("N0") đ</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* BIỂU ĐỒ TRẠNG THÁI *@
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4">
+            <h6 class="fw-bold mb-4">Cơ cấu trạng thái đơn</h6>
+            <div style="height: 220px;"><canvas id="statusChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-clay { color: #C8855A; }
+    .btn-clay { background-color: #C8855A; border: none; }
+    .serif-heading { font-family: 'Playfair Display', serif; }
+    .avatar-circle-sm { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fdf6f2; color: #C8855A; font-weight: bold; }
+    .bg-success-subtle { background-color: #e8f5e9; }
+    .bg-danger-subtle { background-color: #ffebee; }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById('rangeSelect').addEventListener('change', function() {
+            const ci = document.getElementById('customDateInputs');
+            if (this.value === 'custom') ci.classList.remove('d-none');
+            else { ci.classList.add('d-none'); document.getElementById('filterForm').submit(); }
+        });
+
+        // Biểu đồ Doanh thu (Line)
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.Stats.Labels)),
+                datasets: [{
+                    label: 'Doanh thu', data: @Html.Raw(Json.Serialize(Model.Stats.RevenueData)),
+                    borderColor: '#C8855A', backgroundColor: 'rgba(200, 133, 90, 0.08)', fill: true, tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        // Biểu đồ Trạng thái (Donut)
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Quoted', 'Confirmed', 'Processing', 'Completed', 'Cancelled'],
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.Stats.OrderStatusCounts)),
+                    backgroundColor: ['#ffc107', '#17a2b8', '#0d6efd', '#6610f2', '#198754', '#dc3545']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+        });
+    </script>
+}

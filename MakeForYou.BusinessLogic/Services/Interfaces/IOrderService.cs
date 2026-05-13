@@ -15,5 +15,8 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address);
 
         Task UpdateStatusAsync(long orderId, int status);
+
+        Task<(List<Order> Orders, int TotalCount)> GetAllOrdersForAdminAsync(
+        string? search, int? status, int pageIndex, int pageSize);
     }
 }

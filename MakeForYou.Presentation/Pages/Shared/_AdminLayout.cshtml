@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>@ViewData["Title"] - MFY Admin</title>
+		<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+		<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Source+Sans+3:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+
+		<style>
+			:root {
+			--mfy-clay: #C8855A;
+			--mfy-bark: #2D2926;
+			--sidebar-width: 260px;
+			}
+
+			body { background-color: #f4f4f2; font-family: 'Source Sans 3', sans-serif; margin: 0; }
+
+			.admin-sidebar {
+			width: var(--sidebar-width);
+			height: 100vh;
+			position: fixed;
+			background: var(--mfy-bark);
+			color: white;
+			z-index: 1000;
+			}
+
+			.admin-main { margin-left: var(--sidebar-width); padding: 40px; min-height: 100vh; }
+
+			.admin-sidebar .nav-link {
+			color: rgba(255, 255, 255, .6) !important;
+			padding: 14px 24px;
+			border-left: 4px solid transparent;
+			transition: all 0.2s;
+			font-weight: 500;
+			background: transparent !important;
+			}
+
+			.admin-sidebar .nav-link:hover {
+			color: white !important;
+			background: rgba(255, 255, 255, .05) !important;
+			}
+
+			/* Dứt điểm màu xanh dương: Dùng !important để đè bẹp Bootstrap */
+			.admin-sidebar .nav-pills .nav-link.active {
+			color: white !important;
+			background-color: var(--mfy-clay) !important;
+			border-left: 4px solid #fff !important;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+			}
+
+			.serif-heading { font-family: 'Playfair Display', serif; }
+			.text-clay { color: var(--mfy-clay); }
+		</style>
+	</head>
+	<body>
+		@{
+		// Hàm này sẽ trả về chuỗi class chuẩn, không để trống ngoặc
+		string GetNavClass(string pageName) {
+		var active = ViewData["ActivePage"]?.ToString();
+		return (active == pageName) ? "nav-link active" : "nav-link";
+		}
+		}
+
+		<div class="admin-sidebar d-flex flex-column">
+			<div class="p-4 mb-2">
+				<h3 class="serif-heading m-0 text-clay">MFY Admin</h3>
+			</div>
+
+			<hr style="border-color: rgba(255,255,255,0.1); margin: 0 15px;" />
+
+			<ul class="nav nav-pills flex-column mb-auto mt-2 px-0">
+				<li class="nav-item">
+					<a href="/Admin/Index" class='@GetNavClass("Dashboard")'>
+						<i class="bi bi-graph-up-arrow me-3"></i>Dashboard
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a href="/Admin/Users" class='@GetNavClass("Users")'>
+						<i class="bi bi-people me-3"></i>Users
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a href="/Admin/Products" class='@GetNavClass("Products")'>
+						<i class="bi bi-box-seam me-3"></i>Products
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a href="/Admin/Categories" class='@GetNavClass("Categories")'>
+						<i class="bi bi-tags me-3"></i>Categories
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a href="/Admin/Orders" class='@GetNavClass("Orders")'>
+						<i class="bi bi-cart-check me-3"></i>Orders
+					</a>
+				</li>
+			</ul>
+
+			<hr style="border-color: rgba(255,255,255,0.1); margin: 0 15px;" />
+
+			
+		</div>
+
+		<main class="admin-main">
+			<div class="container-fluid">
+				@RenderBody()
+			</div>
+		</main>
+
+		<script src="~/lib/jquery/dist/jquery.min.js"></script>
+		<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+		@await RenderSectionAsync("Scripts", required: false)
+	</body>
+</html>
