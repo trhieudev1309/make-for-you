@@ -7,16 +7,25 @@
 }
 
 <style>
-    /* Thêm đoạn này để nút .btn-clay không bị trắng xóa nữa */
-    .btn-clay { 
-        background-color: var(--mfy-clay, #C8855A) !important; 
-        border: none; 
+    .btn-clay {
+        background-color: var(--mfy-clay, #C8855A) !important;
+        border: none;
     }
-    .btn-clay:hover { 
-        background-color: #b0724a !important; 
-        color: white !important; 
+
+        .btn-clay:hover {
+            background-color: #b0724a !important;
+            color: white !important;
+        }
+
+    .serif-heading {
+        font-family: 'Playfair Display', serif;
     }
-    .serif-heading { font-family: 'Playfair Display', serif; }
+    /* Style bổ sung để trường disabled trông rõ ràng hơn */
+    .form-control:disabled, .form-select:disabled {
+        cursor: not-allowed;
+        background-color: #f8f9fa !important;
+        color: #6c757d;
+    }
 </style>
 
 <div class="card p-4 shadow-sm border-0">
@@ -27,7 +36,7 @@
 
     <form method="post">
         <input type="hidden" asp-for="ProductId" />
-        
+
         <div class="row">
             <div class="col-md-12 mb-3">
                 <label class="form-label fw-bold">Tên sản phẩm</label>
@@ -41,24 +50,37 @@
             <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Xem trước ảnh</label>
                 <div class="border rounded p-1 text-center bg-light" style="height: 100px;">
-                    <img src="@Model.Product.ImageUrl" id="imagePreview" style="max-height: 100%; max-width: 100%; object-fit: contain;" 
+                    <img src="@Model.Product.ImageUrl" id="imagePreview" style="max-height: 100%; max-width: 100%; object-fit: contain;"
                          onerror="this.src='/images/placeholder.jpg'" />
                 </div>
             </div>
 
+            @* PHẦN NGHỆ NHÂN - ĐÃ SỬA LẠI ĐỂ KHÔNG BỊ MẤT FIELD *@
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Nghệ nhân (Seller)</label>
-                <select asp-for="Product.SellerId" class="form-select" required>
-                    @foreach (var s in Model.Sellers) {
-                        <option value="@s.SellerId">ID: @s.SellerId - @s.Bio</option>
+                @* Sử dụng disabled để khóa và bg-light để hiện màu xám *@
+                <select class="form-select bg-light" disabled>
+                    @if (Model.Sellers != null)
+                    {
+                        foreach (var s in Model.Sellers)
+                        {
+                            @* Logic để chọn đúng Seller hiện tại *@
+                            <option value="@s.SellerId" selected="@(s.SellerId == Model.Product.SellerId ? "selected" : null)">
+                                ID: @s.SellerId - @(string.IsNullOrEmpty(s.Bio) ? "Nghệ nhân" : s.Bio)
+                            </option>
+                        }
                     }
                 </select>
+
+                @* QUAN TRỌNG: Thẻ hidden để gửi SellerId về server vì thẻ disabled không gửi dữ liệu *@
+                <input type="hidden" asp-for="Product.SellerId" />
             </div>
 
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Danh mục</label>
                 <select asp-for="Product.CategoryId" class="form-select" required>
-                    @foreach (var c in Model.Categories) {
+                    @foreach (var c in Model.Categories)
+                    {
                         <option value="@c.CategoryId">@c.Name</option>
                     }
                 </select>
