@@ -27,6 +27,8 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
+        public DbSet<Notification> Notifications => Set<Notification>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

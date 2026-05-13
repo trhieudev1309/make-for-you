@@ -1,297 +1,247 @@
 ﻿@page
 @model MakeForYou.Presentation.Pages.IndexModel
 @{
-    ViewData["Title"] = "MakeForYou – Handcrafted Marketplace";
+	ViewData["Title"] = "MakeForYou – Handcrafted Marketplace";
 }
 
 <style>
-    .quick-nav {
-        display: flex;
-        justify-content: center;
-        gap: 2.5rem;
-        padding: 0.75rem 0;
-        background: white;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
+	.quick-nav {
+		display: flex;
+		justify-content: center;
+		gap: 2.5rem;
+		padding: 0.75rem 0;
+		background: white;
+		overflow-x: auto;
+		white-space: nowrap;
+	}
 
-        .quick-nav a {
-            font-family: var(--mono);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            text-decoration: none;
-            color: #888;
-            transition: 0.3s;
-        }
+		.quick-nav a {
+			font-family: var(--mono);
+			font-size: 0.65rem;
+			text-transform: uppercase;
+			letter-spacing: 0.15em;
+			text-decoration: none;
+			color: #888;
+			transition: 0.3s;
+		}
 
-            .quick-nav a:hover {
-                color: var(--mfy-clay);
-            }
+			.quick-nav a:hover {
+				color: var(--mfy-clay);
+			}
 
-    /* ── HERO BANNER ── */
-    .hero-banner {
-        border-radius: 24px;
-        overflow: hidden;
-        height: 480px;
-        position: relative;
-        display: flex;
-        align-items: center;
-        padding: 5rem;
-        color: white;
-        background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=1400');
-        background-size: cover;
-        background-position: center;
-        animation: fadeIn 1s ease;
-    }
+	/* ── HERO BANNER ── */
+	.hero-banner {
+		border-radius: 24px;
+		overflow: hidden;
+		height: 480px;
+		position: relative;
+		display: flex;
+		align-items: center;
+		padding: 5rem;
+		color: white;
+		background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=1400');
+		background-size: cover;
+		background-position: center;
+		animation: fadeIn 1s ease;
+	}
 
-    .hero-content {
-        max-width: 550px;
-    }
+	.hero-content {
+		max-width: 550px;
+	}
 
-        .hero-content h1 {
-            font-family: var(--serif);
-            font-size: 4rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+		.hero-content h1 {
+			font-family: var(--serif);
+			font-size: 4rem;
+			font-weight: 700;
+			line-height: 1.1;
+			margin-bottom: 1.5rem;
+			text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+		}
 
-    .btn-mfy-solid {
-        background: var(--mfy-clay);
-        color: white;
-        padding: 1rem 2.5rem;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        display: inline-block;
-        transition: 0.3s;
-        box-shadow: 0 4px 15px rgba(200, 133, 90, 0.3);
-    }
+	.btn-mfy-solid {
+		background: var(--mfy-clay);
+		color: white;
+		padding: 1rem 2.5rem;
+		border-radius: 50px;
+		text-decoration: none;
+		font-weight: 600;
+		display: inline-block;
+		transition: 0.3s;
+		box-shadow: 0 4px 15px rgba(200, 133, 90, 0.3);
+	}
 
-        .btn-mfy-solid:hover {
-            background: var(--mfy-clay-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(200, 133, 90, 0.4);
-            color: white;
-        }
+		.btn-mfy-solid:hover {
+			background: var(--mfy-clay-dark);
+			transform: translateY(-3px);
+			box-shadow: 0 6px 20px rgba(200, 133, 90, 0.4);
+			color: white;
+		}
 
-    /* ── CUSTOMIZE SECTION ── */
-    .custom-section {
-        background: #1A1A1A;
-        color: white;
-        padding: 6rem 0;
-        border-radius: 32px;
-        margin: 5rem 0;
-        position: relative;
-        overflow: hidden;
-    }
+	/* ── CUSTOMIZE SECTION ── */
+	.custom-section {
+		background: #1A1A1A;
+		color: white;
+		padding: 6rem 0;
+		border-radius: 32px;
+		margin: 5rem 0;
+		position: relative;
+		overflow: hidden;
+	}
 
-        .custom-section::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(200, 133, 90, 0.1) 0%, transparent 70%);
-        }
+		.custom-section::after {
+			content: "";
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 300px;
+			height: 300px;
+			background: radial-gradient(circle, rgba(200, 133, 90, 0.1) 0%, transparent 70%);
+		}
 
-    .custom-tag {
-        font-family: var(--mono);
-        color: var(--mfy-clay);
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.4em;
-        margin-bottom: 1.2rem;
-        display: block;
-    }
+	.custom-tag {
+		font-family: var(--mono);
+		color: var(--mfy-clay);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.4em;
+		margin-bottom: 1.2rem;
+		display: block;
+	}
 
-    /* ── PRODUCT CARDS ── */
-    .product-card {
-        background: white;
-        border: 1px solid var(--mfy-border);
-        border-radius: 16px;
-        overflow: hidden;
-        height: 100%;
-        transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
+	/* ── PRODUCT CARDS ── */
+	.product-card {
+		background: white;
+		border: 1px solid var(--mfy-border);
+		border-radius: 16px;
+		overflow: hidden;
+		height: 100%;
+		transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+	}
 
-        .product-card:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-            border-color: var(--mfy-clay);
-        }
+		.product-card:hover {
+			transform: translateY(-12px);
+			box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+			border-color: var(--mfy-clay);
+		}
 
-    .product-img {
-        height: 280px;
-        object-fit: cover;
-        width: 100%;
-        transition: 0.6s;
-    }
+	.product-img {
+		height: 280px;
+		object-fit: cover;
+		width: 100%;
+		transition: 0.6s;
+	}
 
-    .product-card:hover .product-img {
-        transform: scale(1.05);
-    }
+	.product-card:hover .product-img {
+		transform: scale(1.05);
+	}
 
-    
 
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .hero-banner {
-            height: auto;
-            padding: 3rem 1.5rem;
-            text-align: center;
-        }
 
-        .hero-content h1 {
-            font-size: 2.5rem;
-        }
+	/* Responsive */
+	@@media (max-width: 768px) {
+		.hero-banner {
+			height: auto;
+			padding: 3rem 1.5rem;
+			text-align: center;
+		}
 
-        .quick-nav {
-            gap: 1.5rem;
-        }
-    }
+		.hero-content h1 {
+			font-size: 2.5rem;
+		}
+
+		.quick-nav {
+			gap: 1.5rem;
+		}
+	}
 </style>
 <body>
 
-@*<header class="mfy-header shadow-sm">
-     <div class="container py-3 d-flex align-items-center justify-content-between">
-        <a href="/" class="mfy-logo">Make<span>For</span>You<div class="dot"></div></a>
-        
-        <div class="search-container d-none d-lg-block">
-            <form method="get" action="/Products">
-                <input type="text" name="SearchTerm" class="search-input" placeholder="Search for unique handmade items...">
-            </form>
-        </div>
+	<div class="container py-3 d-flex align-items-center justify-content-between">
+		<div class="container d-none d-md-block">
+			<nav class="quick-nav">
+				<a href="/Products?categoryId=1">Home Decor</a>
+				<a href="/Products?categoryId=2">Jewelry</a>
+				<a href="/Products?categoryId=3">Vintage</a>
+				<a href="/Products?categoryId=4">Pottery</a>
+				<a href="/Products?categoryId=5">Art & Prints</a>
+				<a href="/Products?categoryId=6">Gifts</a>
+			</nav>
+		</div>
+	</div>
+	<div class="container mt-5">
+		<section class="hero-banner shadow-lg">
+			<div class="hero-content">
+				<h1>Elevate your space with soul.</h1>
+				<p class="lead mb-5 opacity-90">Experience the beauty of handcrafted goods. Every piece is a testament to human creativity and passion.</p>
+				<a href="/Products" class="btn-mfy-solid">Explore Gallery</a>
+			</div>
+		</section>
 
-            <div class="d-flex align-items-center gap-4">
-                <a href="/Products" class="text-dark text-decoration-none fw-medium d-none d-md-block">Browse</a>
+		<section class="custom-section text-center shadow-lg">
+			<div class="container position-relative" style="z-index: 2;">
+				<span class="custom-tag">Premium Custom Service</span>
+				<h2 class="display-4 fw-bold mb-4" style="font-family: var(--serif); letter-spacing: -0.01em;">Can't find exactly what you need?</h2>
+				<p class="opacity-75 mb-5 mx-auto fs-5" style="max-width: 650px;">Collaborate with our world-class artisans to create a masterpiece that is uniquely yours. From custom dimensions to personal engravings.</p>
+				<a href="/CustomOrders/Create" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow">
+					Start Custom Project <i class="bi bi-stars ms-2 text-warning"></i>
+				</a>
+			</div>
+		</section>
 
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <div class="dropdown">
-                        <button class="btn btn-outline-dark rounded-pill px-4 fw-medium dropdown-toggle"
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle me-1"></i>@User.Identity.Name
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            @if (User.IsInRole("Seller"))
-                            {
-                                <li><a class="dropdown-item" href="/Seller/Dashboard"><i class="bi bi-grid me-2"></i>Dashboard</a></li>
-                            }
-                            else
-                            {
-                                <li><a class="dropdown-item" href="/Buyer/Dashboard"><i class="bi bi-grid me-2"></i>Dashboard</a></li>
-                            }
-                            <li><hr class="dropdown-divider" /></li>
-                            <li>
-                                <form method="post" action="/Auth/Logout">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Sign out
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                }
-                else
-                {
-                    <a href="/Auth/Login" class="btn btn-outline-dark rounded-pill px-4 fw-medium">Sign in</a>
-                }
+		<div class="d-flex justify-content-between align-items-end mb-4">
+			<div>
+				<h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.5rem;">Editor's Picks</h2>
+				<p class="text-muted">Handpicked treasures from our artisan community.</p>
+			</div>
+			<a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">See all creations</a>
+		</div>
 
-                <a href="#" class="fs-4 text-dark"><i class="bi bi-bag-heart"></i></a>
-            </div>
-    </div>
-</header> *@
-    <div class="container py-3 d-flex align-items-center justify-content-between">
-    <div class="container d-none d-md-block">
-        <nav class="quick-nav">
-            <a href="/Products?categoryId=1">Home Decor</a>
-            <a href="/Products?categoryId=2">Jewelry</a>
-            <a href="/Products?categoryId=3">Vintage</a>
-            <a href="/Products?categoryId=4">Pottery</a>
-            <a href="/Products?categoryId=5">Art & Prints</a>
-            <a href="/Products?categoryId=6">Gifts</a>
-        </nav>
-    </div>
-    </div>
-<div class="container mt-5">
-    <section class="hero-banner shadow-lg">
-        <div class="hero-content">
-            <h1>Elevate your space with soul.</h1>
-            <p class="lead mb-5 opacity-90">Experience the beauty of handcrafted goods. Every piece is a testament to human creativity and passion.</p>
-            <a href="/Products" class="btn-mfy-solid">Explore Gallery</a>
-        </div>
-    </section>
+		<div class="row g-4 mb-5">
+			@if (Model.HomeData.FeaturedProducts != null && Model.HomeData.FeaturedProducts.Any())
+			{
+				@foreach (var product in Model.HomeData.FeaturedProducts)
+				{
+					<div class="col-sm-6 col-md-4 col-lg-3">
+						<div class="product-card">
+							<div style="overflow: hidden; position: relative;">
+								<img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.jpg" : product.ImageUrl)" class="product-img" alt="@product.Title" />
+								<div class="position-absolute top-0 end-0 p-3">
+									<button class="btn btn-white btn-sm rounded-circle shadow-sm" style="width:35px; height:35px;"><i class="bi bi-heart text-danger"></i></button>
+								</div>
+							</div>
+							<div class="p-4">
+								<span class="text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--mfy-clay);">@product.Category?.Name</span>
+								<h5 class="fw-bold my-2 text-truncate" style="font-family: var(--serif);">@product.Title</h5>
+								<div class="small text-muted mb-4"><i class="bi bi-person-circle"></i> By @product.Seller?.User?.FullName</div>
+								<div class="d-flex justify-content-between align-items-center pt-3 border-top">
+									<span class="fw-bold fs-5" style="color: var(--mfy-bark);">@product.Price?.ToString("N0") VNĐ</span>
+									<a asp-page="/Products/Details" asp-route-id="@product.ProductId" class="btn btn-dark btn-sm rounded-pill px-4">View</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+			}
+		</div>
+	</div>
 
-    <section class="custom-section text-center shadow-lg">
-        <div class="container position-relative" style="z-index: 2;">
-            <span class="custom-tag">Premium Custom Service</span>
-            <h2 class="display-4 fw-bold mb-4" style="font-family: var(--serif); letter-spacing: -0.01em;">Can't find exactly what you need?</h2>
-            <p class="opacity-75 mb-5 mx-auto fs-5" style="max-width: 650px;">Collaborate with our world-class artisans to create a masterpiece that is uniquely yours. From custom dimensions to personal engravings.</p>
-            <a href="/CustomOrders/Create" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow">
-                Start Custom Project <i class="bi bi-stars ms-2 text-warning"></i>
-            </a>
-        </div>
-    </section>
-
-    <div class="d-flex justify-content-between align-items-end mb-4">
-        <div>
-            <h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.5rem;">Editor's Picks</h2>
-            <p class="text-muted">Handpicked treasures from our artisan community.</p>
-        </div>
-        <a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">See all creations</a>
-    </div>
-
-    <div class="row g-4 mb-5">
-        @if (Model.HomeData.FeaturedProducts != null && Model.HomeData.FeaturedProducts.Any())
-        {
-            @foreach (var product in Model.HomeData.FeaturedProducts)
-            {
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <div class="product-card">
-                        <div style="overflow: hidden; position: relative;">
-                            <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.jpg" : product.ImageUrl)" class="product-img" alt="@product.Title" />
-                            <div class="position-absolute top-0 end-0 p-3">
-                                <button class="btn btn-white btn-sm rounded-circle shadow-sm" style="width:35px; height:35px;"><i class="bi bi-heart text-danger"></i></button>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <span class="text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--mfy-clay);">@product.Category?.Name</span>
-                            <h5 class="fw-bold my-2 text-truncate" style="font-family: var(--serif);">@product.Title</h5>
-                            <div class="small text-muted mb-4"><i class="bi bi-person-circle"></i> By @product.Seller?.User?.FullName</div>
-                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                                <span class="fw-bold fs-5" style="color: var(--mfy-bark);">@product.Price?.ToString("N0") VNĐ</span>
-                                <a asp-page="/Products/Details" asp-route-id="@product.ProductId" class="btn btn-dark btn-sm rounded-pill px-4">View</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-    </div>
-</div>
-
-<footer class="py-5" style="background: var(--mfy-bark); color: white; margin-top: 8rem;">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
-                <a href="/" class="mfy-logo text-white" style="font-size: 2rem;">Make<span>For</span>You<div class="dot"></div></a>
-            </div>
-            <div class="col-md-4 text-center mb-4 mb-md-0">
-                <div class="d-flex justify-content-center gap-4">
-                    <a href="/Products" class="text-white text-decoration-none opacity-75">Shop</a>
-                    <a href="/Artisans" class="text-white text-decoration-none opacity-75">Artisans</a>
-                    <a href="#" class="text-white text-decoration-none opacity-75">About</a>
-                </div>
-            </div>
-            <div class="col-md-4 text-center text-md-end">
-                <p class="small opacity-50 mb-0">Handcrafted with Heart &middot; 2026</p>
-            </div>
-        </div>
-    </div>
-</footer>
+	<footer class="py-5" style="background: var(--mfy-bark); color: white; margin-top: 8rem;">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
+					<a href="/" class="mfy-logo text-white" style="font-size: 2rem;">Make<span>For</span>You<div class="dot"></div></a>
+				</div>
+				<div class="col-md-4 text-center mb-4 mb-md-0">
+					<div class="d-flex justify-content-center gap-4">
+						<a href="/Products" class="text-white text-decoration-none opacity-75">Shop</a>
+						<a href="/Artisans" class="text-white text-decoration-none opacity-75">Artisans</a>
+						<a href="#" class="text-white text-decoration-none opacity-75">About</a>
+					</div>
+				</div>
+				<div class="col-md-4 text-center text-md-end">
+					<p class="small opacity-50 mb-0">Handcrafted with Heart &middot; 2026</p>
+				</div>
+			</div>
+		</div>
+	</footer>
 </body>

@@ -103,6 +103,39 @@
     .badge-warning   { background: #fef3d0; color: #9a6800; }
     .badge-success   { background: #d6f5e3; color: #1e7a45; }
     .badge-danger    { background: #fce4e4; color: #b02020; }
+    /* ── star rating ── */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        width: fit-content;
+        gap: 0.25rem;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating .star {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            user-select: none;
+        }
+
+            .star-rating .star:hover,
+            .star-rating .star:hover ~ .star,
+            .star-rating input:checked ~ .star {
+                color: var(--clay);
+                transform: scale(1.1);
+            }
+
+    .star-display {
+        white-space: nowrap;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
 </style>
 
 <div class="od-wrap">
@@ -393,7 +426,79 @@
                         </a>
                     }
                 </div>
+                <!-- Feedback: only for completed orders -->
+                @if (Model.Order != null && (OrderStatus)Model.Order.Status == OrderStatus.Completed)
+                {
+                    var existing = Model.Order.Reviews?.FirstOrDefault(r => r.BuyerId == Model.Order.BuyerId);
+                    if (existing == null)
+                    {
+                        <div class="od-card">
+                            <div class="od-card-title">
+                                <i class="bi bi-star"></i> Leave Feedback
+                            </div>
 
+                            <form method="post" asp-page-handler="Feedback" asp-route-id="@Model.Order.OrderId">
+                                <div class="mb-3">
+                                    <label class="form-label small d-block mb-2">Rating</label>
+                                    <div class="star-rating">
+                                        <input type="radio" id="star5" name="FeedbackRating" value="5" />
+                                        <label for="star5" class="star" title="5 stars">★</label>
+
+                                        <input type="radio" id="star4" name="FeedbackRating" value="4" />
+                                        <label for="star4" class="star" title="4 stars">★</label>
+
+                                        <input type="radio" id="star3" name="FeedbackRating" value="3" />
+                                        <label for="star3" class="star" title="3 stars">★</label>
+
+                                        <input type="radio" id="star2" name="FeedbackRating" value="2" />
+                                        <label for="star2" class="star" title="2 stars">★</label>
+
+                                        <input type="radio" id="star1" name="FeedbackRating" value="1" />
+                                        <label for="star1" class="star" title="1 star">★</label>
+                                    </div>
+                                    <span class="text-muted small d-block mt-2">Rate the artisan from 0 (worst) to 5 (best).</span>
+                                    <span asp-validation-for="FeedbackRating" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small">Comment (optional)</label>
+                                    <textarea class="form-control" rows="4" asp-for="FeedbackComment"></textarea>
+                                    <span asp-validation-for="FeedbackComment" class="text-danger small"></span>
+                                </div>
+
+                                <button type="submit" class="btn btn-success">Submit Feedback</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="od-card">
+                            <div class="od-card-title">
+                                <i class="bi bi-star-fill"></i> Your Feedback
+                            </div>
+                            <div>
+                                <div class="fw-bold mb-2">
+                                    <span class="star-display">
+                                        @for (int i = 0; i < existing.Rating; i++)
+                                        {
+                                            <span class="text-warning">★</span>
+                                        }
+                                    </span>
+                                    @existing.Rating / 5
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(existing.Comment))
+                                {
+                                    <div class="text-muted" style="white-space:pre-wrap;">@existing.Comment</div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted small fst-italic">No comment provided.</div>
+                                }
+                                <div class="text-muted small mt-2">Left on @existing.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                            </div>
+                        </div>
+                    }
+                }
             </div><!-- /col-lg-4 -->
 
         </div>

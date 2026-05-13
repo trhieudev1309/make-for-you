@@ -10,23 +10,24 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly IOrderRepository _orderRepo;
         private readonly ICartService _cartService;
         private readonly ICartRepository _cartRepo;
-        // THÊM DÒNG NÀY ĐỂ KHAI BÁO
         private readonly IProductRepository _productRepo;
+        private readonly INotificationService _notificationService;
 
-        // CẬP NHẬT CONSTRUCTOR ĐỂ TIÊM (INJECT) NÓ VÀO
         public OrderService(
             IOrderRepository orderRepo,
             ICartService cartService,
             ICartRepository cartRepo,
-            IProductRepository productRepo) // Thêm tham số này
+            IProductRepository productRepo,
+            INotificationService notificationService)
         {
             _orderRepo = orderRepo;
             _cartService = cartService;
             _cartRepo = cartRepo;
-            _productRepo = productRepo; // Gán giá trị vào biến private
+            _productRepo = productRepo;
+            _notificationService = notificationService;
         }
         public Task<List<Order>> GetOrdersByUserAsync(long buyerId) =>
-    _orderRepo.FindByBuyerIdAsync(buyerId);
+            _orderRepo.FindByBuyerIdAsync(buyerId);
 
         public Task<Order?> GetOrderDetailAsync(long orderId, long buyerId) =>
             _orderRepo.GetOrderWithDetailsAsync(orderId, buyerId);
@@ -41,8 +42,14 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 Status = (int)MakeForYou.BusinessLogic.Enums.OrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
-            return await _orderRepo.AddAsync(order);
+            var saved = await _orderRepo.AddAsync(order);
+
+            // Send notification to seller
+            await _notificationService.SendOrderNotificationAsync(saved);
+
+            return saved;
         }
+
         public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address)
         {
             // 1. Lấy toàn bộ giỏ hàng
@@ -97,6 +104,9 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 // 5. Lưu vào Database (Mỗi đơn 1 lần gọi Repo)
                 var savedOrder = await _orderRepo.CreateOrderAsync(order, orderItems);
                 createdOrders.Add(savedOrder);
+
+                // Send notification to seller for each created order
+                await _notificationService.SendOrderNotificationAsync(savedOrder);
             }
 
             // 6. Xóa sạch giỏ hàng sau khi đã tách và lưu hết các đơn
