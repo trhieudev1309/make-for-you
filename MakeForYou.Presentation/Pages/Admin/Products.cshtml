@@ -1,0 +1,126 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Admin.ProductsModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý sản phẩm";
+    ViewData["ActivePage"] = "Products";
+}
+
+@* Phần tiêu đề và nút Thêm mới *@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="serif-heading fw-bold" style="color: var(--mfy-bark)">Danh sách sản phẩm</h2>
+        <p class="text-muted small">Quản lý kho hàng và trạng thái hiển thị của các sản phẩm nghệ thuật.</p>
+    </div>
+    <a href="/Admin/Products/Create" class="btn btn-clay rounded-pill px-4 shadow-sm text-white">
+        <i class="bi bi-plus-lg me-2"></i>Thêm sản phẩm mới
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr class="small-caps" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    <th class="ps-4 py-3">SẢN PHẨM</th>
+                    <th>DANH MỤC</th>
+                    <th>ĐƠN GIÁ</th>
+                    <th>TRẠNG THÁI</th>
+                    <th class="text-end pe-4">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Products != null && Model.Products.Any())
+                {
+                    foreach (var p in Model.Products)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    @* Hiển thị ảnh sản phẩm hoặc ảnh mặc định nếu null *@
+                                    <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.jpg" : p.ImageUrl)" 
+                                         class="rounded shadow-sm me-3" 
+                                         style="width:48px; height:60px; object-fit:cover;" 
+                                         alt="@p.Title">
+                                    <div>
+                                        <div class="fw-bold text-dark">@p.Title</div>
+                                        <small class="text-muted">ID: #@p.ProductId</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border fw-normal">@p.CategoryName</span>
+                            </td>
+                            <td class="fw-bold text-clay">@p.Price.ToString("N0") VNĐ</td>
+                            <td>
+                                @* Logic hiển thị badge trạng thái dựa trên IsAvailable (Status == 1) *@
+                                @if (p.IsAvailable)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Đang bán</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 rounded-pill">Đang ẩn</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                    @* Nút Sửa: Truyền ID qua URL *@
+                                    <a href="/Admin/Products/Edit?id=@p.ProductId" class="btn btn-sm btn-white border-end" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    @* Nút Xóa: Gọi hàm JavaScript để submit form ẩn *@
+                                    <button type="button" onclick="confirmDelete(@p.ProductId)" class="btn btn-sm btn-white text-danger" title="Ẩn sản phẩm">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="opacity-50">
+                                <i class="bi bi-box-seam display-4"></i>
+                                <p class="mt-3">Chưa có sản phẩm nào trong hệ thống.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Form ẩn để gửi yêu cầu xóa lên Server *@
+<form id="deleteForm" method="post" asp-page-handler="Delete">
+    <input type="hidden" name="id" id="deleteProductId" />
+</form>
+
+<style>
+    .text-clay { color: var(--mfy-clay); }
+    .btn-clay { background-color: var(--mfy-clay); border: none; }
+    .btn-clay:hover { background-color: #b0724a; }
+    .btn-white { background: white; border: 1px solid #dee2e6; transition: 0.2s; }
+    .btn-white:hover { background: #f8f9fa; }
+    .serif-heading { font-family: 'Playfair Display', serif; }
+    .small-caps { font-variant: small-caps; font-weight: 600; color: #6c757d; }
+</style>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id) {
+            // Hiển thị confirm box chuẩn của trình duyệt
+            if (confirm("Tiến có chắc chắn muốn ẩn sản phẩm này không? Nó sẽ không xuất hiện trên cửa hàng nữa.")) {
+                
+                // 1. Gán ID vào input ẩn
+                document.getElementById('deleteProductId').value = id;
+                
+                // 2. Submit form lên server để chạy OnPostDeleteAsync
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}

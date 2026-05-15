@@ -29,6 +29,8 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
+        public DbSet<Notification> Notifications => Set<Notification>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -87,19 +89,6 @@ namespace MakeForYou.BusinessLogic
                 .HasForeignKey(r => r.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Chat messages
-            modelBuilder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Order)
-                .WithMany(o => o.ChatMessages)
-                .HasForeignKey(cm => cm.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Sender)
-                .WithMany(u => u.SentMessages)
-                .HasForeignKey(cm => cm.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // Quotation -> Order
             modelBuilder.Entity<Quotation>()
                 .HasOne(q => q.Order)
@@ -120,6 +109,25 @@ namespace MakeForYou.BusinessLogic
                 .WithMany()
                 .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ChatMessage relationships: explicit configuration for FromUser and ToUser
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.HasKey(m => m.MessageId);
+
+                entity.HasOne(m => m.FromUser)
+                      .WithMany(u => u.SentMessages)
+                      .HasForeignKey(m => m.FromUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(m => m.ToUser)
+                      .WithMany(u => u.ReceivedMessages)
+                      .HasForeignKey(m => m.ToUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(m => m.Message).IsRequired();
+                entity.Property(m => m.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            });
         }
     }
 }

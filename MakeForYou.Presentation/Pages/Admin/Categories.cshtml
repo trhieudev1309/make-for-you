@@ -1,0 +1,126 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Admin.CategoriesModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý danh mục";
+    ViewData["ActivePage"] = "Categories";
+}
+
+<div class="row">
+    @* Cột trái: Thêm danh mục mới *@
+    <div class="col-md-4">
+        <div class="card p-4 mb-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-4 serif-heading" style="color: var(--mfy-bark)">Thêm danh mục mới</h5>
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-uppercase text-muted">Tên danh mục</label>
+                    <input asp-for="NewCategory.Name" class="form-control border-0 bg-light py-2" placeholder="VD: Đồ gốm, Tranh..." required>
+                </div>
+                <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 shadow-sm">
+                    <i class="bi bi-plus-lg me-1"></i> Tạo danh mục
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @* Cột phải: Danh sách danh mục hiện có *@
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-muted small-caps" style="font-size: 0.7rem;">TÊN DANH MỤC</th>
+                        <th class="text-center text-muted small-caps" style="font-size: 0.7rem;">SẢN PHẨM</th>
+                        <th class="text-end pe-4 text-muted small-caps" style="font-size: 0.7rem;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in Model.CategoryList)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-medium">@cat.Name</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-clay-light text-clay px-3">@cat.ProductCount</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm rounded-pill overflow-hidden bg-white">
+                                    @* Nút gọi Modal sửa *@
+                                    <button class="btn btn-sm btn-white border-end" 
+                                            onclick="openEditModal(@cat.CategoryId, '@cat.Name')" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    @* Nút xóa *@
+                                    <button class="btn btn-sm btn-white text-danger" 
+                                            onclick="confirmDelete(@cat.CategoryId, '@cat.Name')" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* --- MODAL CHỈNH SỬA DANH MỤC --- *@
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <form method="post" asp-page-handler="Edit">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold serif-heading">Chỉnh sửa danh mục</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <input type="hidden" asp-for="EditCategoryId" id="inputEditId" />
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">TÊN DANH MỤC MỚI</label>
+                        <input asp-for="EditCategoryName" id="inputEditName" class="form-control shadow-sm" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-clay rounded-pill px-4 text-white shadow-sm">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Form ẩn để xử lý xóa *@
+<form id="deleteForm" method="post" asp-page-handler="Delete">
+    <input type="hidden" name="id" id="inputDeleteId" />
+</form>
+
+<style>
+    .bg-clay-light { background-color: rgba(200, 133, 90, 0.1); }
+    .text-clay { color: #C8855A; }
+    .btn-clay { background-color: #C8855A; border: none; }
+    .btn-clay:hover { background-color: #b0724a; color: white; }
+    .btn-white { background: white; border: none; transition: 0.2s; }
+    .btn-white:hover { background: #f8f9fa; }
+    .serif-heading { font-family: 'Playfair Display', serif; }
+    .small-caps { font-weight: 700; letter-spacing: 0.05em; }
+</style>
+
+@section Scripts {
+    <script>
+        // Hàm mở modal và gán dữ liệu cũ vào input
+        function openEditModal(id, name) {
+            document.getElementById('inputEditId').value = id;
+            document.getElementById('inputEditName').value = name;
+            var myModal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+            myModal.show();
+        }
+
+        // Hàm xác nhận xóa
+        function confirmDelete(id, name) {
+            if (confirm("Tiến có chắc chắn muốn xóa danh mục '" + name + "' không?")) {
+                document.getElementById('inputDeleteId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}

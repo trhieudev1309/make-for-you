@@ -33,7 +33,15 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Order>? OrdersAsBuyer { get; set; }
 
         public ICollection<Review>? Reviews { get; set; }
+
+        // Messages the user has sent
         public ICollection<ChatMessage>? SentMessages { get; set; }
+
+        // Messages the user has received (added to disambiguate the two relationships)
+        public ICollection<ChatMessage>? ReceivedMessages { get; set; }
+
         public ICollection<Quotation>? CreatedQuotations { get; set; }
+        public ICollection<Notification>? Notifications { get; set; }
+
     }
 }

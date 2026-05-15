@@ -31,8 +31,8 @@ namespace MakeForYou.Repositories.Repository
              .Include(o => o.Seller).ThenInclude(s => s.User)
              .Include(o => o.Quotations)
              .Include(o => o.Reviews)
-             .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
-                 .ThenInclude(m => m.Sender)
+             .Include(o => o.ChatMessages.OrderBy(m => m.CreatedAt))
+                 .ThenInclude(m => m.FromUser)
              .Include(o => o.OrderItems)          // ← add this
                  .ThenInclude(i => i.Product)     // ← and this
              .FirstOrDefaultAsync();
@@ -84,6 +84,54 @@ namespace MakeForYou.Repositories.Repository
 
         public async Task UpdateStatusAsync(long orderId, int newStatus)
         {
+            var order = await _context.Set<Order>().FindAsync(orderId);
+            if (order != null)
+            {
+                order.Status = status;
+
+                // KIỂM TRA: Nếu chuyển thành Completed (4) thì cập nhật giờ hoàn thành
+                if (status == 4)
+                {
+                    order.CompletedAt = DateTime.UtcNow; // Hoặc DateTime.Now tùy múi giờ dự án của bạn
+                }
+                else
+                {
+                    // Nếu lỡ chuyển nhầm thành Completed rồi chuyển lại Pending, thì clear CompletedAt đi
+                    order.CompletedAt = null;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<(List<Order> Orders, int TotalCount)> GetAllOrdersFilteredAsync(
+    string? search, int? status, int pageIndex, int pageSize)
+        {
+            var query = _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.Seller).ThenInclude(s => s.User)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .AsQueryable();
+
+            // Lọc theo trạng thái
+            if (status.HasValue)
+                query = query.Where(o => o.Status == status.Value);
+
+            // Tìm kiếm theo mã đơn hoặc tên khách
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(o => o.OrderId.ToString().Contains(search) || o.Buyer.FullName.Contains(search));
+
+            var totalCount = await query.CountAsync();
+
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (orders, totalCount);
+        }
+    }
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null) return;
             order.Status = newStatus;

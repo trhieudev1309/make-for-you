@@ -30,5 +30,7 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? Price { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int Status { get; set; }
     }
 }

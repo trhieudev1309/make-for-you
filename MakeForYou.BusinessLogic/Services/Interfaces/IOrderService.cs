@@ -17,6 +17,9 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<List<Order>> GetRequestsBySellerAsync(long sellerId);
         Task<Order?> GetRequestDetailAsync(long orderId, long sellerId);
         Task UpdateStatusAsync(long orderId, int status);
+
+        Task<(List<Order> Orders, int TotalCount)> GetAllOrdersForAdminAsync(
+        string? search, int? status, int pageIndex, int pageSize);
         Task<AuthResult> UpdateProgressAsync(long orderId, long sellerId, UpdateProgressRequest req);
         Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId);
     }

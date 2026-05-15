@@ -2,6 +2,7 @@
 @using MakeForYou.BusinessLogic.Entities.Enums
 @using MakeForYou.BusinessLogic.Services.Interfaces
 @inject ICartService CartService
+@inject INotificationService NotificationService
 
 @{
     var isLoggedIn = User?.Identity?.IsAuthenticated == true;
@@ -9,6 +10,7 @@
 
     // Logic lấy số lượng giỏ hàng thực tế
     int cartCount = 0;
+    int unreadCount = 0;
     if (isLoggedIn)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -17,6 +19,9 @@
             // Lấy dữ liệu đồng bộ để hiển thị trong Layout
             var cart = CartService.GetCartAsync(uId).GetAwaiter().GetResult();
             cartCount = cart?.Count ?? 0;
+
+            var notes = NotificationService.GetUserNotificationsAsync(uId).GetAwaiter().GetResult();
+            unreadCount = notes?.Count(n => !n.IsRead) ?? 0;
         }
     }
 }
@@ -110,6 +115,25 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* small styles for notification badge */
+        #notifBadge {
+            font-size: 0.55rem;
+            padding: 0.35em 0.45em;
+            min-width: 1.6rem;
+            text-align: center;
+        }
+
+        .notif-item-unread {
+            background-color: #fff6ea;
+        }
+
+        .notif-menu {
+            width: 320px;
+            max-height: 420px;
+            overflow: auto;
+            padding: 0.25rem;
+        }
     </style>
 
     @RenderSection("Styles", required: false)
@@ -122,6 +146,35 @@
             <div class="d-flex align-items-center gap-3">
                 <a href="/Products" class="text-decoration-none text-dark">Browse</a>
                 
+                @if (isLoggedIn)
+                {
+                    <a href="/Chat" class="text-decoration-none text-dark" title="Messages">
+                        <i class="bi bi-chat-dots"></i> Messages
+                    </a>
+                }
+
+                @* Notification dropdown (site-wide) *@
+                @if (isLoggedIn)
+                {
+                    <div class="dropdown" id="notifDropdown">
+                        <button class="btn position-relative text-dark fs-5 ms-2" id="notifToggle" data-bs-toggle="dropdown" aria-expanded="false" type="button" title="Notifications" style="background:none; border:none;">
+                            <i class="bi bi-bell"></i>
+                            <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                  style="display:@(unreadCount > 0 ? "inline-block" : "none")">
+                                @unreadCount
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow notif-menu" aria-labelledby="notifToggle" id="notifMenu">
+                            <li class="dropdown-header px-3 d-flex justify-content-between align-items-center">
+                                <strong>Notifications</strong>
+                                <small id="notifCountSmall" class="text-muted">@unreadCount new</small>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li class="px-3"><div class="small text-muted">Loading…</div></li>
+                        </ul>
+                    </div>
+                }
+
                 @* Biểu tượng giỏ hàng với số lượng thực tế *@
                 <a href="/Cart" class="position-relative text-dark fs-5 ms-2">
                     <i class="bi bi-bag-heart"></i>
@@ -194,5 +247,226 @@
     <script src="@(Url.Content("~/lib/jquery/dist/jquery.js"))"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* SignalR + dropdown handling: only for authenticated users *@
+    @if (isLoggedIn)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7/dist/browser/signalr.min.js"></script>
+        <script>
+            (function () {
+                const badge = document.getElementById('notifBadge');
+                const countSmall = document.getElementById('notifCountSmall');
+                const notifMenu = document.getElementById('notifMenu');
+                const dropdownEl = document.getElementById('notifDropdown');
+
+                let unreadCount = parseInt(badge?.innerText || '0', 10) || 0;
+
+                // Load notifications (called when dropdown is opened)
+                async function loadNotifications() {
+                    try {
+                        const res = await fetch('/api/notifications', { credentials: 'same-origin' });
+                        if (!res.ok) {
+                            renderEmpty('Failed to load notifications');
+                            return;
+                        }
+                        const notes = await res.json();
+                        renderNotifications(notes);
+
+                        // mark read on server for all unread items
+                        await fetch('/api/notifications/markreadall', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'RequestVerificationToken': getAntiForgeryToken() }
+                        });
+
+                        // update UI badge and small counter
+                        unreadCount = 0;
+                        if (badge) { badge.style.display = 'none'; badge.innerText = '0'; }
+                        if (countSmall) { countSmall.innerText = '0 new'; }
+                    } catch (e) {
+                        console.error('Failed loading notifications', e);
+                        renderEmpty('Error loading notifications');
+                    }
+                }
+
+                function renderEmpty(msg) {
+                    notifMenu.innerHTML = `<li class="px-3"><div class="small text-muted">${msg}</div></li>`;
+                }
+
+                function renderNotifications(items) {
+                    if (!items || items.length === 0) {
+                        renderEmpty('You have no notifications.');
+                        return;
+                    }
+
+                    const listHtml = [];
+                    for (const n of items) {
+                        const unreadClass = n.isRead ? '' : 'notif-item-unread';
+                        const orderLink = n.orderId ? `<div class="mt-2"><a class="small" href="/Orders/Detail?id=${n.orderId}">View order</a></div>` : '';
+                        const created = new Date(n.createdAt).toLocaleString();
+                        listHtml.push(`<li class="${unreadClass} dropdown-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">${escapeHtml(n.title)}</div>
+                                <div class="small text-muted">${escapeHtml(n.message)}</div>
+                                ${orderLink}
+                            </div>
+                            <div class="text-end small text-muted">${created}</div>
+                        </li>`);
+                    }
+
+                    notifMenu.innerHTML = '';
+                    // header & divider already present; append items after divider
+                    // find divider index and insert; easier: replace entire menu content with header + items
+                    const header = `<li class="dropdown-header px-3 d-flex justify-content-between align-items-center"><strong>Notifications</strong><small id="notifCountSmall" class="text-muted">0 new</small></li><li><hr class="dropdown-divider" /></li>`;
+                    notifMenu.innerHTML = header + listHtml.join('');
+                    // update small counter
+                    const unread = items.filter(i => !i.isRead).length;
+                    if (countSmall) countSmall.innerText = `${unread} new`;
+                }
+
+                // small HTML escape helper
+                function escapeHtml(unsafe) {
+                    if (!unsafe) return '';
+                    return unsafe.replace(/[&<"'>]/g, function (m) {
+                        switch (m) {
+                            case '&': return '&amp;';
+                            case '<': return '&lt;';
+                            case '>': return '&gt;';
+                            case '"': return '&quot;';
+                            case "'": return '&#039;';
+                            default: return m;
+                        }
+                    });
+                }
+
+                // fetch antiforgery token if present in DOM (for POST)
+                function getAntiForgeryToken() {
+                    const el = document.querySelector('input[name="__RequestVerificationToken"]');
+                    return el ? el.value : '';
+                }
+
+                // When dropdown shown, load notifications and mark as read
+                if (dropdownEl) {
+                    dropdownEl.addEventListener('shown.bs.dropdown', function () {
+                        loadNotifications();
+                    });
+                }
+
+                // SignalR connection for live notifications
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/hubs/notifications')
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on('ReceiveNotification', function (payload) {
+                    try {
+                        // increment badge
+                        unreadCount++;
+                        if (badge) {
+                            badge.innerText = unreadCount;
+                            badge.style.display = 'inline-block';
+                        }
+                        if (countSmall) {
+                            countSmall.innerText = `${unreadCount} new`;
+                        }
+
+                        // prepend to current menu if menu already populated
+                        try {
+                            const existing = document.getElementById('notifMenu');
+                            if (existing) {
+                                const orderLink = payload.orderId ? `<div class="mt-2"><a class="small" href="/Orders/Detail?id=${payload.orderId}">View order</a></div>` : '';
+                                const created = new Date(payload.createdAt).toLocaleString();
+                                const li = document.createElement('li');
+                                li.className = 'notif-item-unread dropdown-item d-flex justify-content-between align-items-start';
+                                li.innerHTML = `<div><div class="fw-semibold">${escapeHtml(payload.title)}</div><div class="small text-muted">${escapeHtml(payload.message)}</div>${orderLink}</div><div class="text-end small text-muted">${created}</div>`;
+                                // insert after header & divider; find first divider
+                                const divider = existing.querySelector('.dropdown-divider');
+                                if (divider && divider.parentElement) {
+                                    divider.parentElement.insertBefore(li, divider.nextSibling);
+                                } else {
+                                    existing.appendChild(li);
+                                }
+                            }
+                        } catch (e) { /* ignore render errors */ }
+
+                        // flash bell
+                        const bellBtn = document.getElementById('notifToggle');
+                        if (bellBtn) {
+                            bellBtn.classList.add('text-primary');
+                            setTimeout(() => bellBtn.classList.remove('text-primary'), 2000);
+                        }
+
+                        // optional toast preview (Bootstrap)
+                        try {
+                            const toastHtml = `<div class="toast align-items-center text-bg-light border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <strong>${escapeHtml(payload.title)}</strong><div class="small text-muted">${escapeHtml(payload.message)}</div>
+                                    </div>
+                                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>`;
+                            const containerId = 'notifToastContainer';
+                            let container = document.getElementById(containerId);
+                            if (!container) {
+                                container = document.createElement('div');
+                                container.id = containerId;
+                                container.style.position = 'fixed';
+                                container.style.top = '1rem';
+                                container.style.right = '1rem';
+                                container.style.zIndex = 1080;
+                                document.body.appendChild(container);
+                            }
+                            const div = document.createElement('div');
+                            div.innerHTML = toastHtml;
+                            container.appendChild(div.firstChild);
+                            const toastEl = container.lastElementChild;
+                            const toast = new bootstrap.Toast(toastEl);
+                            toast.show();
+                        } catch (e) { /* ignore toast errors */ }
+
+                    } catch (e) {
+                        console.error('Notification handling error', e);
+                    }
+                });
+
+                connection.start()
+                    .catch(err => console.error('SignalR connection error:', err));
+            })();
+        </script>
+    }
+    <script>
+        // Global chat helper - available on all pages
+        window.startChatWithArtisan = function (artisanId, artisanName) {
+            const currentUserId = localStorage.getItem('_currentUserId');
+            if (!currentUserId) {
+                // Get from a data attribute or make a request to get user ID
+                console.warn('Current user ID not available');
+                return false;
+            }
+
+            const conversations = JSON.parse(localStorage.getItem(`chats_${currentUserId}`) || '[]');
+            const exists = conversations.find(c => c.artisanId === artisanId);
+
+            if (!exists) {
+                conversations.push({
+                    artisanId,
+                    artisanName,
+                    messages: []
+                });
+                localStorage.setItem(`chats_${currentUserId}`, JSON.stringify(conversations));
+            }
+
+            return true;
+        };
+
+    </script>
+        @if (isLoggedIn)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            <script>
+                localStorage.setItem('_currentUserId', '@userIdStr');
+            </script>
+        }
 </body>
 </html>

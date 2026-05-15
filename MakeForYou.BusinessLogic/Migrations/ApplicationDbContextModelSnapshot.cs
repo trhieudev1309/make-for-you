@@ -85,25 +85,73 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MessageId"));
 
-                    b.Property<string>("MessageContent")
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<long>("FromUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("OrderId")
+                    b.Property<long?>("OrderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SenderId")
+                    b.Property<long>("ToUserId")
                         .HasColumnType("bigint");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("MessageId");
 
+                    b.HasIndex("FromUserId");
+
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("SenderId");
+                    b.HasIndex("ToUserId");
 
                     b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
+                {
+                    b.Property<long>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("OrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
@@ -289,6 +337,9 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
@@ -469,21 +520,42 @@ namespace MakeForYou.BusinessLogic.Migrations
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.ChatMessage", b =>
                 {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Order", "Order")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "FromUser")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "Sender")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderId")
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.Order", null)
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "ToUser")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ToUserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("ToUser");
+                });
+
+            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
+                {
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.Order", "Order")
+                        .WithMany("Notifications")
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.User", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Sender");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
@@ -560,7 +632,7 @@ namespace MakeForYou.BusinessLogic.Migrations
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Product", b =>
                 {
                     b.HasOne("MakeForYou.BusinessLogic.Entities.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId");
 
                     b.HasOne("MakeForYou.BusinessLogic.Entities.Seller", "Seller")
@@ -627,9 +699,16 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Category", b =>
+                {
+                    b.Navigation("Products");
+                });
+
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
                 {
                     b.Navigation("ChatMessages");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("OrderItems");
 
@@ -657,7 +736,11 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     b.Navigation("CreatedQuotations");
 
+                    b.Navigation("Notifications");
+
                     b.Navigation("OrdersAsBuyer");
+
+                    b.Navigation("ReceivedMessages");
 
                     b.Navigation("Reviews");
 

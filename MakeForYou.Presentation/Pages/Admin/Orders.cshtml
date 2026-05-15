@@ -1,0 +1,212 @@
+﻿@page
+@using MakeForYou.BusinessLogic.Enums
+@model AdminOrdersModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+@* TIÊU ĐỀ *@
+<div class="mb-4">
+    <h2 class="serif-heading fw-bold mb-0">Quản lý đơn hàng</h2>
+    <p class="text-muted small">Theo dõi và cập nhật trạng thái mọi giao dịch trên hệ thống.</p>
+</div>
+
+@* 1. THANH TÌM KIẾM & BỘ LỌC *@
+<div class="card border-0 shadow-sm p-3 mb-4 bg-white">
+    <form method="get" class="row g-2">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-0"><i class="bi bi-hash"></i></span>
+                <input asp-for="SearchTerm" class="form-control border-0 bg-light shadow-none" placeholder="Tìm theo Mã đơn hàng hoặc Tên khách hàng...">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select asp-for="StatusFilter" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()">
+                <option value="">Tất cả trạng thái</option>
+                @foreach (var status in Enum.GetValues(typeof(OrderStatus)))
+                {
+                    <option value="@((int)status)">@status</option>
+                }
+            </select>
+        </div>
+    </form>
+</div>
+
+@* 2. BẢNG DANH SÁCH *@
+<div class="card border-0 shadow-sm overflow-hidden mb-4">
+    <table class="table table-hover align-middle mb-0 text-center text-md-start">
+        <thead class="bg-light">
+            <tr class="small-caps" style="font-size: 0.75rem;">
+                <th class="ps-4">MÃ ĐƠN</th>
+                <th>KHÁCH HÀNG</th>
+                <th>NGHỆ NHÂN</th>
+                <th>TỔNG TIỀN</th>
+                <th>TRẠNG THÁI</th>
+                <th class="text-end pe-4">THAO TÁC</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.OrderList)
+            {
+                <tr>
+                    <td class="ps-4 fw-bold text-clay">#@order.OrderId</td>
+                    <td>@order.Buyer.FullName</td>
+                    <td>@order.Seller.User.FullName</td>
+                    <td class="fw-bold">@order.AgreedPrice?.ToString("N0") đ</td>
+                    <td>
+                        @{
+                            var statusClass = order.Status switch {
+                                0 => "bg-warning-subtle text-warning border-warning-subtle",
+                                4 => "bg-success-subtle text-success border-success-subtle",
+                                5 => "bg-danger-subtle text-danger border-danger-subtle",
+                                _ => "bg-info-subtle text-info border-info-subtle"
+                            };
+                        }
+                        <span class="badge @statusClass border px-3 rounded-pill fw-normal">
+                            @((OrderStatus)order.Status)
+                        </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        @* NÚT BIỂU TƯỢNG BÁNH RĂNG GỌN ĐẸP *@
+                        <button type="button" class="btn btn-sm btn-light border text-primary rounded-circle shadow-sm" 
+                                style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;"
+                                data-bs-toggle="modal" data-bs-target="#orderModal-@order.OrderId" 
+                                title="Chi tiết & Cập nhật">
+                            <i class="bi bi-gear-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* 3. PHÂN TRANG *@
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center py-4 bg-light border-top">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 shadow-sm">
+                    @for (int i = 1; i <= Model.TotalPages; i++) {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link shadow-none border-0 @(i == Model.CurrentPage ? "bg-clay text-white" : "text-dark")" 
+                               asp-route-CurrentPage="@i" 
+                               asp-route-SearchTerm="@Model.SearchTerm" 
+                               asp-route-StatusFilter="@Model.StatusFilter">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@* --- MODAL CHI TIẾT VÀ CẬP NHẬT TRẠNG THÁI --- *@
+@foreach (var order in Model.OrderList)
+{
+    <div class="modal fade" id="orderModal-@order.OrderId" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 bg-light">
+                    <h6 class="modal-title fw-bold serif-heading">Chi tiết Đơn hàng #@order.OrderId</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6 border-end">
+                            <p class="small text-muted mb-2 fw-bold text-uppercase">Thông tin khách hàng</p>
+                            <p class="mb-1"><strong>Họ tên:</strong> @order.Buyer.FullName</p>
+                            <p class="mb-1"><strong>SĐT:</strong> @(order.Buyer.Phone ?? "Chưa cập nhật")</p>
+                            <p class="mb-0 text-truncate"><strong>Email:</strong> @order.Buyer.Email</p>
+                        </div>
+                        <div class="col-md-6 ps-md-4">
+                            <p class="small text-muted mb-2 fw-bold text-uppercase">Thông tin giao hàng</p>
+                            <p class="mb-1 text-clay"><strong>Trạng thái hiện tại:</strong> @((OrderStatus)order.Status)</p>
+                            
+                            @* BỔ SUNG: Hiển thị thời gian hoàn thành nếu có *@
+                            @if (order.CompletedAt.HasValue)
+                            {
+                                <p class="mb-1 text-success small fw-bold">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Hoàn thành lúc: @order.CompletedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            }
+
+                            <p class="mb-0 mt-2"><strong>Ghi chú/Địa chỉ:</strong> <br />
+                                <span class="small text-secondary">@(order.OrderDescription ?? "Không có ghi chú")</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="small text-muted mb-2 fw-bold text-uppercase">Danh sách sản phẩm</p>
+                    <div class="table-responsive rounded-3 border mb-4">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="small text-muted">
+                                    <th class="ps-3 py-2">Sản phẩm</th>
+                                    <th class="text-center">SL</th>
+                                    <th class="text-end pe-3">Đơn giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (order.OrderItems != null) {
+                                    foreach (var item in order.OrderItems) {
+                                        <tr>
+                                            <td class="ps-3 py-2 fw-bold text-dark">@(item.Product?.Title ?? "Sản phẩm")</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end pe-3">@item.Price.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="text-end py-2">Tổng cộng:</td>
+                                    <td class="text-end pe-3 text-danger fs-5">@order.AgreedPrice?.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    @* KHU VỰC CẬP NHẬT TRẠNG THÁI *@
+                    <div class="bg-light p-3 rounded-3 border border-warning-subtle">
+                        <form method="post" asp-page-handler="UpdateStatus" class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark">Cập nhật trạng thái</h6>
+                                <p class="small text-muted mb-0">Thay đổi tiến độ xử lý của đơn hàng này.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <select name="status" class="form-select form-select-sm border-0 shadow-sm" style="width: 160px;">
+                                    @foreach (var status in Enum.GetValues(typeof(OrderStatus))) {
+                                        if ((int)status == order.Status) {
+                                            <option value="@((int)status)" selected>@status</option>
+                                        } else {
+                                            <option value="@((int)status)">@status</option>
+                                        }
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-clay text-white shadow-sm px-4">Lưu</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .text-clay { color: #C8855A; }
+    .bg-clay { background-color: #C8855A !important; }
+    .btn-clay { background-color: #C8855A; border: none; transition: 0.2s; }
+    .btn-clay:hover { background-color: #b0724a; color: white; }
+    .small-caps { font-weight: 700; color: #6c757d; }
+    .bg-warning-subtle { background-color: #fff3cd; }
+    .bg-success-subtle { background-color: #d1e7dd; }
+    .bg-danger-subtle { background-color: #f8d7da; }
+    .bg-info-subtle { background-color: #cff4fc; }
+    .serif-heading { font-family: 'Playfair Display', serif; }
+</style>
