@@ -25,6 +25,8 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<OrderItem> OrderItems { get; set; }
 
+        public DbSet<OrderProgress> OrderProgresses => Set<OrderProgress>();
+
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -29,13 +29,14 @@ builder.Services.AddSession();
 
 //builder.Services.AddScoped<AuthService>();
 
-// Repository & service registrations
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-// Đăng ký thêm Service của bạn ở đây
+
 builder.Services.AddScoped<IHomeService, HomeService>();
-//builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<ICartRepository, CartRepository>();
@@ -44,7 +45,16 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 
+builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+builder.Services.AddScoped<ISellerService, SellerService>();
+
+builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+builder.Services.AddScoped<PortfolioService, PortfolioService>();
+
+builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 
 builder.Configuration.GetSection("Email"); // Để đảm bảo ứng dụng đọc được file json
 

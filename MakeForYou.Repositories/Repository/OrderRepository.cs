@@ -1,5 +1,6 @@
 ﻿using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,14 +82,43 @@ namespace MakeForYou.Repositories.Repository
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
 
-        public async Task UpdateStatusAsync(long orderId, int status)
+        public async Task UpdateStatusAsync(long orderId, int newStatus)
         {
-            var order = await _context.Set<Order>().FindAsync(orderId);
-            if (order != null)
-            {
-                order.Status = status;
-                await _context.SaveChangesAsync();
-            }
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return;
+            order.Status = newStatus;
+            if (newStatus == (int)OrderStatus.Completed)
+                order.CompletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
-    }
+
+        public async Task<List<Order>> FindBySellerIdAsync(long sellerId) =>
+    await _context.Orders
+        .Where(o => o.SellerId == sellerId)
+        .Include(o => o.Buyer)
+        .Include(o => o.Quotations)
+        .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+        public async Task<Order?> GetOrderWithDetailsBySellerAsync(long orderId, long sellerId) =>
+            await _context.Orders
+                .Where(o => o.OrderId == orderId && o.SellerId == sellerId)
+                .Include(o => o.Buyer)
+                .Include(o => o.Seller).ThenInclude(s => s.User)
+                .Include(o => o.Quotations)
+                .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+                .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
+                    .ThenInclude(m => m.Sender)
+                .Include(o => o.Reviews)
+                .FirstOrDefaultAsync();
+
+        public async Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
+    await _context.Orders
+             .Where(o => o.OrderId == orderId && o.SellerId == sellerId)
+             .Include(o => o.Buyer)
+             .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+             .Include(o => o.ProgressLogs)
+             .FirstOrDefaultAsync();
+    } 
 }

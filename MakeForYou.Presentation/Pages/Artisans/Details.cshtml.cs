@@ -14,7 +14,7 @@ namespace MakeForYou.Presentation.Pages.Artisans
             _productRepository = productRepository;
         }
 
-        public Seller Artisan { get; set; } = null!;
+        public MakeForYou.BusinessLogic.Entities.Seller Artisan { get; set; } = null!;
         public List<Product> Products { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(long id)

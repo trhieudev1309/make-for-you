@@ -36,5 +36,6 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Quotation>? Quotations { get; set; }
 
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public ICollection<OrderProgress>? ProgressLogs { get; set; }
     }
 }

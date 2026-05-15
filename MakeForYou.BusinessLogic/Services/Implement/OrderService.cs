@@ -1,7 +1,9 @@
 ﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities.DTOs;
 using MakeForYou.BusinessLogic.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -12,18 +14,24 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly ICartRepository _cartRepo;
         // THÊM DÒNG NÀY ĐỂ KHAI BÁO
         private readonly IProductRepository _productRepo;
+        private readonly IProgressRepository _progressRepo;
+        private readonly IWebHostEnvironment _env;
 
         // CẬP NHẬT CONSTRUCTOR ĐỂ TIÊM (INJECT) NÓ VÀO
         public OrderService(
             IOrderRepository orderRepo,
             ICartService cartService,
             ICartRepository cartRepo,
-            IProductRepository productRepo) // Thêm tham số này
+            IProductRepository productRepo,
+            IProgressRepository progressRepo,
+            IWebHostEnvironment env) // Thêm tham số này
         {
             _orderRepo = orderRepo;
             _cartService = cartService;
             _cartRepo = cartRepo;
             _productRepo = productRepo; // Gán giá trị vào biến private
+            _progressRepo = progressRepo; // Gán giá trị vào biến private
+            _env = env; // Gán giá trị vào biến private
         }
         public Task<List<Order>> GetOrdersByUserAsync(long buyerId) =>
     _orderRepo.FindByBuyerIdAsync(buyerId);
@@ -109,6 +117,67 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         {
             // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
+        }
+
+        public Task<List<Order>> GetRequestsBySellerAsync(long sellerId) =>
+    _orderRepo.FindBySellerIdAsync(sellerId);
+
+        public Task<Order?> GetRequestDetailAsync(long orderId, long sellerId) =>
+            _orderRepo.GetOrderWithDetailsBySellerAsync(orderId, sellerId);
+    
+
+    public Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
+    _orderRepo.GetOrderForSellerAsync(orderId, sellerId);
+
+        public async Task<AuthResult> UpdateProgressAsync(long orderId, long sellerId, UpdateProgressRequest req)
+        {
+            var order = await _orderRepo.GetOrderForSellerAsync(orderId, sellerId);
+            if (order == null)
+                return AuthResult.Fail("Order not found or access denied.");
+
+            // Guard: can't update a completed or cancelled order
+            if (order.Status == (int)OrderStatus.Completed)
+                return AuthResult.Fail("This order is already completed.");
+            if (order.Status == (int)OrderStatus.Cancelled)
+                return AuthResult.Fail("This order has been cancelled.");
+
+            // Guard: status must move forward only
+            if (req.NewStatus <= order.Status)
+                return AuthResult.Fail("New status must be ahead of the current status.");
+
+            // 1. Save image if uploaded
+            string? imageUrl = null;
+            if (req.Image != null && req.Image.Length > 0)
+            {
+                var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var ext = Path.GetExtension(req.Image.FileName).ToLower();
+                if (!allowed.Contains(ext))
+                    return AuthResult.Fail("Only JPG, PNG, or WEBP images are allowed.");
+
+                var folder = Path.Combine(_env.WebRootPath, "uploads", "progress");
+                Directory.CreateDirectory(folder);
+                var fileName = $"{orderId}_{DateTime.UtcNow:yyyyMMddHHmmss}{ext}";
+                var filePath = Path.Combine(folder, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await req.Image.CopyToAsync(stream);
+                imageUrl = $"/uploads/progress/{fileName}";
+            }
+
+            // 2. Insert progress log
+            await _progressRepo.CreateAsync(new OrderProgress
+            {
+                OrderId = orderId,
+                Note = req.Note.Trim(),
+                ImageUrl = imageUrl,
+                StatusSnapshot = req.NewStatus,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            // 3. Update order status
+            await _orderRepo.UpdateStatusAsync(orderId, req.NewStatus);
+
+            return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
         }
     }
 }

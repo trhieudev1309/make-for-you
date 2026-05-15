@@ -26,15 +26,16 @@ namespace MakeForYou.Presentation.Pages.Orders
             return Page();
         }
 
+        // Matches the custom CSS badge classes in Detail.cshtml
         public static string BadgeClass(int status) => (OrderStatus)status switch
         {
-            OrderStatus.Pending => "bg-secondary",
-            OrderStatus.Quoted => "bg-info text-dark",
-            OrderStatus.Confirmed => "bg-primary",
-            OrderStatus.InProgress => "bg-warning text-dark",
-            OrderStatus.Completed => "bg-success",
-            OrderStatus.Cancelled => "bg-danger",
-            _ => "bg-secondary"
+            OrderStatus.Pending => "badge-secondary",
+            OrderStatus.Quoted => "badge-info",
+            OrderStatus.Confirmed => "badge-primary",
+            OrderStatus.InProgress => "badge-warning",
+            OrderStatus.Completed => "badge-success",
+            OrderStatus.Cancelled => "badge-danger",
+            _ => "badge-secondary"
         };
 
         public static string StatusIcon(int status) => (OrderStatus)status switch

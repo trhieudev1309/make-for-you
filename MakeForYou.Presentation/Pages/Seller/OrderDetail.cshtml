@@ -1,0 +1,400 @@
+﻿@page "{id:long}"
+@model MakeForYou.Presentation.Pages.Seller.OrderDetailModel
+@using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.Presentation.Pages.Seller
+@{
+    ViewData["Title"] = $"Manage Order #{Model.Order?.OrderId}";
+    var isLocked = Model.Order?.Status == (int)OrderStatus.Completed
+                || Model.Order?.Status == (int)OrderStatus.Cancelled;
+    var isCartOrder = Model.Order?.OrderItems != null && Model.Order.OrderItems.Any();
+    var itemsTotal = Model.Order?.OrderItems?.Sum(i => i.Price * i.Quantity);
+    var displayTotal = Model.Order?.AgreedPrice ?? itemsTotal;
+}
+
+<style>
+    :root {
+        --bark:   #2D2926;
+        --clay:   #C8855A;
+        --ivory:  #F9F7F2;
+        --border: #E8E2D9;
+        --sand:   #F0EDE8;
+        --serif:  'Playfair Display', serif;
+    }
+
+    .od-wrap        { max-width: 960px; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+    .od-breadcrumb  { font-size: .8rem; color: #999; margin-bottom: 1.8rem; }
+    .od-breadcrumb a { color: #999; text-decoration: none; }
+    .od-breadcrumb a:hover { color: var(--clay); }
+    .od-header      { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+    .od-title       { font-family: var(--serif); font-size: 2rem; font-weight: 700; color: var(--bark); margin: 0 0 .25rem; }
+    .od-date        { font-size: .85rem; color: #aaa; }
+    .od-status      { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1.1rem; border-radius: 50px; font-size: .82rem; font-weight: 700; letter-spacing: .03em; }
+    .od-card        { background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(45,41,38,.06); padding: 1.75rem; margin-bottom: 1.5rem; }
+    .od-card-title  { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #bbb; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
+    .od-card-title i { font-size: 1rem; }
+
+    /* buyer strip */
+    .od-artisan-strip { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.1rem; border-radius: 14px; background: var(--ivory); border: 1px solid var(--border); margin-bottom: 1.25rem; }
+    .od-avatar        { width: 42px; height: 42px; border-radius: 50%; background: var(--bark); color: #fff; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .od-artisan-name  { font-weight: 700; font-size: .95rem; color: var(--bark); }
+    .od-artisan-skill { font-size: .8rem; color: #aaa; }
+    .od-strip-price   { margin-left: auto; text-align: right; }
+    .od-strip-price .label { font-size: .75rem; color: #bbb; }
+    .od-strip-price .val   { font-weight: 700; font-size: 1rem; color: var(--bark); }
+
+    /* items */
+    .od-item          { display: flex; align-items: center; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--border); }
+    .od-item:last-child { border-bottom: none; }
+    .od-item-img      { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+    .od-item-img-ph   { width: 72px; height: 72px; border-radius: 14px; background: var(--sand); display: flex; align-items: center; justify-content: center; color: #ccc; flex-shrink: 0; }
+    .od-item-name     { font-weight: 700; font-size: .95rem; color: var(--bark); margin-bottom: .2rem; }
+    .od-item-meta     { font-size: .8rem; color: #aaa; }
+    .od-item-price    { margin-left: auto; text-align: right; flex-shrink: 0; }
+    .od-item-price .unit  { font-size: .75rem; color: #bbb; }
+    .od-item-price .total { font-weight: 700; font-size: .95rem; color: var(--bark); }
+
+    .od-note { background: var(--ivory); border-left: 3px solid var(--clay); border-radius: 0 10px 10px 0; padding: .85rem 1rem; font-size: .875rem; color: #777; white-space: pre-wrap; }
+
+    /* table */
+    .od-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    .od-table thead th { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #bbb; padding: 0 0 .75rem; border-bottom: 1px solid var(--border); }
+    .od-table tbody td { padding: .75rem 0; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--bark); }
+    .od-table tbody tr:last-child td { border-bottom: none; }
+    .od-table tfoot td { padding: 1rem 0 0; font-weight: 700; font-size: 1rem; color: var(--bark); }
+
+    /* timeline */
+    .od-timeline       { display: flex; flex-direction: column; }
+    .od-tl-entry       { display: flex; gap: 1rem; padding-bottom: 1.5rem; position: relative; }
+    .od-tl-dot-col     { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .od-tl-dot         { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--bark); background: #fff; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .od-tl-line        { width: 2px; flex: 1; background: var(--border); margin-top: 4px; }
+    .od-tl-entry:last-child .od-tl-line { display: none; }
+    .od-tl-img         { max-height: 180px; max-width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-top: .75rem; cursor: pointer; object-fit: cover; }
+
+    /* summary */
+    .od-summary-row  { display: flex; justify-content: space-between; align-items: center; font-size: .875rem; margin-bottom: .6rem; }
+    .od-summary-row .lbl { color: #aaa; }
+    .od-summary-row .val { font-weight: 600; color: var(--bark); }
+    .od-divider      { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    .od-total-row    { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; color: var(--bark); padding-top: .75rem; border-top: 2px solid var(--bark); }
+
+    /* side avatar */
+    .od-side-avatar  { width: 50px; height: 50px; border-radius: 50%; background: var(--bark); color: #fff; font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .od-contact-btn  { display: block; width: 100%; text-align: center; background: var(--bark); color: #fff; border: none; border-radius: 50px; padding: .6rem 1rem; font-size: .85rem; font-weight: 700; text-decoration: none; transition: background .2s; margin-top: 1.25rem; }
+    .od-contact-btn:hover { background: var(--clay); color: #fff; }
+
+    /* badges */
+    .badge-secondary { background: #e0dbd6; color: #888; }
+    .badge-info      { background: #daeef8; color: #1a7fa3; }
+    .badge-primary   { background: #dce6f9; color: #2255b0; }
+    .badge-warning   { background: #fef3d0; color: #9a6800; }
+    .badge-success   { background: #d6f5e3; color: #1e7a45; }
+    .badge-danger    { background: #fce4e4; color: #b02020; }
+
+    /* form */
+    .od-form-label   { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #999; margin-bottom: .4rem; display: block; }
+    .od-locked-notice { background: var(--sand); border-radius: 14px; padding: 1rem 1.25rem; font-size: .875rem; color: #999; display: flex; align-items: center; gap: .6rem; }
+</style>
+
+<div class="od-wrap">
+
+    @if (Model.Order == null)
+    {
+        <div class="alert alert-warning rounded-3">Order not found.</div>
+    }
+    else
+    {
+        <!-- Breadcrumb -->
+        <nav class="od-breadcrumb">
+            <a asp-page="/Seller/Dashboard">Dashboard</a>
+            <span class="mx-2">/</span>
+            <span>Order #@Model.Order.OrderId</span>
+        </nav>
+
+        <!-- Header -->
+        <div class="od-header">
+            <div>
+                <h1 class="od-title">Order #@Model.Order.OrderId</h1>
+                <div class="od-date">
+                    From <strong>@Model.Order.Buyer?.FullName</strong> ·
+                    @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")
+                </div>
+            </div>
+            <span class="od-status @Model.BadgeClass(Model.Order.Status)">
+                <i class="bi @Model.StatusIcon(Model.Order.Status)"></i>
+                @((OrderStatus)Model.Order.Status)
+            </span>
+        </div>
+
+        <!-- Alerts -->
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success rounded-3 mb-4">
+                <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger rounded-3 mb-4">
+                <i class="bi bi-exclamation-circle me-2"></i>@Model.ErrorMessage
+            </div>
+        }
+
+        <div class="row g-4">
+
+            <!-- ══ LEFT ══ -->
+            <div class="col-lg-7">
+
+                <!-- Order Items -->
+                <div class="od-card">
+                    <div class="od-card-title"><i class="bi bi-bag"></i> Order Items</div>
+
+                    <!-- Buyer strip -->
+                    <div class="od-artisan-strip">
+                        <div class="od-avatar">
+                            @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
+                        </div>
+                        <div>
+                            <div class="od-artisan-name">@Model.Order.Buyer?.FullName</div>
+                            <div class="od-artisan-skill">@Model.Order.Buyer?.Phone</div>
+                        </div>
+                        <div class="od-strip-price">
+                            <div class="label">@(isCartOrder ? "Cart order" : "Custom order")</div>
+                            <div class="val">
+                                @(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Price pending")
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (isCartOrder)
+                    {
+                        @foreach (var item in Model.Order.OrderItems)
+                        {
+                            <div class="od-item">
+                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                {
+                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Title" class="od-item-img" />
+                                }
+                                else
+                                {
+                                    <div class="od-item-img-ph"><i class="bi bi-image fs-4"></i></div>
+                                }
+                                <div class="flex-grow-1">
+                                    <div class="od-item-name">@item.Product?.Title</div>
+                                    <div class="od-item-meta">
+                                        Qty: @item.Quantity &nbsp;·&nbsp; @item.Price.ToString("N0") VNĐ each
+                                    </div>
+                                </div>
+                                <div class="od-item-price">
+                                    <div class="unit">Subtotal</div>
+                                    <div class="total">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
+                                </div>
+                            </div>
+                        }
+                        <div class="od-total-row mt-3">
+                            <span>Total</span>
+                            <span>@(displayTotal?.ToString("N0") ?? "—") VNĐ</span>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
+                    {
+                        <div class="od-note">@Model.Order.OrderDescription</div>
+                    }
+                </div>
+
+                <!-- Update Progress -->
+                <div class="od-card">
+                    <div class="od-card-title"><i class="bi bi-pencil-square"></i> Update Progress</div>
+
+                    @if (isLocked)
+                    {
+                        <div class="od-locked-notice">
+                            <i class="bi bi-lock fs-5"></i>
+                            This order is <strong>&nbsp;@((OrderStatus)Model.Order.Status)</strong>&nbsp; and cannot be updated.
+                        </div>
+                    }
+                    else
+                    {
+                        <form method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+
+                            <div class="mb-3">
+                                <label class="od-form-label">New Status <span class="text-danger">*</span></label>
+                                <select asp-for="ProgressInput.NewStatus" class="form-select rounded-3">
+                                    @foreach (var (value, label) in Model.AllowedStatuses())
+                                    {
+                                        <option value="@value">@label</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ProgressInput.NewStatus" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="od-form-label">Progress Note <span class="text-danger">*</span></label>
+                                <textarea asp-for="ProgressInput.Note" class="form-control rounded-3" rows="3"
+                                          placeholder="Describe what you've done, e.g. 'Frame carved and sanded, starting paint...'"></textarea>
+                                <span asp-validation-for="ProgressInput.Note" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="od-form-label">Progress Photo <span class="text-muted fw-normal">(optional)</span></label>
+                                <input asp-for="ProgressInput.Image" type="file" class="form-control rounded-3"
+                                       accept=".jpg,.jpeg,.png,.webp" onchange="previewImg(event)" />
+                                <div id="imgPreview" class="mt-2 d-none">
+                                    <img id="previewEl" src="" alt="Preview"
+                                         class="rounded-3 border" style="max-height:200px;object-fit:cover;" />
+                                </div>
+                            </div>
+
+                            <button type="submit" class="od-contact-btn" style="width:auto;padding:.65rem 2rem;">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Post Update
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <!-- Progress Timeline -->
+                <div class="od-card">
+                    <div class="od-card-title"><i class="bi bi-clock-history"></i> Progress Timeline</div>
+
+                    @if (Model.Order.ProgressLogs == null || !Model.Order.ProgressLogs.Any())
+                    {
+                        <p class="text-muted fst-italic mb-0" style="font-size:.875rem;">No updates posted yet.</p>
+                    }
+                    else
+                    {
+                        <div class="od-timeline">
+                            @foreach (var log in Model.Order.ProgressLogs.OrderByDescending(l => l.CreatedAt))
+                            {
+                                <div class="od-tl-entry">
+                                    <div class="od-tl-dot-col">
+                                        <div class="od-tl-dot">
+                                            <i class="bi @Model.StatusIcon(log.StatusSnapshot) small"></i>
+                                        </div>
+                                        <div class="od-tl-line"></div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="od-status @Model.BadgeClass(log.StatusSnapshot)"
+                                                  style="padding:.25rem .75rem;font-size:.72rem;">
+                                                @((OrderStatus)log.StatusSnapshot)
+                                            </span>
+                                            <span style="font-size:.78rem;color:#bbb;">
+                                                @log.CreatedAt.ToLocalTime().ToString("MMM d, yyyy HH:mm")
+                                            </span>
+                                        </div>
+                                        <p class="mb-0" style="font-size:.875rem;white-space:pre-wrap;color:#555;">@log.Note</p>
+                                        @if (!string.IsNullOrEmpty(log.ImageUrl))
+                                        {
+                                            <img src="@log.ImageUrl" alt="Progress photo" class="od-tl-img"
+                                                 data-bs-toggle="modal" data-bs-target="#imgModal"
+                                                 onclick="document.getElementById('modalImg').src=this.src" />
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div><!-- /col-lg-7 -->
+
+            <!-- ══ RIGHT ══ -->
+            <div class="col-lg-5">
+
+                <!-- Buyer Card -->
+                <div class="od-card">
+                    <div class="od-card-title"><i class="bi bi-person"></i> Buyer</div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="od-side-avatar">
+                            @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="color:var(--bark);">@Model.Order.Buyer?.FullName</div>
+                            <div class="text-muted small">@Model.Order.Buyer?.Phone</div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Order.Buyer?.Email))
+                    {
+                        <a href="mailto:@Model.Order.Buyer.Email" class="od-contact-btn">
+                            <i class="bi bi-envelope me-1"></i>Email Buyer
+                        </a>
+                    }
+                </div>
+
+                <!-- Order Summary -->
+                <div class="od-card">
+                    <div class="od-card-title"><i class="bi bi-clipboard-check"></i> Order Summary</div>
+
+                    <div class="od-summary-row">
+                        <span class="lbl">Order #</span>
+                        <span class="val">@Model.Order.OrderId</span>
+                    </div>
+                    <div class="od-summary-row">
+                        <span class="lbl">Status</span>
+                        <span class="od-status @Model.BadgeClass(Model.Order.Status)"
+                              style="padding:.2rem .7rem;font-size:.75rem;">
+                            @((OrderStatus)Model.Order.Status)
+                        </span>
+                    </div>
+                    <div class="od-summary-row">
+                        <span class="lbl">Placed</span>
+                        <span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span>
+                    </div>
+                    @if (Model.Order.CompletedAt.HasValue)
+                    {
+                        <div class="od-summary-row">
+                            <span class="lbl">Completed</span>
+                            <span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span>
+                        </div>
+                    }
+
+                    <hr class="od-divider" />
+
+                    @if (isCartOrder)
+                    {
+                        @foreach (var item in Model.Order.OrderItems)
+                        {
+                            <div class="od-summary-row">
+                                <span class="lbl" style="max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                    @item.Product?.Title <span style="opacity:.6;">×@item.Quantity</span>
+                                </span>
+                                <span class="val">@((item.Price * item.Quantity).ToString("N0")) VNĐ</span>
+                            </div>
+                        }
+                    }
+
+                    <div class="od-total-row mt-2">
+                        <span>Total</span>
+                        <span>@(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                    </div>
+                </div>
+
+            </div><!-- /col-lg-5 -->
+        </div>
+    }
+</div>
+
+<!-- Image modal -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background:transparent;border:none;">
+            <div class="modal-body p-0 text-center">
+                <img id="modalImg" src="" alt="Progress photo"
+                     style="max-width:100%;border-radius:12px;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImg(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('previewEl').src = URL.createObjectURL(file);
+            document.getElementById('imgPreview').classList.remove('d-none');
+        }
+    </script>
+}

@@ -1,0 +1,449 @@
+﻿@page "{id:long}"
+@model MakeForYou.Presentation.Pages.Seller.RequestDetailModel
+@using MakeForYou.BusinessLogic.Enums
+@{
+    ViewData["Title"] = $"Request #{Model.Order?.OrderId}";
+    var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
+    var latestQuote   = Model.Order?.Quotations?.OrderByDescending(q => q.CreatedAt).FirstOrDefault();
+    var displayPrice  = Model.Order?.AgreedPrice ?? acceptedQuote?.ProposedPrice ?? latestQuote?.ProposedPrice;
+    var isCartOrder   = Model.Order?.OrderItems != null && Model.Order.OrderItems.Any();
+}
+
+<style>
+    :root {
+        --bg:       #FAFAF8;
+        --card:     #FFFFFF;
+        --muted:    #F5F3F0;
+        --fg:       #1A1A1A;
+        --fg-muted: #6B6B6B;
+        --accent:   #B8860B;
+        --accent2:  #D4A84B;
+        --border:   #E8E4DF;
+        --serif:    'Playfair Display', Georgia, serif;
+        --sans:     'Source Sans 3', system-ui, sans-serif;
+        --mono:     'IBM Plex Mono', monospace;
+    }
+
+    .rd-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+    /* breadcrumb */
+    .rd-breadcrumb { font-size: .8rem; color: #999; margin-bottom: 1.8rem; }
+    .rd-breadcrumb a { color: #999; text-decoration: none; }
+    .rd-breadcrumb a:hover { color: var(--accent); }
+
+    /* header */
+    .rd-header { display: flex; justify-content: space-between; align-items: flex-start;
+        flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+    .rd-title { font-family: var(--serif); font-size: 2rem; font-weight: 400;
+        color: var(--fg); margin: 0 0 .25rem; }
+    .rd-date  { font-size: .85rem; color: #aaa; }
+
+    /* status badge */
+    .rd-status {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .4rem 1rem; border-radius: 2px;
+        font-family: var(--mono); font-size: .72rem; font-weight: 500;
+        letter-spacing: .08em; text-transform: uppercase;
+    }
+    .badge-pending    { background: #f5f3f0; color: #888; }
+    .badge-quoted     { background: #e8f4fb; color: #1a7fa3; }
+    .badge-confirmed  { background: #dce6f9; color: #2255b0; }
+    .badge-inprogress { background: #fef3d0; color: #9a6800; }
+    .badge-completed  { background: #f0faf4; color: #1e7a45; }
+    .badge-cancelled  { background: #fff5f5; color: #b02020; }
+
+    /* card */
+    .rd-card {
+        background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+        padding: 1.75rem 2rem; margin-bottom: 1.5rem;
+        box-shadow: 0 1px 2px rgba(26,26,26,.04);
+    }
+    .rd-card-accent { border-top: 2px solid var(--accent); }
+    .rd-section-title {
+        font-family: var(--mono); font-size: .68rem; font-weight: 500;
+        letter-spacing: .14em; text-transform: uppercase; color: #bbb;
+        margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem;
+    }
+    .rd-section-title i { font-size: .95rem; }
+
+    /* buyer strip */
+    .rd-buyer-strip {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 1rem 1.1rem; border-radius: 4px;
+        background: var(--muted); border: 1px solid var(--border); margin-bottom: 1.25rem;
+    }
+    .rd-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: var(--fg); color: #fff; font-weight: 700; font-size: 1rem;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .rd-buyer-name { font-weight: 600; font-size: .95rem; color: var(--fg); }
+    .rd-buyer-meta { font-size: .8rem; color: var(--fg-muted); }
+
+    /* order items */
+    .rd-item {
+        display: flex; align-items: center; gap: 1rem;
+        padding: .9rem 0; border-bottom: 1px solid var(--border);
+    }
+    .rd-item:last-child { border-bottom: none; }
+    .rd-item-img {
+        width: 64px; height: 64px; border-radius: 8px;
+        object-fit: cover; flex-shrink: 0; background: var(--muted);
+    }
+    .rd-item-img-placeholder {
+        width: 64px; height: 64px; border-radius: 8px;
+        background: var(--muted); display: flex; align-items: center;
+        justify-content: center; color: #ccc; flex-shrink: 0;
+    }
+    .rd-item-name { font-weight: 600; font-size: .9rem; color: var(--fg); margin-bottom: .2rem; }
+    .rd-item-meta { font-size: .8rem; color: var(--fg-muted); }
+    .rd-item-price { margin-left: auto; text-align: right; flex-shrink: 0;
+        font-weight: 700; font-size: .9rem; color: var(--fg); }
+
+    /* note */
+    .rd-note {
+        background: var(--muted); border-left: 3px solid var(--accent);
+        border-radius: 0 4px 4px 0; padding: .85rem 1rem;
+        font-size: .875rem; color: #777; white-space: pre-wrap;
+    }
+
+    /* quote form */
+    .rd-input {
+        width: 100%; height: 44px; padding: 0 .875rem;
+        border: 1px solid var(--border); border-radius: 4px;
+        background: transparent; font-family: var(--sans); font-size: .95rem;
+        color: var(--fg); outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .rd-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,134,11,.1); }
+    textarea.rd-input { height: auto; padding: .75rem .875rem; resize: vertical; line-height: 1.6; }
+    .rd-label { display: block; font-family: var(--mono); font-size: .66rem;
+        font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+        color: var(--fg-muted); margin-bottom: .4rem; }
+    .rd-field { margin-bottom: 1.25rem; }
+
+    /* buttons */
+    .rd-btn {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: var(--accent); color: #fff; border: none; border-radius: 4px;
+        padding: 0 1.5rem; height: 44px; font-family: var(--sans);
+        font-size: .875rem; font-weight: 600; cursor: pointer;
+        transition: background .2s, box-shadow .2s;
+    }
+    .rd-btn:hover { background: var(--accent2); box-shadow: 0 4px 12px rgba(184,134,11,.2); }
+    .rd-btn-ghost {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: transparent; color: var(--fg-muted);
+        border: 1px solid var(--border); border-radius: 4px;
+        padding: 0 1.25rem; height: 40px; font-family: var(--sans);
+        font-size: .85rem; cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .rd-btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .rd-btn-success {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: #1e7a45; color: #fff; border: none; border-radius: 4px;
+        padding: 0 1.25rem; height: 40px; font-family: var(--sans);
+        font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .rd-btn-success:hover { background: #165c33; }
+    .rd-btn-danger {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: transparent; color: #b02020; border: 1px solid #f0c0c0;
+        border-radius: 4px; padding: 0 1.25rem; height: 40px;
+        font-family: var(--sans); font-size: .85rem; cursor: pointer; transition: all .2s;
+    }
+    .rd-btn-danger:hover { background: #fff5f5; border-color: #b02020; }
+
+    /* summary row */
+    .rd-row { display: flex; justify-content: space-between; align-items: center;
+        font-size: .875rem; margin-bottom: .6rem; }
+    .rd-row .lbl { color: var(--fg-muted); }
+    .rd-row .val { font-weight: 600; color: var(--fg); }
+    .rd-total { display: flex; justify-content: space-between; align-items: center;
+        font-weight: 700; font-size: 1.05rem; color: var(--fg);
+        padding-top: .75rem; border-top: 2px solid var(--fg); }
+
+    /* messages */
+    .rd-messages { display: flex; flex-direction: column; gap: .85rem;
+        max-height: 340px; overflow-y: auto; }
+    .rd-bubble-wrap { display: flex; }
+    .rd-bubble-wrap.mine { justify-content: flex-end; }
+    .rd-bubble { max-width: 72%; padding: .75rem 1rem; border-radius: 14px; font-size: .875rem; }
+    .rd-bubble.mine   { background: var(--fg); color: #fff; border-bottom-right-radius: 4px; }
+    .rd-bubble.theirs { background: var(--muted); color: var(--fg); border-bottom-left-radius: 4px; }
+    .rd-bubble .sender { font-size: .68rem; font-weight: 700; opacity: .6; margin-bottom: .2rem; }
+    .rd-bubble .time   { font-size: .65rem; opacity: .5; text-align: right; margin-top: .3rem; }
+
+    /* quote history */
+    .rd-quote-row { display: flex; justify-content: space-between; align-items: center;
+        padding: .75rem 0; border-bottom: 1px solid var(--border); font-size: .875rem; }
+    .rd-quote-row:last-child { border-bottom: none; }
+    .rd-quote-accepted { background: #f0faf4; padding: .75rem .875rem; border-radius: 4px; margin: -.75rem -.875rem; }
+
+    /* alert */
+    .rd-alert {
+        display: flex; align-items: center; gap: .75rem;
+        padding: .9rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem;
+        font-size: .875rem; animation: fadeIn .3s ease-out;
+    }
+    .rd-alert-success { background: #f0faf4; border: 1px solid #a8dfc0; color: #1e7a45; }
+    .rd-alert-error   { background: #fff5f5; border: 1px solid #f0c0c0; color: #b02020; }
+    @@keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:none; } }
+</style>
+
+<div class="rd-wrap">
+
+    @{
+    var statusKey = Model.Order == null
+        ? "pending"
+        : ((OrderStatus)Model.Order.Status) switch
+        {
+            OrderStatus.Pending    => "pending",
+            OrderStatus.Quoted     => "quoted",
+            OrderStatus.Confirmed  => "confirmed",
+            OrderStatus.InProgress => "inprogress",
+            OrderStatus.Completed  => "completed",
+            OrderStatus.Cancelled  => "cancelled",
+            _                      => "pending"
+        };
+}
+
+@if (Model.Order == null)
+{
+    <div class="rd-alert rd-alert-error">
+        <i class="bi bi-exclamation-triangle"></i> Request not found.
+    </div>
+}
+
+        <!-- Breadcrumb -->
+        <nav class="rd-breadcrumb">
+            <a href="/Seller/Requests">Requests</a>
+            <span class="mx-2">/</span>
+            <span>Order #@Model.Order.OrderId</span>
+        </nav>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="rd-alert rd-alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="rd-alert rd-alert-error"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+        }
+
+        <!-- Header -->
+        <div class="rd-header">
+            <div>
+                <h1 class="rd-title">Request #@Model.Order.OrderId</h1>
+                <div class="rd-date">Received @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
+            </div>
+            <span class="rd-status badge-@statusKey">@((OrderStatus)Model.Order.Status)</span>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- ══ LEFT ══ -->
+            <div class="col-lg-8">
+
+                <!-- Buyer & Order Info -->
+                <div class="rd-card rd-card-accent">
+                    <div class="rd-section-title"><i class="bi bi-person"></i> Buyer</div>
+                    <div class="rd-buyer-strip">
+                        <div class="rd-avatar">
+                            @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
+                        </div>
+                        <div>
+                            <div class="rd-buyer-name">@Model.Order.Buyer?.FullName</div>
+                            <div class="rd-buyer-meta">Placed @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                        </div>
+                    </div>
+
+                    <!-- Items or description -->
+                    @if (isCartOrder)
+                    {
+                        <div class="rd-section-title mt-3"><i class="bi bi-bag"></i> Items Ordered</div>
+                        @foreach (var item in Model.Order.OrderItems!)
+                        {
+                            <div class="rd-item">
+                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                {
+                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Title" class="rd-item-img" />
+                                }
+                                else
+                                {
+                                    <div class="rd-item-img-placeholder"><i class="bi bi-image"></i></div>
+                                }
+                                <div class="flex-grow-1">
+                                    <div class="rd-item-name">@item.Product?.Title</div>
+                                    <div class="rd-item-meta">Qty: @item.Quantity · @item.Price.ToString("N0") VNĐ each</div>
+                                </div>
+                                <div class="rd-item-price">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
+                            </div>
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
+                    {
+                        <div class="rd-section-title mt-3"><i class="bi bi-chat-left-text"></i> Request Description</div>
+                        <div class="rd-note">@Model.Order.OrderDescription</div>
+                    }
+                </div>
+
+                <!-- Send Quotation (only when pending or quoted) -->
+                @if (Model.Order.Status == (int)OrderStatus.Pending ||
+                     Model.Order.Status == (int)OrderStatus.Quoted)
+                {
+                    <div class="rd-card">
+                        <div class="rd-section-title"><i class="bi bi-tag"></i> Send a Quotation</div>
+                        <form method="post" asp-page-handler="SendQuote">
+                            @Html.AntiForgeryToken()
+                            <div class="rd-field">
+                                <label class="rd-label">Proposed Price (VNĐ)</label>
+                                <input class="rd-input" type="number" name="ProposedPrice"
+                                       placeholder="e.g. 350000" required />
+                            </div>
+                            <div class="rd-field">
+                                <label class="rd-label">Message to Buyer</label>
+                                <textarea class="rd-input" name="Message" rows="3"
+                                          placeholder="Describe what's included, timeline, materials…"></textarea>
+                            </div>
+                            <div style="display:flex;justify-content:flex-end;">
+                                <button type="submit" class="rd-btn">
+                                    <i class="bi bi-send"></i> Send Quote
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                }
+
+                <!-- Quote History -->
+                @if (Model.Order.Quotations != null && Model.Order.Quotations.Any())
+                {
+                    <div class="rd-card">
+                        <div class="rd-section-title"><i class="bi bi-receipt"></i> Quote History</div>
+                        @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
+                        {
+                            var isAccepted = q.Status == 1;
+                            <div class="rd-quote-row @(isAccepted ? "rd-quote-accepted" : "")">
+                                <div>
+                                    <div style="font-size:.875rem;color:var(--fg);margin-bottom:.2rem;">
+                                        @(string.IsNullOrEmpty(q.Message) ? "Custom work" : q.Message)
+                                    </div>
+                                    <div style="font-family:var(--mono);font-size:.65rem;color:var(--fg-muted);letter-spacing:.08em;">
+                                        @q.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · HH:mm")
+                                    </div>
+                                </div>
+                                <div style="text-align:right;flex-shrink:0;">
+                                    <div style="font-weight:700;font-size:.95rem;color:var(--accent);">
+                                        @(q.ProposedPrice.HasValue ? q.ProposedPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                    </div>
+                                    <span class="rd-status @(isAccepted ? "badge-completed" : "badge-pending")"
+                                          style="font-size:.6rem;padding:.15rem .6rem;margin-top:.25rem;">
+                                        @(isAccepted ? "Accepted" : "Pending")
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Messages -->
+                <div class="rd-card">
+                    <div class="rd-section-title"><i class="bi bi-chat-dots"></i> Messages</div>
+                    @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
+                    {
+                        <p style="font-size:.875rem;color:var(--fg-muted);font-style:italic;margin:0;">No messages yet.</p>
+                    }
+                    else
+                    {
+                        <div class="rd-messages">
+                            @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.SentAt))
+                            {
+                                var isMine = msg.SenderId == Model.SellerId;
+                                <div class="rd-bubble-wrap @(isMine ? "mine" : "")">
+                                    <div class="rd-bubble @(isMine ? "mine" : "theirs")">
+                                        <div class="sender">@msg.Sender?.FullName</div>
+                                        @msg.MessageContent
+                                        <div class="time">@msg.SentAt.ToLocalTime().ToString("HH:mm")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- ══ RIGHT ══ -->
+            <div class="col-lg-4">
+
+                <!-- Order Summary -->
+                <div class="rd-card">
+                    <div class="rd-section-title"><i class="bi bi-clipboard-check"></i> Summary</div>
+                    <div class="rd-row"><span class="lbl">Order #</span><span class="val">@Model.Order.OrderId</span></div>
+                    <div class="rd-row">
+                        <span class="lbl">Status</span>
+                        <span class="rd-status badge-@statusKey" style="font-size:.62rem;padding:.15rem .65rem;">
+                            @((OrderStatus)Model.Order.Status)
+                        </span>
+                    </div>
+                    <div class="rd-row"><span class="lbl">Received</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                    @if (Model.Order.CompletedAt.HasValue)
+                    {
+                        <div class="rd-row"><span class="lbl">Completed</span><span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                    }
+                    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+                    <div class="rd-row"><span class="lbl">Subtotal</span><span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span></div>
+                    <div class="rd-total">
+                        <span>Total</span>
+                        <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="rd-card">
+                    <div class="rd-section-title"><i class="bi bi-lightning"></i> Actions</div>
+                    <div style="display:flex;flex-direction:column;gap:.75rem;">
+
+                        @if (Model.Order.Status == (int)OrderStatus.Confirmed)
+                        {
+                            <form method="post" asp-page-handler="UpdateStatus">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.InProgress)" />
+                                <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
+                                    <i class="bi bi-tools"></i> Mark as In Progress
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.Order.Status == (int)OrderStatus.InProgress)
+                        {
+                            <form method="post" asp-page-handler="UpdateStatus">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.Completed)" />
+                                <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
+                                    <i class="bi bi-bag-check"></i> Mark as Completed
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.Order.Status != (int)OrderStatus.Completed &&
+                             Model.Order.Status != (int)OrderStatus.Cancelled)
+                        {
+                            <form method="post" asp-page-handler="UpdateStatus"
+                                  onsubmit="return confirm('Cancel this order?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.Cancelled)" />
+                                <button type="submit" class="rd-btn-danger" style="width:100%;justify-content:center;">
+                                    <i class="bi bi-x-circle"></i> Cancel Order
+                                </button>
+                            </form>
+                        }
+
+                        <a href="mailto:@Model.Order.Buyer?.Email" class="rd-btn-ghost" style="justify-content:center;">
+                            <i class="bi bi-envelope"></i> Email Buyer
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</div>

@@ -1,0 +1,476 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Seller.ProfileModel
+@{
+    ViewData["Title"] = "My Profile — MakeForYou";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+    :root {
+        --bg:       #FAFAF8;
+        --card:     #FFFFFF;
+        --muted:    #F5F3F0;
+        --fg:       #1A1A1A;
+        --fg-muted: #6B6B6B;
+        --accent:   #B8860B;
+        --accent2:  #D4A84B;
+        --border:   #E8E4DF;
+        --serif:    'Playfair Display', Georgia, serif;
+        --sans:     'Source Sans 3', system-ui, sans-serif;
+        --mono:     'IBM Plex Mono', monospace;
+    }
+
+    body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
+
+    /* ── layout ── */
+    .sp-wrap { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+    /* ── page label ── */
+    .sp-label {
+        display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem;
+    }
+    .sp-label-rule { flex: 1; height: 1px; background: var(--border); }
+    .sp-label-text {
+        font-family: var(--mono); font-size: .72rem; font-weight: 500;
+        letter-spacing: .15em; text-transform: uppercase; color: var(--accent);
+    }
+
+    /* ── section heading ── */
+    .sp-section-title {
+        font-family: var(--serif); font-size: 1.45rem; font-weight: 600;
+        color: var(--fg); margin-bottom: 1.5rem; padding-bottom: .75rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* ── card ── */
+    .sp-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 4px; padding: 2rem 2.25rem; margin-bottom: 2rem;
+        box-shadow: 0 1px 2px rgba(26,26,26,.04);
+        transition: box-shadow .2s ease-out;
+    }
+    .sp-card:hover { box-shadow: 0 4px 12px rgba(26,26,26,.06); }
+    .sp-card-accent { border-top: 2px solid var(--accent); }
+
+    /* ── form fields ── */
+    .sp-field { margin-bottom: 1.5rem; }
+    .sp-label-field {
+        display: block; font-family: var(--mono); font-size: .68rem;
+        font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+        color: var(--fg-muted); margin-bottom: .5rem;
+    }
+    .sp-input {
+        width: 100%; height: 44px; padding: 0 .875rem;
+        border: 1px solid var(--border); border-radius: 4px;
+        background: transparent; font-family: var(--sans); font-size: .95rem;
+        color: var(--fg); outline: none; transition: border-color .15s ease-out, box-shadow .15s ease-out;
+    }
+    .sp-input:hover  { border-color: #ccc; }
+    .sp-input:focus  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,134,11,.12); }
+    textarea.sp-input { height: auto; padding: .75rem .875rem; resize: vertical; line-height: 1.6; }
+    .sp-input::placeholder { color: var(--fg-muted); opacity: .6; }
+
+    /* ── select ── */
+    select.sp-input { cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B6B6B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right .875rem center;
+        padding-right: 2rem;
+    }
+
+    /* ── field row ── */
+    .sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+   @@media (max-width: 600px) { .sp-row { grid-template-columns: 1fr; } }
+
+    /* ── primary button ── */
+    .sp-btn {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: var(--accent); color: #fff; border: none; border-radius: 4px;
+        padding: 0 1.75rem; height: 44px; font-family: var(--sans);
+        font-size: .875rem; font-weight: 600; letter-spacing: .04em;
+        cursor: pointer; transition: background .2s, box-shadow .2s, transform .15s;
+        text-decoration: none;
+    }
+    .sp-btn:hover { background: var(--accent2); box-shadow: 0 4px 12px rgba(184,134,11,.2); color: #fff; }
+    .sp-btn:active { transform: translateY(1px); }
+
+    /* ── ghost button ── */
+    .sp-btn-ghost {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: transparent; color: var(--fg-muted); border: 1px solid var(--border);
+        border-radius: 4px; padding: 0 1.25rem; height: 40px;
+        font-family: var(--sans); font-size: .85rem; font-weight: 500;
+        cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .sp-btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── danger button ── */
+    .sp-btn-danger {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: transparent; color: #b02020; border: 1px solid #f0c0c0;
+        border-radius: 4px; padding: 0 1rem; height: 34px;
+        font-family: var(--mono); font-size: .68rem; letter-spacing: .08em;
+        text-transform: uppercase; cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .sp-btn-danger:hover { background: #fff5f5; border-color: #b02020; color: #b02020; }
+
+    /* ── success alert ── */
+    .sp-alert {
+        display: flex; align-items: center; gap: .75rem;
+        padding: .9rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem;
+        font-size: .875rem; animation: fadeSlideIn .3s ease-out;
+    }
+    .sp-alert-success { background: #f0faf4; border: 1px solid #a8dfc0; color: #1e7a45; }
+    .sp-alert-error   { background: #fff5f5; border: 1px solid #f0c0c0; color: #b02020; }
+    @@keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── portfolio grid ── */
+    .sp-portfolio-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.25rem; margin-bottom: 1.5rem;
+    }
+    .sp-portfolio-item { position: relative; border-radius: 4px; overflow: hidden;
+        border: 1px solid var(--border); aspect-ratio: 4/3; background: var(--muted);
+        transition: box-shadow .2s;
+    }
+    .sp-portfolio-item:hover { box-shadow: 0 4px 12px rgba(26,26,26,.1); }
+    .sp-portfolio-item img { width: 100%; height: 100%; object-fit: cover;
+        display: block; transition: transform .4s ease-out; }
+    .sp-portfolio-item:hover img { transform: scale(1.04); }
+    .sp-portfolio-overlay {
+        position: absolute; inset: 0; background: rgba(26,26,26,.55);
+        display: flex; flex-direction: column; justify-content: flex-end;
+        padding: .875rem; opacity: 0; transition: opacity .2s;
+    }
+    .sp-portfolio-item:hover .sp-portfolio-overlay { opacity: 1; }
+    .sp-portfolio-overlay-title { font-family: var(--serif); color: #fff;
+        font-size: .95rem; margin-bottom: .35rem; }
+    .sp-portfolio-overlay-desc  { font-size: .75rem; color: rgba(255,255,255,.7); }
+    .sp-portfolio-delete {
+        position: absolute; top: .5rem; right: .5rem; background: rgba(26,26,26,.6);
+        border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; opacity: 0; transition: opacity .2s, background .2s; font-size: .8rem;
+    }
+    .sp-portfolio-item:hover .sp-portfolio-delete { opacity: 1; }
+    .sp-portfolio-delete:hover { background: #b02020; }
+
+    /* ── upload zone ── */
+    .sp-upload-zone {
+        border: 2px dashed var(--border); border-radius: 4px;
+        padding: 2rem; text-align: center; cursor: pointer;
+        transition: border-color .2s, background .2s;
+        background: var(--muted);
+    }
+    .sp-upload-zone:hover { border-color: var(--accent); background: rgba(184,134,11,.03); }
+    .sp-upload-zone i { font-size: 1.75rem; color: var(--fg-muted); display: block; margin-bottom: .5rem; }
+    .sp-upload-zone p { font-size: .85rem; color: var(--fg-muted); margin: 0; }
+    .sp-upload-zone strong { color: var(--accent); }
+
+    /* ── availability badge ── */
+    .sp-avail {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .25rem .75rem; border-radius: 2px;
+        font-family: var(--mono); font-size: .68rem; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase;
+    }
+    .sp-avail-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .sp-avail-available { background: #f0faf4; color: #1e7a45; }
+    .sp-avail-available .sp-avail-dot { background: #1e7a45; }
+    .sp-avail-busy { background: #fff8e6; color: #9a6800; }
+    .sp-avail-busy .sp-avail-dot { background: #9a6800; }
+    .sp-avail-unavailable { background: #f5f3f0; color: #888; }
+    .sp-avail-unavailable .sp-avail-dot { background: #bbb; }
+
+    /* ── stat chips ── */
+    .sp-stats { display: flex; gap: 2rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .sp-stat-val { font-family: var(--serif); font-size: 1.8rem; color: var(--fg); display: block; line-height: 1; }
+    .sp-stat-lbl { font-family: var(--mono); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-muted); margin-top: .2rem; }
+
+    /* ── tab nav ── */
+    .sp-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+    .sp-tab {
+        padding: .65rem 1.25rem; font-family: var(--mono); font-size: .72rem;
+        letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted);
+        cursor: pointer; border: none; background: none;
+        border-bottom: 2px solid transparent; margin-bottom: -1px;
+        transition: color .2s, border-color .2s;
+    }
+    .sp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .sp-tab:hover:not(.active) { color: var(--fg); }
+
+    .sp-tab-panel { display: none; }
+    .sp-tab-panel.active { display: block; }
+</style>
+
+<div class="sp-wrap">
+
+    <!-- Page Label -->
+    <div class="sp-label">
+        <span class="sp-label-rule"></span>
+        <span class="sp-label-text">Seller Dashboard</span>
+        <span class="sp-label-rule"></span>
+    </div>
+
+    <!-- Page Title -->
+    <h1 style="font-family:var(--serif);font-size:2.25rem;font-weight:400;margin-bottom:.375rem;">
+        My Profile
+    </h1>
+    <p style="font-size:.9rem;color:var(--fg-muted);margin-bottom:2.5rem;">
+        Manage how buyers discover and experience your work.
+    </p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="sp-alert sp-alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="sp-alert sp-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- Stats Row -->
+    @if (Model.Seller != null)
+    {
+        <div class="sp-stats">
+            <div>
+                <span class="sp-stat-val">@(Model.Seller.AverageRating ?? 0)</span>
+                <span class="sp-stat-lbl">Avg Rating</span>
+            </div>
+            <div>
+                <span class="sp-stat-val">@(Model.Seller.TotalReviews ?? 0)</span>
+                <span class="sp-stat-lbl">Reviews</span>
+            </div>
+            <div>
+                <span class="sp-stat-val">@(Model.Seller.PortfolioItems?.Count ?? 0)</span>
+                <span class="sp-stat-lbl">Portfolio Items</span>
+            </div>
+            <div>
+                @{
+                    var avClass = Model.Seller.AvailabilityStatus switch {
+                        1 => "sp-avail-available",
+                        2 => "sp-avail-busy",
+                        _ => "sp-avail-unavailable"
+                    };
+                    var avLabel = Model.Seller.AvailabilityStatus switch {
+                        1 => "Available",
+                        2 => "Busy",
+                        _ => "Unavailable"
+                    };
+                }
+                <span class="sp-avail @avClass" style="margin-top:.45rem;display:inline-flex;">
+                    <span class="sp-avail-dot"></span>@avLabel
+                </span>
+                <span class="sp-stat-lbl" style="margin-top:.3rem;">Status</span>
+            </div>
+        </div>
+    }
+
+    <!-- Tab Nav -->
+    <div class="sp-tabs">
+        <button class="sp-tab active" onclick="switchTab('profile', this)">Profile</button>
+        <button class="sp-tab" onclick="switchTab('portfolio', this)">Portfolio</button>
+        <button class="sp-tab" onclick="switchTab('account', this)">Account</button>
+    </div>
+
+    <!-- ══ TAB: PROFILE ══ -->
+    <div id="tab-profile" class="sp-tab-panel active">
+        <form method="post" asp-page-handler="UpdateProfile">
+            @Html.AntiForgeryToken()
+
+            <div class="sp-card sp-card-accent">
+                <h2 class="sp-section-title">Artisan Identity</h2>
+
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Full Name</label>
+                        <input class="sp-input" type="text" name="FullName"
+                               value="@Model.Seller?.User?.FullName" placeholder="Your display name" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Email</label>
+                        <input class="sp-input" type="email" name="Email"
+                               value="@Model.Seller?.User?.Email" placeholder="your@email.com" />
+                    </div>
+                </div>
+
+                <div class="sp-field">
+                    <label class="sp-label-field">Skill / Craft Description</label>
+                    <input class="sp-input" type="text" name="SkillDescription"
+                           value="@Model.Seller?.SkillDescription"
+                           placeholder="e.g. Hand-poured soy candles &amp; botanical prints" />
+                </div>
+
+                <div class="sp-field">
+                    <label class="sp-label-field">Bio</label>
+                    <textarea class="sp-input" name="Bio" rows="5"
+                              placeholder="Tell buyers about yourself, your craft, and your story…">@Model.Seller?.Bio</textarea>
+                </div>
+
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Starting Price (VNĐ)</label>
+                        <input class="sp-input" type="number" name="PriceRange"
+                               value="@Model.Seller?.PriceRange" placeholder="e.g. 150000" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Availability</label>
+                        <select class="sp-input" name="AvailabilityStatus">
+                           <option value="1" selected="@(Model.Seller?.AvailabilityStatus == 1)">Available</option>
+                           <option value="2" selected="@(Model.Seller?.AvailabilityStatus == 2)">Busy — limited slots</option>
+                           <option value="0" selected="@(Model.Seller?.AvailabilityStatus == 0)">Unavailable</option> 
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:.75rem;">
+                <button type="submit" class="sp-btn">
+                    <i class="bi bi-check2"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══ TAB: PORTFOLIO ══ -->
+    <div id="tab-portfolio" class="sp-tab-panel">
+
+        <!-- Existing items -->
+        @if (Model.Seller?.PortfolioItems != null && Model.Seller.PortfolioItems.Any())
+        {
+            <div class="sp-portfolio-grid">
+                @foreach (var item in Model.Seller.PortfolioItems.OrderByDescending(p => p.CreatedAt))
+                {
+                    <div class="sp-portfolio-item">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--border);">
+                                <i class="bi bi-image" style="font-size:2rem;"></i>
+                            </div>
+                        }
+                        <div class="sp-portfolio-overlay">
+                            <div class="sp-portfolio-overlay-title">@item.Title</div>
+                            @if (!string.IsNullOrEmpty(item.Description))
+                            {
+                                <div class="sp-portfolio-overlay-desc">@item.Description</div>
+                            }
+                        </div>
+                        <!-- Delete -->
+                        <form method="post" asp-page-handler="DeletePortfolio" style="display:contents;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="portfolioId" value="@item.PortfolioId" />
+                            <button type="submit" class="sp-portfolio-delete"
+                                    onclick="return confirm('Remove this piece?')"
+                                    title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div style="text-align:center;padding:3rem 0;color:var(--fg-muted);">
+                <i class="bi bi-images" style="font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.4;"></i>
+                <p style="font-family:var(--serif);font-size:1.1rem;margin-bottom:.25rem;color:var(--fg);">No portfolio items yet</p>
+                <p style="font-size:.875rem;">Add your first piece below to showcase your craft.</p>
+            </div>
+        }
+
+        <!-- Add new item -->
+        <div class="sp-card">
+            <h2 class="sp-section-title">Add Portfolio Piece</h2>
+            <form method="post" asp-page-handler="AddPortfolio" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Title</label>
+                        <input class="sp-input" type="text" name="Title" placeholder="Name of this piece" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Image URL</label>
+                        <input class="sp-input" type="url" name="ImageUrl" placeholder="https://..." />
+                    </div>
+                </div>
+
+                <div class="sp-field">
+                    <label class="sp-label-field">Description</label>
+                    <textarea class="sp-input" name="Description" rows="3"
+                              placeholder="Materials used, technique, story behind this piece…"></textarea>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;">
+                    <button type="submit" class="sp-btn">
+                        <i class="bi bi-plus-lg"></i> Add to Portfolio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══ TAB: ACCOUNT ══ -->
+    <div id="tab-account" class="sp-tab-panel">
+        <div class="sp-card">
+            <h2 class="sp-section-title">Change Password</h2>
+            <form method="post" asp-page-handler="ChangePassword">
+                @Html.AntiForgeryToken()
+
+                <div class="sp-field">
+                    <label class="sp-label-field">Current Password</label>
+                    <input class="sp-input" type="password" name="CurrentPassword" />
+                </div>
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">New Password</label>
+                        <input class="sp-input" type="password" name="NewPassword" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Confirm Password</label>
+                        <input class="sp-input" type="password" name="ConfirmPassword" />
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;">
+                    <button type="submit" class="sp-btn">
+                        <i class="bi bi-shield-lock"></i> Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="sp-card" style="border-top:2px solid #f0c0c0;">
+            <h2 class="sp-section-title" style="color:#b02020;">Danger Zone</h2>
+            <p style="font-size:.875rem;color:var(--fg-muted);margin-bottom:1.25rem;">
+                Deactivating your account will hide your profile and listings from buyers.
+                This action can be reversed by contacting support.
+            </p>
+            <button class="sp-btn-danger" onclick="return confirm('Deactivate your account?')">
+                <i class="bi bi-person-x"></i> Deactivate Account
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function switchTab(name, btn) {
+    document.querySelectorAll('.sp-tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sp-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+</script>

@@ -1,4 +1,5 @@
 ﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,10 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<Order?> GetOrderDetailAsync(long orderId, long buyerId);
         Task<Order> CreateOrderAsync(long buyerId, long sellerId, string description);
         Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address);
-
+        Task<List<Order>> GetRequestsBySellerAsync(long sellerId);
+        Task<Order?> GetRequestDetailAsync(long orderId, long sellerId);
         Task UpdateStatusAsync(long orderId, int status);
+        Task<AuthResult> UpdateProgressAsync(long orderId, long sellerId, UpdateProgressRequest req);
+        Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId);
     }
 }
