@@ -5,6 +5,114 @@
 }
 <link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
 
+<style>
+    /* ── Quotation Card ──────────────────────────────────────────────────── */
+    .quotation-card {
+        border: 1.5px solid var(--serif-border, #ddd);
+        border-radius: 12px;
+        background: #fff;
+        padding: 1rem 1.25rem;
+        max-width: 340px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        font-size: 0.875rem;
+    }
+    .quotation-card .q-header {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700; color: var(--mfy-bark, #5a3a1a);
+        font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .quotation-card .q-icon {
+        width: 20px; height: 20px;
+        background: var(--mfy-clay, #C8855A); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 10px; flex-shrink: 0;
+    }
+    .quotation-card .q-row {
+        display: flex; justify-content: space-between; margin-bottom: 0.35rem; color: #555;
+    }
+    .quotation-card .q-label { color: #999; }
+    .quotation-card .q-val   { font-weight: 600; color: #222; }
+    .quotation-card .q-desc {
+        border-top: 1px solid #f0ece8; margin-top: 0.5rem; padding-top: 0.5rem;
+        color: #555; line-height: 1.4; font-size: 0.82rem;
+    }
+    .q-status {
+        display: inline-block; padding: 0.2rem 0.65rem; border-radius: 99px;
+        font-size: 0.72rem; font-weight: 700; margin-top: 0.6rem;
+        text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .q-status.pending   { background: #fff3cd; color: #856404; }
+    .q-status.accepted  { background: #d1e7dd; color: #0a3622; }
+    .q-status.rejected  { background: #f8d7da; color: #58151c; }
+    .q-status.confirmed { background: #2D2926;  color: #fff; }
+    .q-status.cancelled { background: #e9ecef; color: #6c757d; }
+    .q-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    .q-btn {
+        flex: 1; border: none; border-radius: 99px; padding: 0.4rem 0.9rem;
+        font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+    }
+    .q-btn:hover { opacity: 0.82; }
+    .q-btn.accept   { background: var(--mfy-clay, #C8855A); color: #fff; }
+    .q-btn.reject   { background: #f8d7da; color: #58151c; }
+    .q-btn.confirm  { background: #2D2926; color: #fff; }
+    .q-btn.cancel   { background: #e9ecef; color: #6c757d; }
+
+    /* ── Quotation Modal ─────────────────────────────────────────────────── */
+    .quotation-modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.35); z-index: 1000;
+        align-items: center; justify-content: center;
+    }
+    .quotation-modal-overlay.open { display: flex; }
+    .quotation-modal {
+        background: #fff; border-radius: 16px; padding: 1.75rem;
+        width: 380px; max-width: 95vw; box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    }
+    .quotation-modal h5 {
+        font-weight: 700; color: var(--mfy-bark, #5a3a1a);
+        margin-bottom: 1.25rem; font-size: 1rem;
+    }
+    .quotation-modal label {
+        font-size: 0.78rem; font-weight: 600; color: #555;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        display: block; margin-bottom: 0.25rem; margin-top: 0.85rem;
+    }
+    .quotation-modal input,
+    .quotation-modal textarea {
+        width: 100%; border: 1.5px solid #e0ddd8; border-radius: 8px;
+        padding: 0.5rem 0.75rem; font-size: 0.875rem; outline: none;
+        transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .quotation-modal input:focus,
+    .quotation-modal textarea:focus { border-color: var(--mfy-clay, #C8855A); }
+    .modal-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
+    .btn-send-quote {
+        flex: 1; background: var(--mfy-clay, #C8855A); color: #fff;
+        border: none; border-radius: 99px; padding: 0.55rem 1rem;
+        font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-send-quote:hover { opacity: 0.85; }
+    .btn-cancel-quote {
+        background: #f0ece8; color: #555; border: none; border-radius: 99px;
+        padding: 0.55rem 1rem; font-size: 0.85rem; cursor: pointer;
+    }
+
+    /* ── Quote toolbar button ────────────────────────────────────────────── */
+    #quoteBtn {
+        background: transparent; border: 1.5px solid var(--mfy-clay, #C8855A);
+        color: var(--mfy-clay, #C8855A); border-radius: 99px;
+        padding: 0.35rem 0.85rem; font-size: 0.78rem; font-weight: 600;
+        cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s;
+    }
+    #quoteBtn:hover { background: var(--mfy-clay, #C8855A); color: #fff; }
+    
+    @@keyframes dummyAnimation {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
 <div class="serif-scope">
     <div class="serif-container" style="height: 90vh; display: flex; flex-direction: column; padding: 0;">
         <header class="mb-4 px-4 pt-4">
@@ -13,29 +121,24 @@
             <div class="small-muted">Chat with artisans and buyers</div>
         </header>
 
-        <!-- Full-height chat layout -->
         <div style="display: flex; gap: 1rem; flex: 1; min-height: 0; padding: 0 1rem 1rem 1rem;">
-            
-            <!-- Conversations List (Left - Narrower) -->
+
             <div style="width: 300px; display: flex; flex-direction: column;">
                 <div class="card h-100 d-flex flex-column" style="border: 1px solid var(--serif-border);">
                     <div class="card-header bg-white border-bottom" style="border-color: var(--serif-border); flex-shrink: 0;">
                         <h5 class="mb-0 small-caps">Conversations</h5>
                     </div>
                     <div id="conversationsList" class="flex-grow-1 overflow-auto" style="background: #fafaf8;">
-                        <div class="p-3 text-center text-muted">
-                            <small>No conversations yet</small>
-                        </div>
+                        <div class="p-3 text-center text-muted"><small>No conversations yet</small></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Chat View (Right - Much Wider) -->
             <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                 <div class="card h-100 d-flex flex-column" style="border: 1px solid var(--serif-border);">
-                    
-                    <!-- Chat Header -->
-                    <div id="chatHeader" class="card-header bg-white border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
+
+                    <div id="chatHeader" class="card-header bg-white border-bottom d-flex justify-content-between align-items-center"
+                         style="border-color: var(--serif-border); display:none !important; flex-shrink: 0;">
                         <div>
                             <h5 class="mb-0" id="chatTitle">Select a conversation</h5>
                             <small class="text-muted" id="chatSubtitle"></small>
@@ -43,19 +146,24 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearChat()">Close</button>
                     </div>
 
-                    <!-- Messages Container (Vertical, Full Height) -->
-                    <div id="messagesContainer" class="flex-grow-1 overflow-auto p-4" style="display:flex; flex-direction: column; gap: 0.75rem; background-color: #fafaf8; min-height: 0;">
+                    <div id="messagesContainer" class="flex-grow-1 overflow-auto p-4"
+                         style="display:flex; flex-direction: column; gap: 0.75rem; background-color: #fafaf8; min-height: 0;">
                         <div class="text-center text-muted" style="margin: auto;">
                             <small>Select a conversation to start messaging</small>
                         </div>
                     </div>
 
-                    <!-- Chat Input Area -->
-                    <div id="chatInputArea" class="card-footer bg-white border-top p-3" style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
-                        <form id="chatForm" class="d-flex gap-2" onsubmit="return false;">
-                            <input id="messageInput" type="text" class="form-control rounded-pill" placeholder="Write a message…" autocomplete="off" />
-                            <button id="sendBtn" type="button" class="btn btn-mfy-solid rounded-pill" style="background: var(--mfy-clay, #C8855A); color:white; white-space: nowrap;">Send</button>
-                        </form>
+                    <div id="chatInputArea" class="card-footer bg-white border-top p-3"
+                         style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
+                        <div class="d-flex gap-2 align-items-center">
+                            <button id="quoteBtn" style="display:none;" onclick="openQuotationModal()">📋 Quote</button>
+                            <input id="messageInput" type="text" class="form-control rounded-pill flex-grow-1"
+                                   placeholder="Write a message…" autocomplete="off" />
+                            <button id="sendBtn" type="button" class="btn btn-mfy-solid rounded-pill"
+                                    style="background: var(--mfy-clay, #C8855A); color:white; white-space: nowrap;">
+                                Send
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,274 +171,402 @@
     </div>
 </div>
 
-<input type="hidden" id="currentUserId" value="@Model.CurrentUserId" />
-<input type="hidden" id="selectedArtisanId" value="" />
+<div class="quotation-modal-overlay" id="quotationModalOverlay">
+    <div class="quotation-modal">
+        <h5>📋 Send a Quotation</h5>
+        <label>Price (VND)</label>
+        <input type="number" id="q_price" min="1" placeholder="e.g. 500000" />
+        <label>Message / Scope of work</label>
+        <textarea id="q_message" rows="4" placeholder="Describe what's included, timeline, terms…"></textarea>
+        <div class="modal-actions">
+            <button class="btn-cancel-quote" onclick="closeQuotationModal()">Cancel</button>
+            <button class="btn-send-quote"   onclick="submitQuotation()">Send Quotation</button>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="currentUserId"       value="@Model.CurrentUserId" />
+<input type="hidden" id="currentUserIsSeller" value="@Model.IsSeller.ToString().ToLower()" />
+<input type="hidden" id="selectedArtisanId"   value="" />
+<input type="hidden" id="selectedOrderId"     value="" />   @* orderId của conversation đang mở *@
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.11/dist/browser/signalr.min.js"></script>
-    <script>
-        (function () {
-            const currentUserId = document.getElementById('currentUserId').value;
-            const conversationsList = document.getElementById('conversationsList');
-            const messagesContainer = document.getElementById('messagesContainer');
-            const chatHeader = document.getElementById('chatHeader');
-            const chatInputArea = document.getElementById('chatInputArea');
-            const messageInput = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const selectedArtisanIdEl = document.getElementById('selectedArtisanId');
-            const chatTitle = document.getElementById('chatTitle');
-            const chatSubtitle = document.getElementById('chatSubtitle');
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.11/dist/browser/signalr.min.js"></script>
+<script>
+(function () {
+    const currentUserId       = document.getElementById('currentUserId').value;
+    const isSeller            = document.getElementById('currentUserIsSeller').value === 'true';
+    const conversationsList   = document.getElementById('conversationsList');
+    const messagesContainer   = document.getElementById('messagesContainer');
+    const chatHeader          = document.getElementById('chatHeader');
+    const chatInputArea       = document.getElementById('chatInputArea');
+    const messageInput        = document.getElementById('messageInput');
+    const sendBtn             = document.getElementById('sendBtn');
+    const selectedArtisanIdEl = document.getElementById('selectedArtisanId');
+    const selectedOrderIdEl   = document.getElementById('selectedOrderId');
+    const chatTitle           = document.getElementById('chatTitle');
+    const chatSubtitle        = document.getElementById('chatSubtitle');
+    const quoteBtn            = document.getElementById('quoteBtn');
 
-            // conversations: key=userId -> { userId, fullName, messages: [], lastMessage, lastMessageAt, lastFromUserId }
-            const conversations = new Map();
-            let connection;
+    // conversations: key = userId
+    const conversations = new Map();
+    // quotations: key = orderId (string)
+    const quotationMap  = new Map();
+    let connection;
 
-            function initSignalR() {
-                connection = new signalR.HubConnectionBuilder()
-                    .withUrl('/hubs/chat')
-                    .withAutomaticReconnect()
-                    .build();
+    // ── SignalR ──────────────────────────────────────────────────────────────
+    function initSignalR() {
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl('/hubs/chat')
+            .withAutomaticReconnect()
+            .build();
 
-                connection.on('ReceiveMessage', payload => {
-                    handleMessageReceived(payload);
+        connection.on('ReceiveMessage',   handleMessageReceived);
+        connection.on('ReceiveQuotation', handleQuotationReceived);
+        connection.on('QuotationUpdated', handleQuotationUpdated);
+
+        connection.start()
+            .then(() => loadConversations())
+            .catch(err => console.error('Chat connection failed:', err));
+    }
+
+    // ── Conversations ────────────────────────────────────────────────────────
+    async function loadConversations() {
+        try {
+            const res = await fetch('/api/chat/conversations', { credentials: 'same-origin' });
+            if (!res.ok) throw new Error(res.status);
+            const users = await res.json();
+            conversations.clear();
+            for (const user of users) {
+                conversations.set(user.userId.toString(), {
+                    userId: user.userId.toString(),
+                    fullName: user.fullName,
+                    orderId: user.orderId?.toString() || null,   // API trả về orderId nếu có
+                    messages: [],
+                    lastMessage: user.lastMessage || null,
+                    lastMessageAt: user.lastMessageAt || null
                 });
+            }
+            renderConversations();
+        } catch {
+            conversationsList.innerHTML = '<div class="p-3 text-center text-danger"><small>Error loading conversations</small></div>';
+        }
+    }
 
-                connection.start()
-                    .then(() => {
-                        console.log('Chat connected');
-                        loadConversations();
-                    })
-                    .catch(err => console.error('Chat connection failed:', err));
+    function renderConversations() {
+        if (conversations.size === 0) {
+            conversationsList.innerHTML = '<div class="p-3 text-center text-muted"><small>No conversations yet</small></div>';
+            return;
+        }
+        const html = [];
+        for (const [userId, conv] of conversations) {
+            const isSelected = selectedArtisanIdEl.value === userId;
+            const lastMsg    = conv.lastMessage || 'No messages';
+            const preview    = lastMsg.substring(0, 40) + (lastMsg.length > 40 ? '…' : '');
+            const time       = conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleString() : '';
+            html.push(`
+                <div class="conversation-item p-3 border-bottom"
+                     style="background:${isSelected ? '#f0ece8' : 'transparent'}; border-color:var(--serif-border); cursor:pointer; transition:background 0.2s;"
+                     onclick="selectConversation('${userId}','${escapeHtml(conv.fullName)}','${conv.orderId || ''}')">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fw-bold small" style="color:var(--mfy-bark);">${escapeHtml(conv.fullName)}</div>
+                        <div class="small text-muted">${escapeHtml(time)}</div>
+                    </div>
+                    <small class="text-muted">${escapeHtml(preview)}</small>
+                </div>
+            `);
+        }
+        conversationsList.innerHTML = html.join('');
+    }
+
+    // ── Select conversation ──────────────────────────────────────────────────
+    window.selectConversation = async function (userId, fullName, orderId) {
+        selectedArtisanIdEl.value = userId;
+        selectedOrderIdEl.value   = orderId || '';
+
+        let conv = conversations.get(userId);
+        if (!conv) {
+            conversations.set(userId, { userId, fullName, orderId, messages: [], lastMessage: null, lastMessageAt: null });
+            conv = conversations.get(userId);
+        }
+
+        chatTitle.innerText     = conv.fullName;
+        chatSubtitle.innerText  = 'Direct message';
+        chatHeader.style.display     = 'flex';
+        chatInputArea.style.display  = 'block';
+
+        // Nút Quote chỉ hiện với Seller VÀ có orderId
+        quoteBtn.style.display = (isSeller && orderId) ? 'inline-block' : 'none';
+
+        await loadMessages(userId);
+        if (orderId) await loadQuotations(orderId);
+
+        const q = quotationMap.get(orderId) || [];
+        renderAll(conv.messages, q);
+        renderConversations();
+
+        if (connection && connection.state === signalR.HubConnectionState.Connected) {
+            connection.invoke('JoinChat', userId).catch(() => {});
+        }
+    };
+
+    window.clearChat = function () {
+        selectedArtisanIdEl.value = '';
+        selectedOrderIdEl.value   = '';
+        chatHeader.style.display      = 'none';
+        chatInputArea.style.display   = 'none';
+        quoteBtn.style.display        = 'none';
+        messagesContainer.innerHTML   = '<div class="text-center text-muted" style="margin:auto;"><small>Select a conversation to start messaging</small></div>';
+        messageInput.value = '';
+    };
+
+    // ── Load messages ────────────────────────────────────────────────────────
+    async function loadMessages(userId) {
+        try {
+            const res = await fetch(`/api/chat/messages?otherUserId=${userId}`, { credentials: 'same-origin' });
+            if (!res.ok) throw new Error(res.status);
+            const msgs = await res.json();
+            const conv = conversations.get(userId);
+            if (conv) {
+                conv.messages = msgs;
+                const last = msgs.at(-1);
+                if (last) { conv.lastMessage = last.message; conv.lastMessageAt = last.createdAt; }
             }
 
-            // Load conversations (includes last message) from API
-            async function loadConversations() {
-                try {
-                    const res = await fetch('/api/chat/conversations', { credentials: 'same-origin' });
-                    if (!res.ok) throw new Error(`Failed to load conversations: ${res.status}`);
-
-                    const users = await res.json();
-                    conversations.clear();
-                    for (const user of users) {
-                        conversations.set(user.userId.toString(), {
-                            userId: user.userId.toString(),
-                            fullName: user.fullName,
-                            messages: [],
-                            lastMessage: user.lastMessage || null,
-                            lastMessageAt: user.lastMessageAt || null,
-                            lastFromUserId: user.lastFromUserId || null
-                        });
-                    }
-                    renderConversations();
-                } catch (err) {
-                    console.error('Failed to load conversations', err);
-                    conversationsList.innerHTML = '<div class="p-3 text-center text-danger"><small>Error loading conversations</small></div>';
-                }
+            // Mark as read
+            const last = msgs.at(-1);
+            if (last && last.fromUserId.toString() !== currentUserId) {
+                fetch('/api/chat/mark-read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fromUserId: last.fromUserId, toUserId: currentUserId }),
+                    credentials: 'same-origin'
+                }).catch(() => {});
             }
+        } catch {
+            messagesContainer.innerHTML = '<div class="text-center text-danger"><small>Error loading messages</small></div>';
+        }
+    }
 
-            function renderConversations() {
-                if (conversations.size === 0) {
-                    conversationsList.innerHTML = '<div class="p-3 text-center text-muted"><small>No conversations yet</small></div>';
-                    return;
-                }
+    // ── Load quotations by orderId ───────────────────────────────────────────
+    async function loadQuotations(orderId) {
+        if (!orderId) return;
+        try {
+            const res = await fetch(`/api/quotation/order/${orderId}`, { credentials: 'same-origin' });
+            if (!res.ok) return;
+            const list = await res.json();
+            quotationMap.set(orderId, list);
+        } catch { /* silent */ }
+    }
 
-                const html = [];
-                for (const [userId, conv] of conversations) {
-                    const isSelected = selectedArtisanIdEl.value === userId;
-                    const lastMsg = conv.lastMessage || 'No messages';
-                    const lastMsgPreview = (lastMsg || '').toString().substring(0, 40) + ((lastMsg || '').toString().length > 40 ? '…' : '');
-                    const time = conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleString() : '';
+    // ── Render: merge messages + quotations chronologically ──────────────────
+    function renderAll(messages, quotations) {
+        const combined = [
+            ...(messages  || []).map(m => ({ type: 'msg', ts: new Date(m.createdAt),  data: m })),
+            ...(quotations|| []).map(q => ({ type: 'quo', ts: new Date(q.createdAt),  data: q }))
+        ].sort((a, b) => a.ts - b.ts);
 
-                    html.push(`
-                        <div class="conversation-item p-3 border-bottom cursor-pointer"
-                             style="background: ${isSelected ? '#f0ece8' : 'transparent'}; border-color: var(--serif-border); cursor: pointer; transition: background 0.2s ease;"
-                             onclick="selectConversation('${userId}', '${escapeHtml(conv.fullName)}')">
-                            <div style="flex: 1;">
-                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                    <div class="fw-bold small" style="color: var(--mfy-bark);">${escapeHtml(conv.fullName)}</div>
-                                    <div class="small text-muted">${escapeHtml(time)}</div>
-                                </div>
-                                <small class="text-muted">${escapeHtml(lastMsgPreview)}</small>
-                            </div>
-                        </div>
-                    `);
-                }
-                conversationsList.innerHTML = html.join('');
-            }
+        if (combined.length === 0) {
+            messagesContainer.innerHTML = '<div class="text-center text-muted" style="margin:auto;"><small>No messages yet</small></div>';
+            return;
+        }
+        messagesContainer.innerHTML = combined.map(item =>
+            item.type === 'msg' ? renderMessage(item.data) : renderQuotation(item.data)
+        ).join('');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 
-            // Load messages for a conversation and update lastMessage
-            async function loadMessages(userId) {
-                try {
-                    const res = await fetch(`/api/chat/messages?otherUserId=${userId}`, { credentials: 'same-origin' });
-                    if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
+    function renderMessage(msg) {
+        const isMe = msg.fromUserId.toString() === currentUserId;
+        const time = new Date(msg.createdAt).toLocaleTimeString();
+        return `
+            <div style="display:flex; justify-content:${isMe ? 'flex-end' : 'flex-start'};">
+                <div style="max-width:60%; background:${isMe ? '#2D2926' : '#e8e2d9'}; color:${isMe ? 'white' : 'black'};
+                            padding:0.75rem 1rem; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                    <div style="font-size:0.75rem; opacity:0.8; margin-bottom:0.25rem; font-weight:500;">${escapeHtml(msg.fromUserName)}</div>
+                    <div style="word-wrap:break-word; white-space:pre-wrap;">${escapeHtml(msg.message)}</div>
+                    <div style="font-size:0.65rem; opacity:0.7; margin-top:0.25rem; text-align:right;">${time}</div>
+                </div>
+            </div>`;
+    }
 
-                    const msgs = await res.json();
-                    const conv = conversations.get(userId);
-                    if (conv) {
-                        conv.messages = msgs;
-                        const last = msgs.length ? msgs[msgs.length - 1] : null;
-                        if (last) {
-                            conv.lastMessage = last.message;
-                            conv.lastMessageAt = last.createdAt;
-                            conv.lastFromUserId = last.fromUserId;
-                        }
-                    }
-                    renderMessages(msgs);
-                    renderConversations();
+    function renderQuotation(q) {
+        const isMe   = q.sellerId.toString() === currentUserId;
+        const status = q.statusLabel.toLowerCase();
+        const price  = Number(q.proposedPrice).toLocaleString('vi-VN') + ' ₫';
+        const time   = new Date(q.createdAt).toLocaleTimeString();
 
-                    // Mark as read if appropriate (existing logic)
-                    if (msgs.length > 0) {
-                        const lastMsg = msgs[msgs.length - 1];
-                        if (lastMsg.fromUserId.toString() !== currentUserId) {
-                            try {
-                                await fetch('/api/chat/mark-read', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        fromUserId: lastMsg.fromUserId,
-                                        toUserId: currentUserId
-                                    }),
-                                    credentials: 'same-origin'
-                                });
-                            } catch (e) {
-                                console.error('Failed to mark as read', e);
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error('Failed to load messages', err);
-                    messagesContainer.innerHTML = '<div class="text-center text-danger"><small>Error loading messages</small></div>';
-                }
-            }
+        let actions = '';
+        if (status === 'pending' && !isMe) {
+            actions = `
+                <button class="q-btn accept" onclick="respondQuotation(${q.quotationId},'accept')">✓ Accept</button>
+                <button class="q-btn reject" onclick="respondQuotation(${q.quotationId},'reject')">✗ Reject</button>`;
+        } else if (status === 'accepted' && isMe) {
+            actions = `
+                <button class="q-btn confirm" onclick="respondQuotation(${q.quotationId},'confirm')">🎉 Confirm Deal</button>
+                <button class="q-btn cancel"  onclick="respondQuotation(${q.quotationId},'cancel')">Cancel</button>`;
+        } else if (status === 'pending' && isMe) {
+            actions = `<button class="q-btn cancel" onclick="respondQuotation(${q.quotationId},'cancel')">Cancel</button>`;
+        }
 
-            window.selectConversation = async function (userId, fullName) {
-                selectedArtisanIdEl.value = userId;
-                let conv = conversations.get(userId);
+        return `
+            <div style="display:flex; justify-content:${isMe ? 'flex-end' : 'flex-start'};">
+                <div class="quotation-card" id="quotation-${q.quotationId}">
+                    <div class="q-header"><div class="q-icon">📋</div> Quotation</div>
+                    <div class="q-row">
+                        <span class="q-label">Price</span>
+                        <span class="q-val">${escapeHtml(price)}</span>
+                    </div>
+                    <div class="q-desc">${escapeHtml(q.message)}</div>
+                    <span class="q-status ${status}">${escapeHtml(q.statusLabel)}</span>
+                    ${actions ? `<div class="q-actions">${actions}</div>` : ''}
+                    <div style="font-size:0.65rem; color:#bbb; margin-top:0.35rem; text-align:right;">${time}</div>
+                </div>
+            </div>`;
+    }
 
-                if (!conv) {
-                    conversations.set(userId, {
-                        userId,
-                        fullName,
-                        messages: [],
-                        lastMessage: null,
-                        lastMessageAt: null,
-                        lastFromUserId: null
-                    });
-                    conv = conversations.get(userId);
-                }
-
-                chatTitle.innerText = conv.fullName;
-                chatSubtitle.innerText = 'Direct message';
-                chatHeader.style.display = 'flex';
-                chatInputArea.style.display = 'block';
-
-                await loadMessages(userId);
-                renderConversations();
-
-                if (connection && connection.state === signalR.HubConnectionState.Connected) {
-                    connection.invoke('JoinChat', userId).catch(err => console.error('Join failed', err));
-                }
-            };
-
-            window.clearChat = function () {
-                selectedArtisanIdEl.value = '';
-                chatHeader.style.display = 'none';
-                chatInputArea.style.display = 'none';
-                messagesContainer.innerHTML = '<div class="text-center text-muted" style="margin: auto;"><small>Select a conversation to start messaging</small></div>';
-                messageInput.value = '';
-            };
-
-            function renderMessages(messages) {
-                if (!messages || messages.length === 0) {
-                    messagesContainer.innerHTML = '<div class="text-center text-muted" style="margin: auto;"><small>No messages yet</small></div>';
-                    return;
-                }
-
-                const html = [];
-                for (const msg of messages) {
-                    const isMe = msg.fromUserId.toString() === currentUserId;
-                    const time = new Date(msg.createdAt).toLocaleTimeString();
-                    html.push(`
-                        <div style="display: flex; justify-content: ${isMe ? 'flex-end' : 'flex-start'}; align-items: flex-end;">
-                            <div style="max-width: 60%; background: ${isMe ? '#2D2926' : '#e8e2d9'}; color: ${isMe ? 'white' : 'black'}; padding: 0.75rem 1rem; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 0.25rem; font-weight: 500;">${escapeHtml(msg.fromUserName)}</div>
-                                <div style="word-wrap: break-word; white-space: pre-wrap;">${escapeHtml(msg.message)}</div>
-                                <div style="font-size: 0.65rem; opacity: 0.7; margin-top: 0.25rem; text-align: right;">${time}</div>
-                            </div>
-                        </div>
-                    `);
-                }
-                messagesContainer.innerHTML = html.join('');
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-
-            function handleMessageReceived(payload) {
-                const userId = payload.fromUserId === currentUserId ? payload.toUserId : payload.fromUserId;
-                const key = userId.toString();
-                let conv = conversations.get(key);
-
-                if (!conv) {
-                    conv = {
-                        userId: key,
-                        fullName: payload.fromUserName || 'Conversation',
-                        messages: [],
-                        lastMessage: null,
-                        lastMessageAt: null,
-                        lastFromUserId: null
-                    };
-                    conversations.set(key, conv);
-                }
-
-                // Append message in memory
-                conv.messages.push({
-                    fromUserId: payload.fromUserId,
-                    toUserId: payload.toUserId,
-                    fromUserName: payload.fromUserName,
-                    message: payload.message,
-                    createdAt: payload.sentAt,
-                    isRead: false
-                });
-
-                // Update last message info
-                conv.lastMessage = payload.message;
-                conv.lastMessageAt = payload.sentAt;
-                conv.lastFromUserId = payload.fromUserId;
-
-                renderConversations();
-
-                if (selectedArtisanIdEl.value === key) {
-                    renderMessages(conv.messages);
-                }
-            }
-
-            sendBtn.addEventListener('click', async () => {
-                const text = messageInput.value.trim();
-                const userId = selectedArtisanIdEl.value;
-
-                if (!text || !userId) return;
-
-                try {
-                    await connection.invoke('SendMessage', userId, text);
-                    messageInput.value = '';
-                    messageInput.focus();
-                } catch (err) {
-                    console.error('Send failed', err);
-                    alert('Failed to send message. Please try again.');
-                }
+    // ── Quotation actions ────────────────────────────────────────────────────
+    window.respondQuotation = async function (id, action) {
+        try {
+            const res = await fetch(`/api/quotation/${id}/${action}`, {
+                method: 'POST', credentials: 'same-origin'
             });
-
-            messageInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter') sendBtn.click();
-            });
-
-            function escapeHtml(unsafe) {
-                if (!unsafe) return '';
-                return unsafe.replace(/[&<"'>]/g, m => ({
-                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-                }[m]));
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Action failed');
+                return;
             }
+            const updated = await res.json();
+            const orderId = selectedOrderIdEl.value;
+            const list    = quotationMap.get(orderId) || [];
+            const idx     = list.findIndex(q => q.quotationId === id);
+            if (idx >= 0) list[idx] = updated; else list.push(updated);
+            quotationMap.set(orderId, list);
 
-            initSignalR();
-        })();
-    </script>
+            const conv = conversations.get(selectedArtisanIdEl.value);
+            renderAll(conv ? conv.messages : [], list);
+        } catch {
+            alert('Network error. Please try again.');
+        }
+    };
+
+    // ── Quotation modal ──────────────────────────────────────────────────────
+    window.openQuotationModal = function () {
+        document.getElementById('q_price').value   = '';
+        document.getElementById('q_message').value = '';
+        document.getElementById('quotationModalOverlay').classList.add('open');
+        document.getElementById('q_price').focus();
+    };
+    window.closeQuotationModal = function () {
+        document.getElementById('quotationModalOverlay').classList.remove('open');
+    };
+    document.getElementById('quotationModalOverlay').addEventListener('click', function (e) {
+        if (e.target === this) closeQuotationModal();
+    });
+
+    window.submitQuotation = async function () {
+        const price   = parseInt(document.getElementById('q_price').value, 10);
+        const message = document.getElementById('q_message').value.trim();
+        const orderId = selectedOrderIdEl.value;
+
+        if (!price || price <= 0) { alert('Please enter a valid price.'); return; }
+        if (!message)              { alert('Please enter a message.');      return; }
+        if (!orderId)              { alert('No order linked to this conversation.'); return; }
+
+        try {
+            const res = await fetch('/api/quotation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ orderId: parseInt(orderId, 10), proposedPrice: price, message })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Failed to send quotation');
+                return;
+            }
+            const newQ = await res.json();
+            const list = quotationMap.get(orderId) || [];
+            list.push(newQ);
+            quotationMap.set(orderId, list);
+
+            const conv = conversations.get(selectedArtisanIdEl.value);
+            renderAll(conv ? conv.messages : [], list);
+            closeQuotationModal();
+        } catch {
+            alert('Network error. Please try again.');
+        }
+    };
+
+    // ── Real-time handlers ───────────────────────────────────────────────────
+    function handleMessageReceived(payload) {
+        const userId = (payload.fromUserId === currentUserId ? payload.toUserId : payload.fromUserId).toString();
+        let conv = conversations.get(userId);
+        if (!conv) {
+            conv = { userId, fullName: payload.fromUserName || '', messages: [], lastMessage: null, lastMessageAt: null };
+            conversations.set(userId, conv);
+        }
+        conv.messages.push({
+            fromUserId: payload.fromUserId, 
+            toUserId: payload.toUserId,
+            fromUserName: payload.fromUserName, 
+            message: payload.message, 
+            createdAt: payload.createdAt // SỬA TẠI ĐÂY: payload.sentAt -> payload.createdAt
+        });
+        conv.lastMessage = payload.message;
+        conv.lastMessageAt = payload.createdAt; // SỬA TẠI ĐÂY: payload.sentAt -> payload.createdAt
+        renderConversations();
+        if (selectedArtisanIdEl.value === userId) {
+            renderAll(conv.messages, quotationMap.get(selectedOrderIdEl.value) || []);
+        }
+    }
+
+    function handleQuotationReceived(q) {
+        const orderId = q.orderId.toString();
+        const list    = quotationMap.get(orderId) || [];
+        if (!list.find(x => x.quotationId === q.quotationId)) list.push(q);
+        quotationMap.set(orderId, list);
+        if (selectedOrderIdEl.value === orderId) {
+            const conv = conversations.get(selectedArtisanIdEl.value);
+            renderAll(conv ? conv.messages : [], list);
+        }
+    }
+
+    function handleQuotationUpdated(q) {
+        const orderId = q.orderId.toString();
+        const list    = quotationMap.get(orderId) || [];
+        const idx     = list.findIndex(x => x.quotationId === q.quotationId);
+        if (idx >= 0) list[idx] = q; else list.push(q);
+        quotationMap.set(orderId, list);
+        if (selectedOrderIdEl.value === orderId) {
+            const conv = conversations.get(selectedArtisanIdEl.value);
+            renderAll(conv ? conv.messages : [], list);
+        }
+    }
+
+    // ── Send message ─────────────────────────────────────────────────────────
+    sendBtn.addEventListener('click', async () => {
+        const text   = messageInput.value.trim();
+        const userId = selectedArtisanIdEl.value;
+        if (!text || !userId) return;
+        try {
+            await connection.invoke('SendMessage', userId, text);
+            messageInput.value = '';
+            messageInput.focus();
+        } catch {
+            alert('Failed to send message. Please try again.');
+        }
+    });
+    messageInput.addEventListener('keyup', e => { if (e.key === 'Enter') sendBtn.click(); });
+
+    // ── Util ─────────────────────────────────────────────────────────────────
+    function escapeHtml(unsafe) {
+        if (unsafe == null) return '';
+        return String(unsafe).replace(/[&<"'>]/g, m =>
+            ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]));
+    }
+
+    initSignalR();
+})();
+</script>
 }

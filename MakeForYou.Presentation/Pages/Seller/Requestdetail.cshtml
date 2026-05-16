@@ -194,256 +194,245 @@
 <div class="rd-wrap">
 
     @{
-    var statusKey = Model.Order == null
-        ? "pending"
-        : ((OrderStatus)Model.Order.Status) switch
-        {
-            OrderStatus.Pending    => "pending",
-            OrderStatus.Quoted     => "quoted",
-            OrderStatus.Confirmed  => "confirmed",
-            OrderStatus.InProgress => "inprogress",
-            OrderStatus.Completed  => "completed",
-            OrderStatus.Cancelled  => "cancelled",
-            _                      => "pending"
-        };
-}
+        var statusKey = Model.Order == null
+            ? "pending"
+            : ((OrderStatus)Model.Order.Status) switch
+            {
+                OrderStatus.Pending    => "pending",
+                OrderStatus.Quoted     => "quoted",
+                OrderStatus.Confirmed  => "confirmed",
+                OrderStatus.InProgress => "inprogress",
+                OrderStatus.Completed  => "completed",
+                OrderStatus.Cancelled  => "cancelled",
+                _                      => "pending"
+            };
+    }
 
-@if (Model.Order == null)
-{
-    <div class="rd-alert rd-alert-error">
-        <i class="bi bi-exclamation-triangle"></i> Request not found.
+    @if (Model.Order == null)
+    {
+        <div class="rd-alert rd-alert-error">
+            <i class="bi bi-exclamation-triangle"></i> Request not found.
+        </div>
+    }
+
+    <nav class="rd-breadcrumb">
+        <a href="/Seller/Requests">Requests</a>
+        <span class="mx-2">/</span>
+        <span>Order #@Model.Order.OrderId</span>
+    </nav>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="rd-alert rd-alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="rd-alert rd-alert-error"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+    }
+
+    <div class="rd-header">
+        <div>
+            <h1 class="rd-title">Request #@Model.Order.OrderId</h1>
+            <div class="rd-date">Received @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
+        </div>
+        <span class="rd-status badge-@statusKey">@((OrderStatus)Model.Order.Status)</span>
     </div>
-}
 
-        <!-- Breadcrumb -->
-        <nav class="rd-breadcrumb">
-            <a href="/Seller/Requests">Requests</a>
-            <span class="mx-2">/</span>
-            <span>Order #@Model.Order.OrderId</span>
-        </nav>
+    <div class="row g-4">
 
-        @if (TempData["Success"] != null)
-        {
-            <div class="rd-alert rd-alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="rd-alert rd-alert-error"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
-        }
+        <div class="col-lg-8">
 
-        <!-- Header -->
-        <div class="rd-header">
-            <div>
-                <h1 class="rd-title">Request #@Model.Order.OrderId</h1>
-                <div class="rd-date">Received @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
-            </div>
-            <span class="rd-status badge-@statusKey">@((OrderStatus)Model.Order.Status)</span>
-        </div>
-
-        <div class="row g-4">
-
-            <!-- ══ LEFT ══ -->
-            <div class="col-lg-8">
-
-                <!-- Buyer & Order Info -->
-                <div class="rd-card rd-card-accent">
-                    <div class="rd-section-title"><i class="bi bi-person"></i> Buyer</div>
-                    <div class="rd-buyer-strip">
-                        <div class="rd-avatar">
-                            @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
-                        </div>
-                        <div>
-                            <div class="rd-buyer-name">@Model.Order.Buyer?.FullName</div>
-                            <div class="rd-buyer-meta">Placed @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
-                        </div>
+            <div class="rd-card rd-card-accent">
+                <div class="rd-section-title"><i class="bi bi-person"></i> Buyer</div>
+                <div class="rd-buyer-strip">
+                    <div class="rd-avatar">
+                        @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
                     </div>
-
-                    <!-- Items or description -->
-                    @if (isCartOrder)
-                    {
-                        <div class="rd-section-title mt-3"><i class="bi bi-bag"></i> Items Ordered</div>
-                        @foreach (var item in Model.Order.OrderItems!)
-                        {
-                            <div class="rd-item">
-                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
-                                {
-                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Title" class="rd-item-img" />
-                                }
-                                else
-                                {
-                                    <div class="rd-item-img-placeholder"><i class="bi bi-image"></i></div>
-                                }
-                                <div class="flex-grow-1">
-                                    <div class="rd-item-name">@item.Product?.Title</div>
-                                    <div class="rd-item-meta">Qty: @item.Quantity · @item.Price.ToString("N0") VNĐ each</div>
-                                </div>
-                                <div class="rd-item-price">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
-                            </div>
-                        }
-                    }
-                    else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
-                    {
-                        <div class="rd-section-title mt-3"><i class="bi bi-chat-left-text"></i> Request Description</div>
-                        <div class="rd-note">@Model.Order.OrderDescription</div>
-                    }
+                    <div>
+                        <div class="rd-buyer-name">@Model.Order.Buyer?.FullName</div>
+                        <div class="rd-buyer-meta">Placed @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                    </div>
                 </div>
 
-                <!-- Send Quotation (only when pending or quoted) -->
-                @if (Model.Order.Status == (int)OrderStatus.Pending ||
-                     Model.Order.Status == (int)OrderStatus.Quoted)
+                @if (isCartOrder)
                 {
-                    <div class="rd-card">
-                        <div class="rd-section-title"><i class="bi bi-tag"></i> Send a Quotation</div>
-                        <form method="post" asp-page-handler="SendQuote">
-                            @Html.AntiForgeryToken()
-                            <div class="rd-field">
-                                <label class="rd-label">Proposed Price (VNĐ)</label>
-                                <input class="rd-input" type="number" name="ProposedPrice"
-                                       placeholder="e.g. 350000" required />
-                            </div>
-                            <div class="rd-field">
-                                <label class="rd-label">Message to Buyer</label>
-                                <textarea class="rd-input" name="Message" rows="3"
-                                          placeholder="Describe what's included, timeline, materials…"></textarea>
-                            </div>
-                            <div style="display:flex;justify-content:flex-end;">
-                                <button type="submit" class="rd-btn">
-                                    <i class="bi bi-send"></i> Send Quote
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                }
-
-                <!-- Quote History -->
-                @if (Model.Order.Quotations != null && Model.Order.Quotations.Any())
-                {
-                    <div class="rd-card">
-                        <div class="rd-section-title"><i class="bi bi-receipt"></i> Quote History</div>
-                        @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
-                        {
-                            var isAccepted = q.Status == 1;
-                            <div class="rd-quote-row @(isAccepted ? "rd-quote-accepted" : "")">
-                                <div>
-                                    <div style="font-size:.875rem;color:var(--fg);margin-bottom:.2rem;">
-                                        @(string.IsNullOrEmpty(q.Message) ? "Custom work" : q.Message)
-                                    </div>
-                                    <div style="font-family:var(--mono);font-size:.65rem;color:var(--fg-muted);letter-spacing:.08em;">
-                                        @q.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · HH:mm")
-                                    </div>
-                                </div>
-                                <div style="text-align:right;flex-shrink:0;">
-                                    <div style="font-weight:700;font-size:.95rem;color:var(--accent);">
-                                        @(q.ProposedPrice.HasValue ? q.ProposedPrice.Value.ToString("N0") + " VNĐ" : "—")
-                                    </div>
-                                    <span class="rd-status @(isAccepted ? "badge-completed" : "badge-pending")"
-                                          style="font-size:.6rem;padding:.15rem .6rem;margin-top:.25rem;">
-                                        @(isAccepted ? "Accepted" : "Pending")
-                                    </span>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-
-                <!-- Messages -->
-                <div class="rd-card">
-                    <div class="rd-section-title"><i class="bi bi-chat-dots"></i> Messages</div>
-                    @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
+                    <div class="rd-section-title mt-3"><i class="bi bi-bag"></i> Items Ordered</div>
+                    @foreach (var item in Model.Order.OrderItems!)
                     {
-                        <p style="font-size:.875rem;color:var(--fg-muted);font-style:italic;margin:0;">No messages yet.</p>
-                    }
-                    else
-                    {
-                        <div class="rd-messages">
-                            @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.SentAt))
+                        <div class="rd-item">
+                            @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
                             {
-                                var isMine = msg.SenderId == Model.SellerId;
-                                <div class="rd-bubble-wrap @(isMine ? "mine" : "")">
-                                    <div class="rd-bubble @(isMine ? "mine" : "theirs")">
-                                        <div class="sender">@msg.Sender?.FullName</div>
-                                        @msg.MessageContent
-                                        <div class="time">@msg.SentAt.ToLocalTime().ToString("HH:mm")</div>
-                                    </div>
-                                </div>
+                                <img src="@item.Product.ImageUrl" alt="@item.Product.Title" class="rd-item-img" />
                             }
+                            else
+                            {
+                                <div class="rd-item-img-placeholder"><i class="bi bi-image"></i></div>
+                            }
+                            <div class="flex-grow-1">
+                                <div class="rd-item-name">@item.Product?.Title</div>
+                                <div class="rd-item-meta">Qty: @item.Quantity · @item.Price.ToString("N0") VNĐ each</div>
+                            </div>
+                            <div class="rd-item-price">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
+                        </div>
+                    }
+                }
+                else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
+                {
+                    <div class="rd-section-title mt-3"><i class="bi bi-chat-left-text"></i> Request Description</div>
+                    <div class="rd-note">@Model.Order.OrderDescription</div>
+                }
+            </div>
+
+            @if (Model.Order.Status == (int)OrderStatus.Pending ||
+                 Model.Order.Status == (int)OrderStatus.Quoted)
+            {
+                <div class="rd-card">
+                    <div class="rd-section-title"><i class="bi bi-tag"></i> Send a Quotation</div>
+                    <form method="post" asp-page-handler="SendQuote">
+                        @Html.AntiForgeryToken()
+                        <div class="rd-field">
+                            <label class="rd-label">Proposed Price (VNĐ)</label>
+                            <input class="rd-input" type="number" name="ProposedPrice"
+                                   placeholder="e.g. 350000" required />
+                        </div>
+                        <div class="rd-field">
+                            <label class="rd-label">Message to Buyer</label>
+                            <textarea class="rd-input" name="Message" rows="3"
+                                      placeholder="Describe what's included, timeline, materials…"></textarea>
+                        </div>
+                        <div style="display:flex;justify-content:flex-end;">
+                            <button type="submit" class="rd-btn">
+                                <i class="bi bi-send"></i> Send Quote
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.Order.Quotations != null && Model.Order.Quotations.Any())
+            {
+                <div class="rd-card">
+                    <div class="rd-section-title"><i class="bi bi-receipt"></i> Quote History</div>
+                    @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
+                    {
+                        var isAccepted = q.Status == 1;
+                        <div class="rd-quote-row @(isAccepted ? "rd-quote-accepted" : "")">
+                            <div>
+                                <div style="font-size:.875rem;color:var(--fg);margin-bottom:.2rem;">
+                                    @(string.IsNullOrEmpty(q.Message) ? "Custom work" : q.Message)
+                                </div>
+                                <div style="font-family:var(--mono);font-size:.65rem;color:var(--fg-muted);letter-spacing:.08em;">
+                                    @q.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · HH:mm")
+                                </div>
+                            </div>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div style="font-weight:700;font-size:.95rem;color:var(--accent);">
+                                    @(q.ProposedPrice.HasValue ? q.ProposedPrice.Value.ToString("N0") + " VNĐ" : "—")
+                                </div>
+                                <span class="rd-status @(isAccepted ? "badge-completed" : "badge-pending")"
+                                      style="font-size:.6rem;padding:.15rem .6rem;margin-top:.25rem;">
+                                    @(isAccepted ? "Accepted" : "Pending")
+                                </span>
+                            </div>
                         </div>
                     }
                 </div>
-            </div>
+            }
 
-            <!-- ══ RIGHT ══ -->
-            <div class="col-lg-4">
-
-                <!-- Order Summary -->
-                <div class="rd-card">
-                    <div class="rd-section-title"><i class="bi bi-clipboard-check"></i> Summary</div>
-                    <div class="rd-row"><span class="lbl">Order #</span><span class="val">@Model.Order.OrderId</span></div>
-                    <div class="rd-row">
-                        <span class="lbl">Status</span>
-                        <span class="rd-status badge-@statusKey" style="font-size:.62rem;padding:.15rem .65rem;">
-                            @((OrderStatus)Model.Order.Status)
-                        </span>
-                    </div>
-                    <div class="rd-row"><span class="lbl">Received</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
-                    @if (Model.Order.CompletedAt.HasValue)
-                    {
-                        <div class="rd-row"><span class="lbl">Completed</span><span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span></div>
-                    }
-                    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
-                    <div class="rd-row"><span class="lbl">Subtotal</span><span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span></div>
-                    <div class="rd-total">
-                        <span>Total</span>
-                        <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")</span>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="rd-card">
-                    <div class="rd-section-title"><i class="bi bi-lightning"></i> Actions</div>
-                    <div style="display:flex;flex-direction:column;gap:.75rem;">
-
-                        @if (Model.Order.Status == (int)OrderStatus.Confirmed)
+            <div class="rd-card">
+                <div class="rd-section-title"><i class="bi bi-chat-dots"></i> Messages</div>
+                @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
+                {
+                    <p style="font-size:.875rem;color:var(--fg-muted);font-style:italic;margin:0;">No messages yet.</p>
+                }
+                else
+                {
+                    <div class="rd-messages">
+                        @foreach (var msg in Model.Order.ChatMessages.OrderBy(m => m.CreatedAt))
                         {
-                            <form method="post" asp-page-handler="UpdateStatus">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.InProgress)" />
-                                <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
-                                    <i class="bi bi-tools"></i> Mark as In Progress
-                                </button>
-                            </form>
+                            var isMine = msg.FromUserId == Model.SellerId;
+                            <div class="rd-bubble-wrap @(isMine ? "mine" : "")">
+                                <div class="rd-bubble @(isMine ? "mine" : "theirs")">
+                                    <div class="sender">@msg.FromUser?.FullName</div>
+                                    @msg.Message
+                                    <div class="time">@msg.CreatedAt.ToLocalTime().ToString("HH:mm")</div>
+                                </div>
+                            </div>
                         }
-
-                        @if (Model.Order.Status == (int)OrderStatus.InProgress)
-                        {
-                            <form method="post" asp-page-handler="UpdateStatus">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.Completed)" />
-                                <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
-                                    <i class="bi bi-bag-check"></i> Mark as Completed
-                                </button>
-                            </form>
-                        }
-
-                        @if (Model.Order.Status != (int)OrderStatus.Completed &&
-                             Model.Order.Status != (int)OrderStatus.Cancelled)
-                        {
-                            <form method="post" asp-page-handler="UpdateStatus"
-                                  onsubmit="return confirm('Cancel this order?')">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="newStatus" value="@((int)OrderStatus.Cancelled)" />
-                                <button type="submit" class="rd-btn-danger" style="width:100%;justify-content:center;">
-                                    <i class="bi bi-x-circle"></i> Cancel Order
-                                </button>
-                            </form>
-                        }
-
-                        <a href="mailto:@Model.Order.Buyer?.Email" class="rd-btn-ghost" style="justify-content:center;">
-                            <i class="bi bi-envelope"></i> Email Buyer
-                        </a>
                     </div>
-                </div>
-
+                }
             </div>
         </div>
+
+        <div class="col-lg-4">
+
+            <div class="rd-card">
+                <div class="rd-section-title"><i class="bi bi-clipboard-check"></i> Summary</div>
+                <div class="rd-row"><span class="lbl">Order #</span><span class="val">@Model.Order.OrderId</span></div>
+                <div class="rd-row">
+                    <span class="lbl">Status</span>
+                    <span class="rd-status badge-@statusKey" style="font-size:.62rem;padding:.15rem .65rem;">
+                        @((OrderStatus)Model.Order.Status)
+                    </span>
+                </div>
+                <div class="rd-row"><span class="lbl">Received</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                @if (Model.Order.CompletedAt.HasValue)
+                {
+                    <div class="rd-row"><span class="lbl">Completed</span><span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                }
+                <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
+                <div class="rd-row"><span class="lbl">Subtotal</span><span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span></div>
+                <div class="rd-total">
+                    <span>Total</span>
+                    <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                </div>
+            </div>
+
+            <div class="rd-card">
+                <div class="rd-section-title"><i class="bi bi-lightning"></i> Actions</div>
+                <div style="display:flex;flex-direction:column;gap:.75rem;">
+
+                    @if (Model.Order.Status == (int)OrderStatus.Confirmed)
+                    {
+                        <form method="post" asp-page-handler="UpdateStatus">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="newStatus" value="@((int)OrderStatus.InProgress)" />
+                            <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
+                                <i class="bi bi-tools"></i> Mark as In Progress
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Order.Status == (int)OrderStatus.InProgress)
+                    {
+                        <form method="post" asp-page-handler="UpdateStatus">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="newStatus" value="@((int)OrderStatus.Completed)" />
+                            <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
+                                <i class="bi bi-bag-check"></i> Mark as Completed
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Order.Status != (int)OrderStatus.Completed &&
+                         Model.Order.Status != (int)OrderStatus.Cancelled)
+                    {
+                        <form method="post" asp-page-handler="UpdateStatus"
+                              onsubmit="return confirm('Cancel this order?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="newStatus" value="@((int)OrderStatus.Cancelled)" />
+                            <button type="submit" class="rd-btn-danger" style="width:100%;justify-content:center;">
+                                <i class="bi bi-x-circle"></i> Cancel Order
+                            </button>
+                        </form>
+                    }
+
+                    <a href="mailto:@Model.Order.Buyer?.Email" class="rd-btn-ghost" style="justify-content:center;">
+                        <i class="bi bi-envelope"></i> Email Buyer
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>

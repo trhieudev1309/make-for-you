@@ -14,28 +14,28 @@ namespace MakeForYou.Repositories.Repository
         {
             _context = context;
         }
+
         // Order history — all orders for a buyer, newest first
         public async Task<List<Order>> FindByBuyerIdAsync(long buyerId) =>
-       await _context.Orders
+            await _context.Orders
                 .Where(o => o.BuyerId == buyerId)
                 .Include(o => o.Seller).ThenInclude(s => s.User)
                 .Include(o => o.Quotations)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
-
         // Order detail — enforces ownership (buyerId must match)
         public async Task<Order?> GetOrderWithDetailsAsync(long orderId, long buyerId) =>
-    await _context.Orders
-             .Where(o => o.OrderId == orderId && o.BuyerId == buyerId)
-             .Include(o => o.Seller).ThenInclude(s => s.User)
-             .Include(o => o.Quotations)
-             .Include(o => o.Reviews)
-             .Include(o => o.ChatMessages.OrderBy(m => m.CreatedAt))
-                 .ThenInclude(m => m.FromUser)
-             .Include(o => o.OrderItems)          // ← add this
-                 .ThenInclude(i => i.Product)     // ← and this
-             .FirstOrDefaultAsync();
+            await _context.Orders
+                .Where(o => o.OrderId == orderId && o.BuyerId == buyerId)
+                .Include(o => o.Seller).ThenInclude(s => s.User)
+                .Include(o => o.Quotations)
+                .Include(o => o.Reviews)
+                .Include(o => o.ChatMessages.OrderBy(m => m.CreatedAt))
+                    .ThenInclude(m => m.FromUser)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync();
 
         public async Task<Order> AddAsync(Order order)
         {
@@ -43,17 +43,15 @@ namespace MakeForYou.Repositories.Repository
             await _context.SaveChangesAsync();
             return order;
         }
+
         public async Task<Order> CreateOrderAsync(Order order, List<OrderItem> items)
         {
-            // Bắt đầu giao dịch (Transaction)
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Lưu đơn hàng chính
                 _context.Set<Order>().Add(order);
-                await _context.SaveChangesAsync(); // Lưu để lấy được OrderId tự tăng
+                await _context.SaveChangesAsync();
 
-                // 2. Gán OrderId cho từng item và lưu vào bảng OrderItems
                 foreach (var item in items)
                 {
                     item.OrderId = order.OrderId;
@@ -61,14 +59,11 @@ namespace MakeForYou.Repositories.Repository
                 }
 
                 await _context.SaveChangesAsync();
-
-                // 3. Xác nhận mọi thứ thành công
                 await transaction.CommitAsync();
                 return order;
             }
             catch (Exception)
             {
-                // Nếu có bất kỳ lỗi gì, hủy bỏ toàn bộ thay đổi
                 await transaction.RollbackAsync();
                 throw;
             }
@@ -87,16 +82,15 @@ namespace MakeForYou.Repositories.Repository
             var order = await _context.Set<Order>().FindAsync(orderId);
             if (order != null)
             {
-                order.Status = status;
+                order.Status = newStatus;
 
-                // KIỂM TRA: Nếu chuyển thành Completed (4) thì cập nhật giờ hoàn thành
-                if (status == 4)
+                // Sử dụng enum OrderStatus.Completed từ hệ thống để đồng bộ logic
+                if (newStatus == (int)OrderStatus.Completed)
                 {
-                    order.CompletedAt = DateTime.UtcNow; // Hoặc DateTime.Now tùy múi giờ dự án của bạn
+                    order.CompletedAt = DateTime.UtcNow;
                 }
                 else
                 {
-                    // Nếu lỡ chuyển nhầm thành Completed rồi chuyển lại Pending, thì clear CompletedAt đi
                     order.CompletedAt = null;
                 }
 
@@ -105,7 +99,7 @@ namespace MakeForYou.Repositories.Repository
         }
 
         public async Task<(List<Order> Orders, int TotalCount)> GetAllOrdersFilteredAsync(
-    string? search, int? status, int pageIndex, int pageSize)
+            string? search, int? status, int pageIndex, int pageSize)
         {
             var query = _context.Orders
                 .Include(o => o.Buyer)
@@ -113,11 +107,9 @@ namespace MakeForYou.Repositories.Repository
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
                 .AsQueryable();
 
-            // Lọc theo trạng thái
             if (status.HasValue)
                 query = query.Where(o => o.Status == status.Value);
 
-            // Tìm kiếm theo mã đơn hoặc tên khách
             if (!string.IsNullOrEmpty(search))
                 query = query.Where(o => o.OrderId.ToString().Contains(search) || o.Buyer.FullName.Contains(search));
 
@@ -131,42 +123,34 @@ namespace MakeForYou.Repositories.Repository
 
             return (orders, totalCount);
         }
-    }
-            var order = await _context.Orders.FindAsync(orderId);
-            if (order == null) return;
-            order.Status = newStatus;
-            if (newStatus == (int)OrderStatus.Completed)
-                order.CompletedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<List<Order>> FindBySellerIdAsync(long sellerId) =>
-    await _context.Orders
-        .Where(o => o.SellerId == sellerId)
-        .Include(o => o.Buyer)
-        .Include(o => o.Quotations)
-        .Include(o => o.OrderItems).ThenInclude(i => i.Product)
-        .OrderByDescending(o => o.CreatedAt)
-        .ToListAsync();
+            await _context.Orders
+                .Where(o => o.SellerId == sellerId)
+                .Include(o => o.Buyer)
+                .Include(o => o.Quotations)
+                .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
 
         public async Task<Order?> GetOrderWithDetailsBySellerAsync(long orderId, long sellerId) =>
+    await _context.Orders
+        .Where(o => o.OrderId == orderId && o.SellerId == sellerId)
+        .Include(o => o.Buyer)
+        .Include(o => o.Seller).ThenInclude(s => s.User)
+        .Include(o => o.Quotations)
+        .Include(o => o.OrderItems).ThenInclude(i => i.Product)
+        .Include(o => o.ChatMessages.OrderBy(m => m.CreatedAt)) // Sửa từ SentAt thành CreatedAt
+            .ThenInclude(m => m.FromUser)                       // Sửa từ Sender thành FromUser
+        .Include(o => o.Reviews)
+        .FirstOrDefaultAsync();
+
+        public async Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
             await _context.Orders
                 .Where(o => o.OrderId == orderId && o.SellerId == sellerId)
                 .Include(o => o.Buyer)
-                .Include(o => o.Seller).ThenInclude(s => s.User)
-                .Include(o => o.Quotations)
                 .Include(o => o.OrderItems).ThenInclude(i => i.Product)
-                .Include(o => o.ChatMessages.OrderBy(m => m.SentAt))
-                    .ThenInclude(m => m.Sender)
-                .Include(o => o.Reviews)
+                .Include(o => o.ProgressLogs)
                 .FirstOrDefaultAsync();
-
-        public async Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
-    await _context.Orders
-             .Where(o => o.OrderId == orderId && o.SellerId == sellerId)
-             .Include(o => o.Buyer)
-             .Include(o => o.OrderItems).ThenInclude(i => i.Product)
-             .Include(o => o.ProgressLogs)
-             .FirstOrDefaultAsync();
-    } 
+    }
 }

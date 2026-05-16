@@ -22,8 +22,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             ICartService cartService,
             ICartRepository cartRepo,
             IProductRepository productRepo,
-            INotificationService notificationService)
-            IProductRepository productRepo,
+            INotificationService notificationService,
             IProgressRepository progressRepo,
             IWebHostEnvironment env) // Thêm tham số này
         {

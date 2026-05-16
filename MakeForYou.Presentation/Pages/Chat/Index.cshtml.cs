@@ -8,10 +8,12 @@ namespace MakeForYou.Presentation.Pages.Chat
     public class IndexModel : PageModel
     {
         public string CurrentUserId { get; private set; } = string.Empty;
+        public bool IsSeller { get; private set; }
 
         public void OnGet()
         {
             CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            IsSeller = User.IsInRole("Seller");
         }
     }
 }

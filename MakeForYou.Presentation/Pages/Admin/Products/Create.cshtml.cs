@@ -1,5 +1,5 @@
 ﻿using MakeForYou.BusinessLogic;
-using MakeForYou.BusinessLogic.Entities; // Thêm để dùng ApplicationDbContext
+using MakeForYou.BusinessLogic.Entities; // Chứa DbContext và Entity Seller
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
@@ -13,7 +13,7 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
     {
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
-        private readonly ApplicationDbContext _context; // Dùng để lấy danh sách Seller nhanh
+        private readonly ApplicationDbContext _context;
 
         public CreateModel(IProductService productService,
                           ICategoryService categoryService,
@@ -29,8 +29,8 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
 
         public List<CategoryViewModel> Categories { get; set; } = new();
 
-        // Danh sách Seller để Admin chọn
-        public List<Seller> Sellers { get; set; } = new();
+        // SỬA TẠI ĐÂY: Chỉ định rõ ràng Class Seller từ namespace Entities để tránh trùng tên với Namespace khác
+        public List<MakeForYou.BusinessLogic.Entities.Seller> Sellers { get; set; } = new();
 
         public async Task OnGetAsync()
         {
@@ -44,14 +44,12 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
         {
             if (!ModelState.IsValid)
             {
-                await OnGetAsync(); // Load lại các list nếu form lỗi
+                await OnGetAsync();
                 return Page();
             }
 
-            // Status mặc định là 1 (Đang bán) khi Admin tạo mới
             Product.Status = 1;
 
-            // Lúc này Product.SellerId đã được gán từ Dropdown trên giao diện
             var result = await _productService.CreateProductAsync(Product);
 
             if (result) return RedirectToPage("/Admin/Index");

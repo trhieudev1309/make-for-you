@@ -68,6 +68,9 @@ builder.Services.AddScoped<ISellerService, SellerService>();
 
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<PortfolioService, PortfolioService>();
+
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 // SignalR
 builder.Services.AddSignalR();
 

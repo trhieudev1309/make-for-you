@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
+using MakeForYou.BusinessLogic.Services.Interfaces; // Hoặc đường dẫn chính xác đến thư mục chứa IQuotationService của bạn
 
 namespace MakeForYou.Presentation.Pages.Seller
 {

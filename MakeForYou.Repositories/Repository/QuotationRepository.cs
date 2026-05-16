@@ -21,5 +21,19 @@ namespace MakeForYou.Repositories.Repository
                 .Where(q => q.OrderId == orderId)
                 .OrderByDescending(q => q.CreatedAt)
                 .ToListAsync();
+
+        public async Task<Quotation?> GetByIdAsync(long id) =>
+            await _context.Set<Quotation>()
+                .FirstOrDefaultAsync(q => q.QuotationId == id);
+
+        // UPDATE status
+        public async Task UpdateStatusAsync(long id, int status)
+        {
+            var q = await _context.Set<Quotation>().FindAsync(id)
+                ?? throw new KeyNotFoundException($"Quotation {id} not found.");
+
+            q.Status = status;
+            await _context.SaveChangesAsync();
+        }
     }
 }
