@@ -21,5 +21,6 @@ namespace MakeForYou.BusinessLogic.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsRead { get; set; } = false;
+        public long? OrderId { get; set; }
     }
 }

@@ -9,5 +9,6 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task AcceptAsync(long quotationId, long buyerId);
         Task RejectAsync(long quotationId, long buyerId);
         Task ConfirmAsync(long quotationId, long sellerId);
+        Task<Quotation?> GetByIdAsync(long quotationId);
     }
 }

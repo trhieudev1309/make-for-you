@@ -204,6 +204,20 @@
 
     .sp-tab-panel { display: none; }
     .sp-tab-panel.active { display: block; }
+
+    /* ── requests link ── */
+    .sp-requests-link {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: transparent; color: var(--accent); border: 1px solid var(--accent);
+        border-radius: 4px; padding: 0 1.25rem; height: 40px;
+        font-family: var(--mono); font-size: .7rem; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase;
+        cursor: pointer; transition: all .2s; text-decoration: none;
+    }
+    .sp-requests-link:hover {
+        background: var(--accent); color: #fff;
+        box-shadow: 0 4px 12px rgba(184,134,11,.2);
+    }
 </style>
 
 <div class="sp-wrap">
@@ -215,13 +229,20 @@
         <span class="sp-label-rule"></span>
     </div>
 
-    <!-- Page Title -->
-    <h1 style="font-family:var(--serif);font-size:2.25rem;font-weight:400;margin-bottom:.375rem;">
-        My Profile
-    </h1>
-    <p style="font-size:.9rem;color:var(--fg-muted);margin-bottom:2.5rem;">
-        Manage how buyers discover and experience your work.
-    </p>
+    <!-- Page Title + Requests shortcut -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2.5rem;">
+        <div>
+            <h1 style="font-family:var(--serif);font-size:2.25rem;font-weight:400;margin-bottom:.375rem;">
+                My Profile
+            </h1>
+            <p style="font-size:.9rem;color:var(--fg-muted);margin:0;">
+                Manage how buyers discover and experience your work.
+            </p>
+        </div>
+        <a href="https://localhost:7175/Seller/Requests" class="sp-requests-link">
+            <i class="bi bi-inbox-fill"></i> My Requests
+        </a>
+    </div>
 
     @if (TempData["Success"] != null)
     {

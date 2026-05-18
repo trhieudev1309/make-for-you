@@ -176,6 +176,8 @@
         <h5>📋 Send a Quotation</h5>
         <label>Price (VND)</label>
         <input type="number" id="q_price" min="1" placeholder="e.g. 500000" />
+        <label>Deadline</label>
+        <input type="date" id="q_deadline" />   <!-- ← thêm -->
         <label>Message / Scope of work</label>
         <textarea id="q_message" rows="4" placeholder="Describe what's included, timeline, terms…"></textarea>
         <div class="modal-actions">
@@ -391,10 +393,13 @@
     }
 
     function renderQuotation(q) {
-        const isMe   = q.sellerId.toString() === currentUserId;
+        const isMe   = (q.sellerId ?? q.createdBy ?? 0).toString() === currentUserId;
         const status = q.statusLabel.toLowerCase();
         const price  = Number(q.proposedPrice).toLocaleString('vi-VN') + ' ₫';
         const time   = new Date(q.createdAt).toLocaleTimeString();
+        const deadlineStr = q.deadline 
+        ? new Date(q.deadline).toLocaleDateString('vi-VN') 
+        : 'No deadline';
 
         let actions = '';
         if (status === 'pending' && !isMe) {
@@ -416,6 +421,10 @@
                     <div class="q-row">
                         <span class="q-label">Price</span>
                         <span class="q-val">${escapeHtml(price)}</span>
+                    </div>
+                    <div class="q-row">
+                        <span class="q-label">Deadline</span>
+                        <span class="q-val">${escapeHtml(deadlineStr)}</span>
                     </div>
                     <div class="q-desc">${escapeHtml(q.message)}</div>
                     <span class="q-status ${status}">${escapeHtml(q.statusLabel)}</span>
@@ -468,6 +477,7 @@
         const price   = parseInt(document.getElementById('q_price').value, 10);
         const message = document.getElementById('q_message').value.trim();
         const orderId = selectedOrderIdEl.value;
+        const deadline = document.getElementById('q_deadline').value;
 
         if (!price || price <= 0) { alert('Please enter a valid price.'); return; }
         if (!message)              { alert('Please enter a message.');      return; }
@@ -478,7 +488,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify({ orderId: parseInt(orderId, 10), proposedPrice: price, message })
+                body: JSON.stringify({ orderId: parseInt(orderId, 10), proposedPrice: price, message,deadline: deadline ? new Date(deadline).toISOString() : null })
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
@@ -493,7 +503,8 @@
             const conv = conversations.get(selectedArtisanIdEl.value);
             renderAll(conv ? conv.messages : [], list);
             closeQuotationModal();
-        } catch {
+        } catch(e) {
+            console.error('submitQuotation error:', e);
             alert('Network error. Please try again.');
         }
     };

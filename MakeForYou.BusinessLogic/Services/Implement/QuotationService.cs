@@ -69,5 +69,8 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             return (q, order);
         }
+
+        public Task<Quotation?> GetByIdAsync(long quotationId)
+    => _quotationRepo.GetByIdAsync(quotationId);
     }
 }

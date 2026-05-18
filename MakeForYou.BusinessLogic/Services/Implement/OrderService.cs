@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -195,6 +196,22 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             await _orderRepo.UpdateStatusAsync(orderId, req.NewStatus);
 
             return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
+        }
+
+        public async Task<long?> GetOrderIdByUsersAsync(long userA, long userB)
+        {
+            // userA là seller, userB là buyer
+            var sellerOrders = await _orderRepo.FindBySellerIdAsync(userA);
+            var order = sellerOrders.FirstOrDefault(o => o.BuyerId == userB);
+
+            if (order == null)
+            {
+                // userB là seller, userA là buyer
+                var sellerOrders2 = await _orderRepo.FindBySellerIdAsync(userB);
+                order = sellerOrders2.FirstOrDefault(o => o.BuyerId == userA);
+            }
+
+            return order?.OrderId;
         }
     }
 }

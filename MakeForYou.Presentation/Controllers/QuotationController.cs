@@ -21,8 +21,27 @@ namespace MakeForYou.Presentation.Controllers.Api
         private long CurrentUserId =>
             long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+        private object MapQuotation(Quotation q) => new
+        {
+            quotationId = q.QuotationId,
+            orderId = q.OrderId,
+            sellerId = q.CreatedBy,
+            proposedPrice = q.ProposedPrice,
+            message = q.Message,
+            deadline = q.Deadline,
+            createdAt = q.CreatedAt,
+            statusLabel = q.Status switch
+            {
+                0 => "Pending",
+                1 => "Accepted",
+                2 => "Rejected",
+                3 => "Confirmed",
+                4 => "Cancelled",
+                _ => "Unknown"
+            }
+        };
+
         // POST api/quotation
-        // Seller tạo quotation cho 1 Order
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateQuotationRequest req)
         {
@@ -34,12 +53,13 @@ namespace MakeForYou.Presentation.Controllers.Api
                     CreatedBy = CurrentUserId,
                     ProposedPrice = req.ProposedPrice,
                     Message = req.Message,
-                    Status = 0,                  // Pending
+                    Deadline = req.Deadline,
+                    Status = 0,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _service.CreateAsync(quotation);
-                return Ok(quotation);
+                return Ok(MapQuotation(quotation));
             }
             catch (UnauthorizedAccessException) { return Forbid(); }
             catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
@@ -53,7 +73,7 @@ namespace MakeForYou.Presentation.Controllers.Api
             try
             {
                 var list = await _service.GetByOrderAsync(orderId);
-                return Ok(list);
+                return Ok(list.Select(MapQuotation));
             }
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
@@ -65,7 +85,8 @@ namespace MakeForYou.Presentation.Controllers.Api
             try
             {
                 await _service.AcceptAsync(id, CurrentUserId);
-                return Ok();
+                var q = await _service.GetByIdAsync(id);
+                return Ok(MapQuotation(q!));
             }
             catch (KeyNotFoundException) { return NotFound(); }
             catch (UnauthorizedAccessException) { return Forbid(); }
@@ -79,7 +100,8 @@ namespace MakeForYou.Presentation.Controllers.Api
             try
             {
                 await _service.RejectAsync(id, CurrentUserId);
-                return Ok();
+                var q = await _service.GetByIdAsync(id);
+                return Ok(MapQuotation(q!));
             }
             catch (KeyNotFoundException) { return NotFound(); }
             catch (UnauthorizedAccessException) { return Forbid(); }
@@ -93,7 +115,8 @@ namespace MakeForYou.Presentation.Controllers.Api
             try
             {
                 await _service.ConfirmAsync(id, CurrentUserId);
-                return Ok();
+                var q = await _service.GetByIdAsync(id);
+                return Ok(MapQuotation(q!));
             }
             catch (KeyNotFoundException) { return NotFound(); }
             catch (UnauthorizedAccessException) { return Forbid(); }
@@ -106,5 +129,6 @@ namespace MakeForYou.Presentation.Controllers.Api
         public long OrderId { get; set; }
         public int ProposedPrice { get; set; }
         public string Message { get; set; } = string.Empty;
+        public DateTime? Deadline { get; set; }
     }
 }
