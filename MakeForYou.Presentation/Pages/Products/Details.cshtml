@@ -1,7 +1,7 @@
 ﻿@page "{id:long}"
 @model MakeForYou.Presentation.Pages.Products.DetailsModel
 @{
-    ViewData["Title"] = Model.Product?.Title ?? "Product Details";
+    ViewData["Title"] = Model.Product?.Title ?? "Chi tiết tác phẩm";
 }
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,21 +13,19 @@
     <div class="serif-container">
         @if (Model.Product == null)
         {
-            <div class="alert alert-warning" role="alert">Product not found.</div>
+            <div class="alert alert-warning" role="alert">Không tìm thấy tác phẩm yêu cầu.</div>
         }
         else
         {
-            <!-- Breadcrumb -->
             <nav aria-label="Breadcrumb" class="mb-3">
                 <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
-                    <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Products</a></li>
-                    <li class="breadcrumb-item text-muted small-caps" aria-current="page">@(Model.Product.Category?.Name ?? "Product")</li>
+                    <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Tác phẩm</a></li>
+                    <li class="breadcrumb-item text-muted small-caps" aria-current="page">@(Model.Product.Category?.Name ?? "Sản phẩm")</li>
                 </ol>
             </nav>
 
-            <!-- Header -->
             <header class="mb-5">
-                <div class="kicker">Product</div>
+                <div class="kicker">Tác phẩm thủ công</div>
                 <h1 class="serif-title">@Model.Product.Title</h1>
                 @if (!string.IsNullOrEmpty(Model.Product.Description))
                 {
@@ -38,61 +36,58 @@
             </header>
 
             <div class="details-grid">
-                <!-- Left: Gallery + Description -->
                 <div class="left-column">
                     <div class="product-hero-card">
-                        <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Open image in larger view">
+                        <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Xem ảnh phóng to">
                             @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
                             {
-                                <img src="@Model.Product.ImageUrl" alt="Image of @Model.Product.Title" loading="lazy" class="product-image-lg" />
+                                <img src="@Model.Product.ImageUrl" alt="Hình ảnh của @Model.Product.Title" loading="lazy" class="product-image-lg" />
                             }
                             else
                             {
                                 <div class="product-image-lg" style="display:flex;align-items:center;justify-content:center;background:#f3f1ee;color:var(--serif-muted);">
-                                    <span class="small-caps">No image available</span>
+                                    <span class="small-caps">Không có hình ảnh</span>
                                 </div>
                             }
                         </button>
                     </div>
 
-                    <!-- Full long read description card (secondary) -->
                     <section>
-                        <div class="small-caps mb-3">Full description</div>
+                        <div class="small-caps mb-3">Mô tả chi tiết tác phẩm</div>
                         <article class="full-desc">
                             <div class="serif-body">@Model.Product.Description</div>
                         </article>
                     </section>
                 </div>
 
-                <!-- Right: Meta + Artisan -->
                 <aside class="right-column">
                     <div class="meta-card">
-                        <div class="small-caps">Offer</div>
+                        <div class="small-caps">Thông tin ưu đãi</div>
                         <div class="d-flex align-items-baseline justify-content-between">
                             <div>
                                 <div class="h3" style="font-family:Playfair Display, Georgia, serif;margin:0;">
                                     @if (Model.Product.Price.HasValue)
                                     {
-                                        @Model.Product.Price.Value.ToString("C0")
+                                        @Model.Product.Price.Value.ToString("N0") <span style="font-size: 1.1rem; font-weight: 600;">đ</span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted-serif">Price on request</span>
+                                        <span class="text-muted-serif" style="font-size: 1.2rem;">Liên hệ để nhận giá</span>
                                     }
                                 </div>
-                                <div class="small-muted">Added @Model.Product.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                                <div class="small-muted">Đăng ngày @Model.Product.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
                             </div>
                             <div class="small-muted text-end">
-                                <div class="small-caps">Stock</div>
-                                <div>@((Model.Product.Seller?.AvailabilityStatus == 1) ? "Available" : "Check availability")</div>
+                                <div class="small-caps">Tình trạng</div>
+                                <div>@((Model.Product.Seller?.AvailabilityStatus == 1) ? "Sẵn sàng giao" : "Liên hệ kiểm tra")</div>
                             </div>
                         </div>
 
                         <hr style="border-color:var(--serif-border);" />
 
-                        @* PHẦN SELECTION ĐÃ THÊM ICON BAG HEART *@
+                        @* KHU VỰC TƯƠNG TÁC GIỎ HÀNG *@
                         <div class="cart-interaction-group mb-4">
-                            <div class="small-caps mb-2" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Selection</div>
+                            <div class="small-caps mb-2" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chọn mua hàng</div>
                             <div class="d-flex flex-column gap-2">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="qty-selector d-flex align-items-center border rounded-pill px-3 py-1 bg-white">
@@ -103,17 +98,18 @@
                                     <button id="addToCartBtn" class="btn btn-mfy-solid flex-grow-1 rounded-pill fw-bold" 
                                             style="background: var(--mfy-bark, #2D2926); color: white; padding: 10px;" 
                                             onclick="handleAddToCart()">
-                                        Add to Basket
+                                        Thêm vào giỏ hàng
                                     </button>
                                 </div>
                                 
-                                @* NÚT GIỎ HÀNG VỚI ICON BI-BAG-HEART *@
+                                @* NÚT XEM GIỎ HÀNG HIỆN TẠI *@
                                 <a href="/Cart/Index" class="btn btn-outline-dark rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2" style="padding: 8px;">
-                                    <i class="bi bi-bag-heart"></i> View My Basket
+                                    <i class="bi bi-bag-heart"></i> Xem giỏ hàng của tôi
                                 </a>
                             </div>
                         </div>
 
+                        @* KHỐI THÔNG TIN PROFILE NGHỆ NHÂN *@
                         <div class="profile-card mt-2">
                             <a href="/Artisans/@Model.Product.SellerId" class="text-decoration-none">
                                 <div class="profile-avatar" aria-hidden="true" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
@@ -134,17 +130,16 @@
                                 <div class="stats-grid">
                                     <div class="stat">
                                         <div class="value">@((Model.Product.Seller?.AverageRating ?? 0).ToString())</div>
-                                        <div class="label">Rating</div>
+                                        <div class="label">Đánh giá</div>
                                     </div>
                                     <div class="stat">
                                         <div class="value">@((Model.Product.Seller?.TotalReviews ?? 0))</div>
-                                        <div class="label">Reviews</div>
+                                        <div class="label">Nhận xét</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Replace the cta-group -->
                         <div class="cta-group mt-3">
                             @if (User.Identity?.IsAuthenticated == true)
                             {
@@ -153,72 +148,71 @@
                                     <a class="btn btn-primary serif" 
                                        href="javascript:void(0);" 
                                        onclick="if(window.startChatWithArtisan('@Model.Product.SellerId', '@Html.Raw(Model.Product.Seller.User.FullName.Replace("'", "\\'"))')) { window.location.href='/Chat'; } return false;">
-                                        Contact Artisan
+                                         Liên hệ Nghệ nhân
                                     </a>
                                 }
                                 else
                                 {
-                                    <button class="btn btn-primary serif" disabled>Contact Unavailable</button>
+                                    <button class="btn btn-primary serif" disabled>Liên hệ tạm khóa</button>
                                 }
                             }
                             else
                             {
-                                <a class="btn btn-primary serif" href="/Auth/Login?returnUrl=/Products/@Model.Product.ProductId">Sign in to Contact</a>
+                                <a class="btn btn-primary serif" href="/Auth/Login?returnUrl=/Products/@Model.Product.ProductId">Đăng nhập để liên hệ</a>
                             }
-                            <a asp-page="/Products/Index" class="btn btn-outline-secondary">Back to products</a>
+                            <a asp-page="/Products/Index" class="btn btn-outline-secondary">Quay lại trang tác phẩm</a>
                         </div>
 
                         <div class="about-card mt-4">
-                            <div class="small-caps mb-2">About the artisan</div>
+                            <div class="small-caps mb-2">Đôi nét về nghệ nhân</div>
                             <p class="serif-body text-muted-serif" style="margin:0;">
-                                @(Model.Product.Seller?.Bio ?? "No biography provided.")
+                                @(Model.Product.Seller?.Bio ?? "Chưa có thông tin giới thiệu tiểu sử.")
                             </p>
                         </div>
                     </div>
                 </aside>
             </div>
 
-                <!-- Reviews -->
-                <section class="reviews-section">
-                    <div class="reviews-header">
-                        <div>
-                            <div class="small-caps">Reviews</div>
-                            <h2 class="serif-title" style="font-size:1.25rem;margin:0;">What customers say</h2>
-                        </div>
-                        <div class="small-muted">
-                            @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
-                            {
-                                <div>@Model.Product.Seller.TotalReviews reviews</div>
-                            }
-                            else
-                            {
-                                <div>No reviews yet</div>
-                            }
-                        </div>
+            <section class="reviews-section">
+                <div class="reviews-header">
+                    <div>
+                        <div class="small-caps">Nhận xét từ cộng đồng</div>
+                        <h2 class="serif-title" style="font-size:1.25rem;margin:0;">Khách hàng nói gì về chúng tôi</h2>
                     </div>
+                    <div class="small-muted">
+                        @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
+                        {
+                            <div>@Model.Product.Seller.TotalReviews nhận xét</div>
+                        }
+                        else
+                        {
+                            <div>Chưa có nhận xét nào</div>
+                        }
+                    </div>
+                </div>
 
                 <div class="reviews-grid">
                     @if (Model.Product.Seller?.TotalReviews > 0)
                     {
                         <div class="review-card">
-                            <div class="review-quote">Excellent craftsmanship — the piece arrived beautifully wrapped and exactly as described. Highly recommend.</div>
+                            <div class="review-quote">Kỹ nghệ chế tác tuyệt vời — tác phẩm được bọc gói rất cẩn thận, tinh xảo giống hệt mô tả. Rất khuyến khích trải nghiệm sản phẩm tại đây.</div>
                             <div class="review-meta">
                                 <div class="small-muted">— Jane D.</div>
-                                <div class="small-muted">Mar 3, 2026</div>
+                                <div class="small-muted">03/03/2026</div>
                             </div>
                         </div>
                         <div class="review-card">
-                            <div class="review-quote">Lovely finish and quick shipping. Will order again.</div>
+                            <div class="review-quote">Đường nét hoàn thiện rất đẹp và giao hàng nhanh chóng. Sẽ tiếp tục ủng hộ nghệ nhân vào lần tới.</div>
                             <div class="review-meta">
                                 <div class="small-muted">— Alex S.</div>
-                                <div class="small-muted">Feb 15, 2026</div>
+                                <div class="small-muted">15/02/2026</div>
                             </div>
                         </div>
                     }
                     else
                     {
                         <div class="review-card">
-                            <div class="review-quote">No customer reviews yet. Be the first to leave feedback.</div>
+                            <div class="review-quote">Chưa có nhận xét nào từ khách hàng. Hãy là người đầu tiên trải nghiệm và chia sẻ cảm nghĩ của bạn.</div>
                             <div class="review-meta">
                                 <div class="small-muted">—</div>
                                 <div class="small-muted">—</div>
@@ -233,13 +227,14 @@
 
 @Html.AntiForgeryToken()
 
+@* MODAL PHÓNG TO HÌNH ẢNH SẢN PHẨM *@
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="background:transparent;border:none;">
             <div class="modal-body p-0 text-center">
                 @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
                 {
-                    <img src="@Model.Product.ImageUrl" alt="Large image of @Model.Product.Title" style="max-width: 100%; border-radius: 12px;" />
+                    <img src="@Model.Product.ImageUrl" alt="Hình ảnh phóng to của @Model.Product.Title" style="max-width: 100%; border-radius: 12px;" />
                 }
             </div>
         </div>
@@ -262,7 +257,7 @@
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
 
             try {
                 const response = await fetch(`?handler=AddToCart&productId=${productId}&quantity=${quantity}`, {
@@ -276,14 +271,14 @@
                     if (badge) badge.innerText = result.newCount;
 
                     Swal.fire({
-                        title: 'Added to Basket',
-                        text: 'Your handcrafted treasure has been reserved.',
+                        title: 'Đã thêm vào giỏ hàng!',
+                        text: 'Tác phẩm nghệ thuật độc bản của bạn đã được lưu giữ thành công.',
                         icon: 'success',
                         showCancelButton: true,
                         confirmButtonColor: '#2D2926',
                         cancelButtonColor: '#C8855A',
-                        confirmButtonText: 'Go to Basket',
-                        cancelButtonText: 'Keep Browsing'
+                        confirmButtonText: 'Đến giỏ hàng',
+                        cancelButtonText: 'Tiếp tục khám phá'
                     }).then((swalResult) => {
                         if (swalResult.isConfirmed) {
                             window.location.href = '/Cart/Index';
@@ -294,7 +289,7 @@
                 console.error("Cart Error:", err);
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'Add to Basket';
+                btn.innerText = 'Thêm vào giỏ hàng';
             }
         }
     </script>
