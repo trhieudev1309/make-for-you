@@ -1,47 +1,52 @@
 ﻿@page
 @model MakeForYou.Presentation.Pages.Checkout.SuccessModel
 @{
-    ViewData["Title"] = "Order Success – MakeForYou";
-    Layout = "_Layout"; 
+    ViewData["Title"] = "Đặt hàng thành công – MakeForYou";
+    Layout = "_Layout";
 }
 
 <div class="container py-5 text-center" style="margin-top: 100px; margin-bottom: 100px;">
     <div class="mb-4">
         <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
     </div>
-    
-    <h1 class="display-4 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">Thank you for your order!</h1>
-    
+
+    <h1 class="display-4 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">Cảm ơn bạn đã đặt hàng!</h1>
+
     <p class="lead mb-4 text-muted">
         @if (Model.OrderIdList.Count > 1)
         {
-            @:Your orders <span class="fw-bold text-dark">#@string.Join(", #", Model.OrderIdList)</span> have been placed successfully.
+            @:Các đơn hàng <span class="fw-bold text-dark">#@string.Join(", #", Model.OrderIdList)</span> của bạn đã được đặt thành công.
         }
         else
         {
-            @:Your order <span class="fw-bold text-dark">#@Model.OrderIdList.FirstOrDefault()</span> has been placed successfully.
+            @:Đơn hàng <span class="fw-bold text-dark">#@Model.OrderIdList.FirstOrDefault()</span> của bạn đã được đặt thành công.
         }
-        <br />Our artisans are being notified to start crafting your unique pieces.
+        <br />Nghệ nhân của chúng tôi đã được thông báo để bắt đầu chế tác tác phẩm độc bản của bạn.
     </p>
 
     <div class="d-flex justify-content-center gap-3">
         <a href="/Products" class="btn btn-outline-dark rounded-pill px-5 py-2 fw-bold">
-            Continue Shopping
+            Tiếp tục mua sắm
         </a>
         <a href="/Orders/Index" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
-            Track My Order
+            Theo dõi đơn hàng
         </a>
     </div>
 
     <div class="mt-5 p-4 bg-light rounded-4 mx-auto" style="max-width: 500px; border: 1px dashed #ccc;">
         <p class="small text-muted mb-0">
-            A confirmation email has been sent to your inbox. 
-            <br />Questions? Contact us at <span class="text-clay">support@makeforyou.com</span>
+            Một email xác nhận đã được gửi tới hộp thư của bạn.
+            <br />Bạn có thắc mắc? Liên hệ với chúng tôi qua <span class="text-clay">support@makeforyou.com</span>
         </p>
     </div>
 </div>
 
 <style>
-    .text-clay { color: #C8855A; }
-    body { background-color: #F9F7F2; } 
+    .text-clay {
+        color: #C8855A;
+    }
+
+    body {
+        background-color: #F9F7F2;
+    }
 </style>

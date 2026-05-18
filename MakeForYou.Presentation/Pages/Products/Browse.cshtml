@@ -1,7 +1,7 @@
 ﻿@page "/Products"
 @model MakeForYou.Presentation.Pages.Products.BrowseModel
 @{
-    ViewData["Title"] = "Browse Creations – MakeForYou";
+    ViewData["Title"] = "Khám phá tác phẩm – MakeForYou";
 }
 
 <style>
@@ -16,13 +16,25 @@
 
     body { font-family: var(--sans); background-color: var(--mfy-ivory); color: var(--mfy-bark); overflow-x: hidden; }
 
-    /* --- Sidebar Clean Style --- */
-    .sidebar-title { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 2rem; display: block; color: #999; }
+    /* --- Cải tiến Sidebar Title nổi bật hơn --- */
+    .sidebar-title { 
+        font-weight: 700; 
+        font-size: 0.85rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.12em; 
+        margin-bottom: 1rem; 
+        display: block; 
+        color: var(--mfy-bark); 
+        border-bottom: 2px solid var(--mfy-clay);
+        padding-bottom: 6px;
+    }
+    
     .cat-item { display: block; padding: 8px 0; color: var(--mfy-bark); text-decoration: none; font-size: 0.95rem; opacity: 0.7; transition: 0.3s; }
     .cat-item:hover { opacity: 1; color: var(--mfy-clay); transform: translateX(5px); }
     .cat-item.active { opacity: 1; color: var(--mfy-clay); font-weight: 600; }
 
-    .price-input { background: white; border: 1px solid var(--mfy-border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; width: 100%; }
+    .price-input { background: white; border: 1px solid var(--mfy-border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; width: 100%; transition: 0.3s; }
+    .price-input:focus { border-color: var(--mfy-clay); outline: none; }
 
     /* --- Product Card - Pinterest Style --- */
     .product-card { border: none; background: transparent; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); margin-bottom: 2rem; }
@@ -34,7 +46,7 @@
     
     .product-info { padding: 0 5px; }
     .sub-info { font-size: 0.8rem; color: #888; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-    .product-name { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; color: var(--mfy-bark); margin-bottom: 4px; line-height: 1.2; }
+    .product-name { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; color: var(--mfy-bark); margin-bottom: 4px; line-height: 1.2; text-wrap: balance; }
     .seller-info { font-size: 0.85rem; color: #999; margin-bottom: 12px; }
     .price-section { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
     .price-val { font-weight: 700; font-size: 1.1rem; color: var(--mfy-bark); }
@@ -42,108 +54,160 @@
     .btn-action { background: var(--mfy-bark); color: white; border-radius: 50px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.3s; }
     .btn-action:hover { background: var(--mfy-clay); color: white; box-shadow: 0 10px 20px rgba(200, 133, 90, 0.2); }
 
-    /* --- Active Tags --- */
+    /* --- Active Tags ─── */
     .active-tag { background: white; border: 1px solid var(--mfy-border); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px; }
     .active-tag i { cursor: pointer; color: #ccc; }
     .active-tag i:hover { color: var(--mfy-clay); }
 
-    .search-bar { background: #F0EDE6; border: none; border-radius: 50px; padding: 0.6rem 1.5rem; font-size: 0.9rem; transition: 0.3s; }
+    /* --- Thanh Tìm Kiếm Cao Cấp --- */
+    .search-container { position: relative; width: 100%; max-width: 450px; }
+    .search-bar { background: #F0EDE6; border: none; border-radius: 50px; padding: 0.65rem 1.5rem 0.65rem 3rem; font-size: 0.9rem; transition: 0.3s; width: 100%; }
     .search-bar:focus { background: white; box-shadow: 0 0 0 4px rgba(200, 133, 90, 0.1); outline: none; }
+    .search-icon { position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none; }
+    .btn-clay-search { background-color: var(--mfy-clay); border: none; color: white; padding: 0.5rem 1.5rem; border-radius: 50px; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; font-weight: 600; }
+    .btn-clay-search:hover { background-color: #b0724a; }
 </style>
 
 <div class="container py-5">
     <div class="row">
-        <aside class="col-lg-2">
-            <span class="sidebar-title">Category</span>
-            <a href="/Products" class="cat-item @(Model.CategoryId == null ? "active" : "")">All Categories</a>
+        @* SIDEBAR BỘ LỌC *@
+        <aside class="col-lg-2 mb-5 mb-lg-0">
+            <span class="sidebar-title">Danh mục</span>
+            <a href="/Products" class="cat-item @(Model.CategoryId == null ? "active" : "")">Tất cả danh mục</a>
             @if (Model.Categories != null) {
                 @foreach (var cat in Model.Categories) {
-                    <a href="/Products?CategoryId=@cat.CategoryId" class="cat-item @(Model.CategoryId == cat.CategoryId ? "active" : "")">
+                    <a href="/Products?CategoryId=@cat.CategoryId&SearchTerm=@Model.SearchTerm" class="cat-item @(Model.CategoryId == cat.CategoryId ? "active" : "")">
                         @cat.Name
                     </a>
                 }
             }
 
             <div class="mt-5">
-                <span class="sidebar-title">Price Range</span>
-                <div class="mb-3"><input type="number" class="price-input" placeholder="Min"></div>
-                <div><input type="number" class="price-input" placeholder="Max"></div>
+                <span class="sidebar-title">Khoảng giá</span>
+                <form method="get" action="/Products">
+                    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+                    <input type="hidden" name="SearchTerm" value="@Model.SearchTerm" />
+                    <div class="mb-3">
+                        <input type="number" name="MinPrice" class="price-input" placeholder="Từ (đ)">
+                    </div>
+                    <div class="mb-3">
+                        <input type="number" name="MaxPrice" class="price-input" placeholder="Đến (đ)">
+                    </div>
+                    <button type="submit" class="btn btn-outline-dark btn-sm w-100 rounded-pill mt-1" style="font-size: 0.75rem; font-weight: 600;">Lọc giá</button>
+                </form>
             </div>
         </aside>
 
+        @* KHU VỰC HIỂN THỊ SẢN PHẨM CHÍNH *@
         <main class="col-lg-10 ps-lg-5">
-            <div class="d-flex justify-content-between align-items-end mb-4">
-                <div>
-                    <h1 class="display-6 fw-bold mb-1" style="font-family: var(--serif);">Explore All Creations</h1>
-                    <p class="text-muted small">Found @Model.Products.Count items for "@(Model.SearchTerm ?? "All")"</p>
+            
+            @* THANH TÌM KIẾM VÀ SẮP XẾP *@
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-4">
+                @* TÍCH HỢP THANH TÌM KIẾM MỚI CHUẨN UX *@
+                <div class="search-container">
+                    <form method="get" action="/Products">
+                        <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+                        <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control search-bar shadow-none" placeholder="Tìm kiếm tác phẩm..." />
+                        <button type="submit" class="btn-clay-search">Tìm</button>
+                    </form>
                 </div>
+
+                @* MENU SẮP XẾP *@
                 <div class="dropdown">
                     <button class="btn btn-link text-dark text-decoration-none fw-bold dropdown-toggle p-0" type="button" data-bs-toggle="dropdown">
-                        Sort By: 
+                        Sắp xếp: 
                         @(Model.SortOrder switch {
-                            "price_asc" => "Price: Low to High",
-                            "price_desc" => "Price: High to Low",
-                            "name_asc" => "Name: A-Z",
-                            _ => "Newest"
+                            "price_asc" => "Giá: Thấp đến Cao",
+                            "price_desc" => "Giá: Cao đến Thấp",
+                            "name_asc" => "Tên: A-Z",
+                            _ => "Mới nhất"
                         })
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                         <li>
                             <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=newest">
-                                Newest
+                                Mới nhất
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_asc">
-                                Price: Low to High
+                                Giá: Thấp đến Cao
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=price_desc">
-                                Price: High to Low
+                                Giá: Cao đến Thấp
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item small" href="/Products?SearchTerm=@Model.SearchTerm&CategoryId=@Model.CategoryId&SortOrder=name_asc">
-                                Name: A-Z
+                                Tên: A-Z
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
 
+            @* TIÊU ĐỀ TRANG VÀ THÔNG TIN SỐ LƯỢNG *@
+            <div class="mb-4">
+                <h1 class="display-6 fw-bold mb-1" style="font-family: var(--serif);">Khám phá mọi tác phẩm</h1>
+                <p class="text-muted small">
+                    Tìm thấy @Model.Products.Count tác phẩm @(string.IsNullOrEmpty(Model.SearchTerm) ? "" : $"cho từ khóa \"{Model.SearchTerm}\"")
+                </p>
+            </div>
+
+            @* CÁC THẺ TAG ĐANG BẬT BỘ LỌC *@
             <div class="mb-5">
                 <div class="d-flex align-items-center flex-wrap gap-2">
                     @if (Model.CategoryId.HasValue) {
                         <div class="active-tag">
-                            @Model.Categories.FirstOrDefault(c => c.CategoryId == Model.CategoryId)?.Name <a href="/Products"><i class="bi bi-x-circle-fill"></i></a>
+                            @Model.Categories.FirstOrDefault(c => c.CategoryId == Model.CategoryId)?.Name 
+                            <a href="/Products?SearchTerm=@Model.SearchTerm"><i class="bi bi-x-circle-fill text-secondary"></i></a>
                         </div>
                     }
-                    <a href="/Products" class="text-dark small fw-bold text-decoration-none ms-2 border-bottom border-dark">Clear all</a>
+                    @if (!string.IsNullOrEmpty(Model.SearchTerm)) {
+                        <div class="active-tag">
+                            Từ khóa: @Model.SearchTerm 
+                            <a href="/Products?CategoryId=@Model.CategoryId"><i class="bi bi-x-circle-fill text-secondary"></i></a>
+                        </div>
+                    }
+                    @if (Model.CategoryId.HasValue || !string.IsNullOrEmpty(Model.SearchTerm)) {
+                        <a href="/Products" class="text-dark small fw-bold text-decoration-none ms-2 border-bottom border-dark">Xóa tất cả bộ lọc</a>
+                    }
                 </div>
             </div>
 
+            @* GRID DANH SÁCH SẢN PHẨM *@
             <div class="row g-4">
-                @foreach (var p in Model.Products) {
-                    <div class="col-sm-6 col-md-4 col-xl-3">
-                        <div class="product-card">
-                            <div class="img-container">
-                                <span class="badge-ready">READY TO SHIP</span>
-                                <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.jpg" : p.ImageUrl)" class="product-img">
-                            </div>
-                            <div class="product-info">
-                                <div class="sub-info">
-                                    <span>@p.Category?.Name</span>
-                                    <span class="text-warning fw-bold"><i class="bi bi-star-fill me-1"></i>4.8</span>
+                @if (Model.Products != null && Model.Products.Any()) {
+                    foreach (var p in Model.Products) {
+                        <div class="col-sm-6 col-md-4 col-xl-3">
+                            <div class="product-card">
+                                <div class="img-container">
+                                    <span class="badge-ready">SẴN SÀNG GIAO</span>
+                                    <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.jpg" : p.ImageUrl)" class="product-img" alt="@p.Title">
                                 </div>
-                                <h2 class="product-name">@p.Title</h2>
-                                <p class="seller-info">By @p.Seller?.User?.FullName</p>
-                                <div class="price-section">
-                                    <span class="price-val">@p.Price?.ToString("N0") VNĐ</span>
-                                    <a href="/Products/Details/@p.ProductId" class="btn-action shadow-sm">Details</a>
+                                <div class="product-info">
+                                    <div class="sub-info">
+                                        <span>@p.Category?.Name</span>
+                                        <span class="text-warning fw-bold"><i class="bi bi-star-fill me-1"></i>4.8</span>
+                                    </div>
+                                    <h2 class="product-name">@p.Title</h2>
+                                    <p class="seller-info">Bởi @p.Seller?.User?.FullName</p>
+                                    <div class="price-section">
+                                        <span class="price-val">@p.Price?.ToString("N0") đ</span>
+                                        <a href="/Products/Details/@p.ProductId" class="btn-action shadow-sm">Chi tiết</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    }
+                } else {
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-box-seam display-4 text-muted mb-3 d-block"></i>
+                        <p class="text-muted">Không tìm thấy sản phẩm nào phù hợp với tiêu chí của bạn.</p>
                     </div>
                 }
             </div>
