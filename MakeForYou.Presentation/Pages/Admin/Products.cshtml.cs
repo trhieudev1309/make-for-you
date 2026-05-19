@@ -1,4 +1,4 @@
-﻿using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +18,21 @@ namespace MakeForYou.Presentation.Pages.Admin
 
         public List<ProductViewModel> Products { get; set; } = new();
 
+        [BindProperty(SupportsGet = true)]
+        public string SearchTerm { get; set; }
+
         public async Task OnGetAsync()
         {
             Products = await _productService.GetAllProductsForAdminAsync();
+
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                var term = SearchTerm.ToLower();
+                Products = Products.Where(p => 
+                    (p.Title != null && p.Title.ToLower().Contains(term)) ||
+                    (p.CategoryName != null && p.CategoryName.ToLower().Contains(term))
+                ).ToList();
+            }
         }
 
 

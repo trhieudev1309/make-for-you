@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Chat.IndexModel
 @{
-    ViewData["Title"] = "Messages";
+    ViewData["Title"] = "Tin Nhắn";
 }
 <link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
 
@@ -116,9 +116,9 @@
 <div class="serif-scope">
     <div class="serif-container" style="height: 90vh; display: flex; flex-direction: column; padding: 0;">
         <header class="mb-4 px-4 pt-4">
-            <div class="kicker">Communication</div>
-            <h1 class="serif-title">Messages</h1>
-            <div class="small-muted">Chat with artisans and buyers</div>
+            <div class="kicker">Giao tiếp</div>
+            <h1 class="serif-title">Tin Nhắn</h1>
+            <div class="small-muted">Trò chuyện với nghệ nhân và người mua</div>
         </header>
 
         <div style="display: flex; gap: 1rem; flex: 1; min-height: 0; padding: 0 1rem 1rem 1rem;">
@@ -126,10 +126,10 @@
             <div style="width: 300px; display: flex; flex-direction: column;">
                 <div class="card h-100 d-flex flex-column" style="border: 1px solid var(--serif-border);">
                     <div class="card-header bg-white border-bottom" style="border-color: var(--serif-border); flex-shrink: 0;">
-                        <h5 class="mb-0 small-caps">Conversations</h5>
+                        <h5 class="mb-0 small-caps">Cuộc trò chuyện</h5>
                     </div>
                     <div id="conversationsList" class="flex-grow-1 overflow-auto" style="background: #fafaf8;">
-                        <div class="p-3 text-center text-muted"><small>No conversations yet</small></div>
+                        <div class="p-3 text-center text-muted"><small>Chưa có cuộc trò chuyện nào</small></div>
                     </div>
                 </div>
             </div>
@@ -140,28 +140,28 @@
                     <div id="chatHeader" class="card-header bg-white border-bottom d-flex justify-content-between align-items-center"
                          style="border-color: var(--serif-border); display:none !important; flex-shrink: 0;">
                         <div>
-                            <h5 class="mb-0" id="chatTitle">Select a conversation</h5>
+                            <h5 class="mb-0" id="chatTitle">Chọn một cuộc trò chuyện</h5>
                             <small class="text-muted" id="chatSubtitle"></small>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearChat()">Close</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearChat()">Đóng</button>
                     </div>
 
                     <div id="messagesContainer" class="flex-grow-1 overflow-auto p-4"
                          style="display:flex; flex-direction: column; gap: 0.75rem; background-color: #fafaf8; min-height: 0;">
                         <div class="text-center text-muted" style="margin: auto;">
-                            <small>Select a conversation to start messaging</small>
+                            <small>Chọn một cuộc trò chuyện để bắt đầu nhắn tin</small>
                         </div>
                     </div>
 
                     <div id="chatInputArea" class="card-footer bg-white border-top p-3"
                          style="border-color: var(--serif-border); display:none; flex-shrink: 0;">
                         <div class="d-flex gap-2 align-items-center">
-                            <button id="quoteBtn" style="display:none;" onclick="openQuotationModal()">📋 Quote</button>
+                            <button id="quoteBtn" style="display:none;" onclick="openQuotationModal()">📋 Báo giá</button>
                             <input id="messageInput" type="text" class="form-control rounded-pill flex-grow-1"
-                                   placeholder="Write a message…" autocomplete="off" />
+                                   placeholder="Viết một tin nhắn…" autocomplete="off" />
                             <button id="sendBtn" type="button" class="btn btn-mfy-solid rounded-pill"
                                     style="background: var(--mfy-clay, #C8855A); color:white; white-space: nowrap;">
-                                Send
+                                Gửi
                             </button>
                         </div>
                     </div>
@@ -173,16 +173,16 @@
 
 <div class="quotation-modal-overlay" id="quotationModalOverlay">
     <div class="quotation-modal">
-        <h5>📋 Send a Quotation</h5>
-        <label>Price (VND)</label>
-        <input type="number" id="q_price" min="1" placeholder="e.g. 500000" />
-        <label>Deadline</label>
+        <h5>📋 Gửi Báo Giá</h5>
+        <label>Giá (VNĐ)</label>
+        <input type="number" id="q_price" min="1" placeholder="vd: 500000" />
+        <label>Hạn chót</label>
         <input type="date" id="q_deadline" />   <!-- ← thêm -->
-        <label>Message / Scope of work</label>
-        <textarea id="q_message" rows="4" placeholder="Describe what's included, timeline, terms…"></textarea>
+        <label>Tin nhắn / Phạm vi công việc</label>
+        <textarea id="q_message" rows="4" placeholder="Mô tả bao gồm những gì, tiến độ, điều khoản…"></textarea>
         <div class="modal-actions">
-            <button class="btn-cancel-quote" onclick="closeQuotationModal()">Cancel</button>
-            <button class="btn-send-quote"   onclick="submitQuotation()">Send Quotation</button>
+            <button class="btn-cancel-quote" onclick="closeQuotationModal()">Hủy</button>
+            <button class="btn-send-quote"   onclick="submitQuotation()">Gửi Báo Giá</button>
         </div>
     </div>
 </div>

@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Profile.EditModel
 @{
-    ViewData["Title"] = "Edit Profile";
+    ViewData["Title"] = "Chỉnh Sửa Hồ Sơ";
 }
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -12,16 +12,16 @@
   <div class="serif-container">
     <nav aria-label="Breadcrumb" class="mb-3">
       <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
-        <li class="breadcrumb-item"><a asp-page="/Home/Index" class="text-decoration-none text-reset small-caps">Home</a></li>
-        <li class="breadcrumb-item"><a asp-page="/Profile/Index" class="text-decoration-none text-reset small-caps">Profile</a></li>
-        <li class="breadcrumb-item text-muted small-caps" aria-current="page">Edit</li>
+        <li class="breadcrumb-item"><a asp-page="/Home/Index" class="text-decoration-none text-reset small-caps">Trang Chủ</a></li>
+        <li class="breadcrumb-item"><a asp-page="/Profile/Index" class="text-decoration-none text-reset small-caps">Hồ Sơ</a></li>
+        <li class="breadcrumb-item text-muted small-caps" aria-current="page">Chỉnh Sửa</li>
       </ol>
     </nav>
 
     <header class="mb-5">
-      <div class="small-caps">Account</div>
-      <h1 class="serif-title">Edit Profile</h1>
-      <p class="text-muted-serif">Update your account information</p>
+      <div class="small-caps">Tài Khoản</div>
+      <h1 class="serif-title">Chỉnh Sửa Hồ Sơ</h1>
+      <p class="text-muted-serif">Cập nhật thông tin tài khoản của bạn</p>
     </header>
 
     @if (Model.UserProfile != null)
@@ -29,38 +29,38 @@
       <form method="post" class="row gy-4">
         <div class="col-lg-8">
           <div class="meta-card">
-            <div class="small-caps mb-3">Personal Information</div>
+            <div class="small-caps mb-3">Thông Tin Cá Nhân</div>
 
             <div class="mb-3">
-              <label for="Input_FullName" class="form-label small-caps">Full Name</label>
+              <label for="Input_FullName" class="form-label small-caps">Họ và Tên</label>
               <input type="text" class="form-control" id="Input_FullName" name="Input.FullName" value="@Model.Input.FullName" required />
               <span class="text-danger" asp-validation-for="Input.FullName"></span>
             </div>
 
             <div class="mb-3">
-              <label for="Input_Email" class="form-label small-caps">Email Address</label>
+              <label for="Input_Email" class="form-label small-caps">Địa chỉ Email</label>
               <input type="email" class="form-control" id="Input_Email" name="Input.Email" value="@Model.Input.Email" readonly />
-              <small class="text-muted">Email cannot be changed through this form. Contact support if you need to update your email.</small>
+              <small class="text-muted">Không thể thay đổi Email qua biểu mẫu này. Vui lòng liên hệ hỗ trợ nếu bạn cần cập nhật email.</small>
             </div>
 
             <div class="mb-3">
-              <label for="Input_Phone" class="form-label small-caps">Phone Number</label>
+              <label for="Input_Phone" class="form-label small-caps">Số điện thoại</label>
               <input type="tel" class="form-control" id="Input_Phone" name="Input.Phone" value="@Model.Input.Phone" placeholder="+1 (555) 000-0000" />
               <span class="text-danger" asp-validation-for="Input.Phone"></span>
             </div>
 
             <div class="d-grid gap-2 mt-4">
-              <button type="submit" class="btn btn-primary serif">Save Changes</button>
-              <a asp-page="/Profile/Index" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary serif">Lưu Thay Đổi</button>
+              <a asp-page="/Profile/Index" class="btn btn-outline-secondary">Hủy</a>
             </div>
           </div>
         </div>
 
         <aside class="col-lg-4">
           <div class="about-card">
-            <div class="small-caps mb-2">Editing Tips</div>
+            <div class="small-caps mb-2">Mẹo Chỉnh Sửa</div>
             <p class="serif-body text-muted-serif" style="margin:0;">
-              Keep your information up to date so sellers can contact you easily and your orders arrive without delay.
+              Luôn cập nhật thông tin của bạn để người bán có thể liên hệ dễ dàng và đơn hàng của bạn được giao đến mà không bị chậm trễ.
             </p>
           </div>
         </aside>
