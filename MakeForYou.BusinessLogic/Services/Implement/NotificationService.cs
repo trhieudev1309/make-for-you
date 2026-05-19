@@ -1,4 +1,4 @@
-using MakeForYou.BusinessLogic.Entities;
+﻿using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Hubs; // for NotificationHub
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
@@ -82,7 +82,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 }
                 catch
                 {
-                    // Swallow email exceptions � notification already saved
+                    // Swallow email exceptions — notification already saved
                 }
             }
 

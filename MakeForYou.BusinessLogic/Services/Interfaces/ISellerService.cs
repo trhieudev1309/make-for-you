@@ -1,4 +1,6 @@
 ﻿using MakeForYou.BusinessLogic.DTOs;
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
+using MakeForYou.BusinessLogic.ViewModels;
 
 namespace MakeForYou.BusinessLogic.Services.Interfaces
 {
@@ -7,5 +9,7 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<MakeForYou.BusinessLogic.Entities.Seller?> GetProfileAsync(long sellerId);
         Task UpdateProfileAsync(long sellerId, UpdateProfileRequest request);
         Task<bool> ChangePasswordAsync(long sellerId, string currentPassword, string newPassword);
+        Task<bool> IsSellerSetupAsync(string userId);
+        Task<ServiceResult> RegisterSellerAsync(string userId, SellerRegisterViewModel model);
     }
 }

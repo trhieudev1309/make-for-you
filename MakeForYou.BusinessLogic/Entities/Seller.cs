@@ -10,6 +10,30 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public User User { get; set; } = null!;
 
+        [MaxLength(100)]
+        public string? ShopName { get; set; }
+
+        [MaxLength(300)]
+        public string? ShopDescription { get; set; }
+
+        [MaxLength(100)]
+        public string? PickupFullName { get; set; }
+
+        [MaxLength(20)]
+        public string? PickupPhone { get; set; }
+
+        [MaxLength(100)]
+        public string? Province { get; set; }
+
+        [MaxLength(100)]
+        public string? District { get; set; }
+
+        [MaxLength(100)]
+        public string? Ward { get; set; }
+
+        [MaxLength(300)]
+        public string? AddressDetail { get; set; }
+
         public string? Bio { get; set; }
         public string? SkillDescription { get; set; }
         public int? PriceRange { get; set; }
