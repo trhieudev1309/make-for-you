@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.IndexModel
 @{
 	ViewData["Title"] = "MakeForYou – Sàn thương mại điện tử đồ thủ công";
@@ -205,7 +205,47 @@
 		</div>
 	</div>
 
-	<div class="container mt-5">
+	<div class="container mt-3">
+		@* THANH TÌM KIẾM *@
+		<style>
+			.home-search-bar {
+				padding: 4px;
+				transition: all 0.3s ease;
+			}
+			.home-search-bar:focus-within {
+				box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+				border-color: rgba(200, 133, 90, 0.4) !important;
+			}
+			.home-search-input {
+				font-family: 'Urbanist', var(--sans, sans-serif);
+				font-size: 0.95rem;
+				padding: 0.4rem 0.5rem;
+			}
+			.home-search-btn {
+				background-color: var(--mfy-clay, #C8855A);
+				color: white;
+				font-weight: 600;
+				font-size: 0.9rem;
+				padding: 0.4rem 1.8rem;
+				transition: all 0.3s ease;
+			}
+			.home-search-btn:hover {
+				background-color: #b0724a;
+				color: white;
+			}
+		</style>
+		<div class="row justify-content-center mb-4">
+			<div class="col-md-7 col-lg-6">
+				<form action="/Products" method="get" class="d-flex bg-white rounded-pill shadow-sm border home-search-bar align-items-center">
+					<i class="bi bi-search ms-4 text-muted" style="font-size: 1rem;"></i>
+					<input type="text" name="searchTerm" class="form-control border-0 shadow-none bg-transparent home-search-input ms-2" placeholder="Tìm kiếm sản phẩm, người bán...">
+					<button class="btn rounded-pill home-search-btn" type="submit">
+						Tìm
+					</button>
+				</form>
+			</div>
+		</div>
+
 		@* HERO BANNER *@
 		<section class="hero-banner shadow-lg mb-5">
 			<div class="hero-content">
