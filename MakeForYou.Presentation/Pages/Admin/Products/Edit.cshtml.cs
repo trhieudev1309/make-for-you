@@ -28,21 +28,20 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
         public long ProductId { get; set; }
 
         public List<MakeForYou.BusinessLogic.Entities.DTOs.Respond.CategoryViewModel> Categories { get; set; } = new();
-        public List<Seller> Sellers { get; set; } = new();
+
+        // SỬA TẠI ĐÂY: Chỉ định rõ namespace để tránh bị hiểu nhầm thành Namespace Seller
+        public List<MakeForYou.BusinessLogic.Entities.Seller> Sellers { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(long id)
         {
-            // Tìm sản phẩm trong DB
             var p = await _context.Products.FindAsync(id);
             if (p == null) return RedirectToPage("/Admin/Products");
 
             ProductId = p.ProductId;
 
-            // Gán dữ liệu sang Model để hiển thị lên Form
             Product = new ProductRequest
             {
                 Title = p.Title,
-                // FIX LỖI NULL: Nếu DB là null, gán thành chuỗi rỗng để ô nhập không hiện chữ "null"
                 Description = p.Description ?? string.Empty,
                 Price = p.Price ?? 0,
                 ImageUrl = p.ImageUrl ?? string.Empty,
@@ -51,7 +50,6 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
                 Status = p.Status
             };
 
-            // Load danh sách để chọn lại nếu cần
             Categories = await _categoryService.GetAllCategoriesAsync();
             Sellers = await _context.Sellers.ToListAsync();
 

@@ -1,7 +1,8 @@
-﻿using System.Security.Claims;
+﻿using MakeForYou.BusinessLogic.Services.Implement;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MakeForYou.Presentation.Controllers
 {
@@ -11,10 +12,12 @@ namespace MakeForYou.Presentation.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IChatService _chatService;
+        private readonly IOrderService _orderService;
 
-        public ChatController(IChatService chatService)
+        public ChatController(IChatService chatService, IOrderService orderService)
         {
             _chatService = chatService;
+            _orderService = orderService;
         }
 
         private long GetUserId()
@@ -41,13 +44,18 @@ namespace MakeForYou.Presentation.Controllers
                 {
                     var msgs = await _chatService.GetMessagesAsync(userId, u.UserId);
                     var last = msgs.LastOrDefault();
+
+                    // Query orderId từ bảng Orders theo cặp buyer/seller
+                    var orderId = await _orderService.GetOrderIdByUsersAsync(userId, u.UserId);
+
                     list.Add(new
                     {
                         userId = u.UserId,
                         fullName = u.FullName ?? "Unknown",
                         lastMessage = last?.Message,
                         lastFromUserId = last?.FromUserId,
-                        lastMessageAt = last?.CreatedAt
+                        lastMessageAt = last?.CreatedAt,
+                        orderId = orderId
                     });
                 }
 

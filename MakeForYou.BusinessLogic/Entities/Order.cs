@@ -37,5 +37,6 @@ namespace MakeForYou.BusinessLogic.Entities
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Notification>? Notifications { get; set; }
 
+        public ICollection<OrderProgress>? ProgressLogs { get; set; }
     }
 }

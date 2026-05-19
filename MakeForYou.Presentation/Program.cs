@@ -1,5 +1,5 @@
-﻿using System.Security.Claims; // Added for ClaimTypes
-using MakeForYou.BusinessLogic;
+﻿using System.Security.Claims;
+using MakeForYou.BusinessLogic;                           // ApplicationDbContext
 using MakeForYou.BusinessLogic.Hubs;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services;
@@ -34,9 +34,13 @@ builder.Services.AddSession();
 
 // Repository & service registrations
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
 builder.Services.AddScoped<IHomeService, HomeService>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<ICartRepository, CartRepository>();
@@ -56,9 +60,21 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IChatService, ChatService>();
 
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
+
+builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+builder.Services.AddScoped<ISellerService, SellerService>();
+
+builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+builder.Services.AddScoped<PortfolioService, PortfolioService>();
+
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 // SignalR
 builder.Services.AddSignalR();
 
+builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 
 builder.Configuration.GetSection("Email"); // Ensure email section read
 
