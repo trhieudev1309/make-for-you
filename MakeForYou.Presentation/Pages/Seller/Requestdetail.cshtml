@@ -1,8 +1,8 @@
-﻿@page "{id:long}"
+@page "{id:long}"
 @model MakeForYou.Presentation.Pages.Seller.RequestDetailModel
 @using MakeForYou.BusinessLogic.Enums
 @{
-    ViewData["Title"] = $"Request #{Model.Order?.OrderId}";
+    ViewData["Title"] = $"Yêu cầu #{Model.Order?.OrderId}";
     var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
     var latestQuote   = Model.Order?.Quotations?.OrderByDescending(q => q.CreatedAt).FirstOrDefault();
     var displayPrice  = Model.Order?.AgreedPrice ?? acceptedQuote?.ProposedPrice ?? latestQuote?.ProposedPrice;
@@ -216,9 +216,9 @@
     }
 
     <nav class="rd-breadcrumb">
-        <a href="/Seller/Requests">Requests</a>
+        <a href="/Seller/Requests">Yêu Cầu</a>
         <span class="mx-2">/</span>
-        <span>Order #@Model.Order.OrderId</span>
+        <span>Đơn hàng #@Model.Order.OrderId</span>
     </nav>
 
     @if (TempData["Success"] != null)
@@ -232,8 +232,8 @@
 
     <div class="rd-header">
         <div>
-            <h1 class="rd-title">Request #@Model.Order.OrderId</h1>
-            <div class="rd-date">Received @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")</div>
+            <h1 class="rd-title">Yêu cầu #@Model.Order.OrderId</h1>
+            <div class="rd-date">Đã nhận @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'lúc' HH:mm")</div>
         </div>
         <span class="rd-status badge-@statusKey">@((OrderStatus)Model.Order.Status)</span>
     </div>
@@ -243,20 +243,20 @@
         <div class="col-lg-8">
 
             <div class="rd-card rd-card-accent">
-                <div class="rd-section-title"><i class="bi bi-person"></i> Buyer</div>
+                <div class="rd-section-title"><i class="bi bi-person"></i> Người Mua</div>
                 <div class="rd-buyer-strip">
                     <div class="rd-avatar">
                         @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
                     </div>
                     <div>
                         <div class="rd-buyer-name">@Model.Order.Buyer?.FullName</div>
-                        <div class="rd-buyer-meta">Placed @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                        <div class="rd-buyer-meta">Ngày đặt @Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
                     </div>
                 </div>
 
                 @if (isCartOrder)
                 {
-                    <div class="rd-section-title mt-3"><i class="bi bi-bag"></i> Items Ordered</div>
+                    <div class="rd-section-title mt-3"><i class="bi bi-bag"></i> Mục Đã Đặt</div>
                     @foreach (var item in Model.Order.OrderItems!)
                     {
                         <div class="rd-item">
@@ -270,7 +270,7 @@
                             }
                             <div class="flex-grow-1">
                                 <div class="rd-item-name">@item.Product?.Title</div>
-                                <div class="rd-item-meta">Qty: @item.Quantity · @item.Price.ToString("N0") VNĐ each</div>
+                                <div class="rd-item-meta">SL: @item.Quantity · @item.Price.ToString("N0") VNĐ mỗi món</div>
                             </div>
                             <div class="rd-item-price">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
                         </div>
@@ -278,7 +278,7 @@
                 }
                 else if (!string.IsNullOrEmpty(Model.Order.OrderDescription))
                 {
-                    <div class="rd-section-title mt-3"><i class="bi bi-chat-left-text"></i> Request Description</div>
+                    <div class="rd-section-title mt-3"><i class="bi bi-chat-left-text"></i> Mô Tả Yêu Cầu</div>
                     <div class="rd-note">@Model.Order.OrderDescription</div>
                 }
             </div>
@@ -287,22 +287,22 @@
                  Model.Order.Status == (int)OrderStatus.Quoted)
             {
                 <div class="rd-card">
-                    <div class="rd-section-title"><i class="bi bi-tag"></i> Send a Quotation</div>
+                    <div class="rd-section-title"><i class="bi bi-tag"></i> Gửi Báo Giá</div>
                     <form method="post" asp-page-handler="SendQuote">
                         @Html.AntiForgeryToken()
                         <div class="rd-field">
-                            <label class="rd-label">Proposed Price (VNĐ)</label>
+                            <label class="rd-label">Giá Đề Xuất (VNĐ)</label>
                             <input class="rd-input" type="number" name="ProposedPrice"
-                                   placeholder="e.g. 350000" required />
+                                   placeholder="vd: 350000" required />
                         </div>
                         <div class="rd-field">
-                            <label class="rd-label">Message to Buyer</label>
+                            <label class="rd-label">Tin nhắn cho Người Mua</label>
                             <textarea class="rd-input" name="Message" rows="3"
-                                      placeholder="Describe what's included, timeline, materials…"></textarea>
+                                      placeholder="Mô tả bao gồm những gì, tiến độ, vật liệu…"></textarea>
                         </div>
                         <div style="display:flex;justify-content:flex-end;">
                             <button type="submit" class="rd-btn">
-                                <i class="bi bi-send"></i> Send Quote
+                                <i class="bi bi-send"></i> Gửi Báo Giá
                             </button>
                         </div>
                     </form>
@@ -312,14 +312,14 @@
             @if (Model.Order.Quotations != null && Model.Order.Quotations.Any())
             {
                 <div class="rd-card">
-                    <div class="rd-section-title"><i class="bi bi-receipt"></i> Quote History</div>
+                    <div class="rd-section-title"><i class="bi bi-receipt"></i> Lịch Sử Báo Giá</div>
                     @foreach (var q in Model.Order.Quotations.OrderByDescending(q => q.CreatedAt))
                     {
                         var isAccepted = q.Status == 1;
                         <div class="rd-quote-row @(isAccepted ? "rd-quote-accepted" : "")">
                             <div>
                                 <div style="font-size:.875rem;color:var(--fg);margin-bottom:.2rem;">
-                                    @(string.IsNullOrEmpty(q.Message) ? "Custom work" : q.Message)
+                                    @(string.IsNullOrEmpty(q.Message) ? "Công việc tùy chỉnh" : q.Message)
                                 </div>
                                 <div style="font-family:var(--mono);font-size:.65rem;color:var(--fg-muted);letter-spacing:.08em;">
                                     @q.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · HH:mm")
@@ -331,7 +331,7 @@
                                 </div>
                                 <span class="rd-status @(isAccepted ? "badge-completed" : "badge-pending")"
                                       style="font-size:.6rem;padding:.15rem .6rem;margin-top:.25rem;">
-                                    @(isAccepted ? "Accepted" : "Pending")
+                                    @(isAccepted ? "Đã chấp nhận" : "Chờ xử lý")
                                 </span>
                             </div>
                         </div>
@@ -340,10 +340,10 @@
             }
 
             <div class="rd-card">
-                <div class="rd-section-title"><i class="bi bi-chat-dots"></i> Messages</div>
+                <div class="rd-section-title"><i class="bi bi-chat-dots"></i> Tin Nhắn</div>
                 @if (Model.Order.ChatMessages == null || !Model.Order.ChatMessages.Any())
                 {
-                    <p style="font-size:.875rem;color:var(--fg-muted);font-style:italic;margin:0;">No messages yet.</p>
+                    <p style="font-size:.875rem;color:var(--fg-muted);font-style:italic;margin:0;">Chưa có tin nhắn nào.</p>
                 }
                 else
                 {
@@ -367,29 +367,29 @@
         <div class="col-lg-4">
 
             <div class="rd-card">
-                <div class="rd-section-title"><i class="bi bi-clipboard-check"></i> Summary</div>
-                <div class="rd-row"><span class="lbl">Order #</span><span class="val">@Model.Order.OrderId</span></div>
+                <div class="rd-section-title"><i class="bi bi-clipboard-check"></i> Tóm Tắt</div>
+                <div class="rd-row"><span class="lbl">Đơn hàng #</span><span class="val">@Model.Order.OrderId</span></div>
                 <div class="rd-row">
-                    <span class="lbl">Status</span>
+                    <span class="lbl">Trạng Thái</span>
                     <span class="rd-status badge-@statusKey" style="font-size:.62rem;padding:.15rem .65rem;">
                         @((OrderStatus)Model.Order.Status)
                     </span>
                 </div>
-                <div class="rd-row"><span class="lbl">Received</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                <div class="rd-row"><span class="lbl">Đã nhận</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
                 @if (Model.Order.CompletedAt.HasValue)
                 {
-                    <div class="rd-row"><span class="lbl">Completed</span><span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span></div>
+                    <div class="rd-row"><span class="lbl">Hoàn thành</span><span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span></div>
                 }
                 <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;" />
-                <div class="rd-row"><span class="lbl">Subtotal</span><span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span></div>
+                <div class="rd-row"><span class="lbl">Tạm tính</span><span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")</span></div>
                 <div class="rd-total">
-                    <span>Total</span>
-                    <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                    <span>Tổng cộng</span>
+                    <span>@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "Đang chờ")</span>
                 </div>
             </div>
 
             <div class="rd-card">
-                <div class="rd-section-title"><i class="bi bi-lightning"></i> Actions</div>
+                <div class="rd-section-title"><i class="bi bi-lightning"></i> Hành Động</div>
                 <div style="display:flex;flex-direction:column;gap:.75rem;">
 
                     @if (Model.Order.Status == (int)OrderStatus.Confirmed)
@@ -398,7 +398,7 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="newStatus" value="@((int)OrderStatus.InProgress)" />
                             <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
-                                <i class="bi bi-tools"></i> Mark as In Progress
+                                <i class="bi bi-tools"></i> Đánh dấu Đang Tiến Hành
                             </button>
                         </form>
                     }
@@ -409,7 +409,7 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="newStatus" value="@((int)OrderStatus.Completed)" />
                             <button type="submit" class="rd-btn-success" style="width:100%;justify-content:center;">
-                                <i class="bi bi-bag-check"></i> Mark as Completed
+                                <i class="bi bi-bag-check"></i> Đánh dấu Hoàn Thành
                             </button>
                         </form>
                     }
@@ -422,13 +422,13 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="newStatus" value="@((int)OrderStatus.Cancelled)" />
                             <button type="submit" class="rd-btn-danger" style="width:100%;justify-content:center;">
-                                <i class="bi bi-x-circle"></i> Cancel Order
+                                <i class="bi bi-x-circle"></i> Hủy Đơn Hàng
                             </button>
                         </form>
                     }
 
                     <a href="mailto:@Model.Order.Buyer?.Email" class="rd-btn-ghost" style="justify-content:center;">
-                        <i class="bi bi-envelope"></i> Email Buyer
+                        <i class="bi bi-envelope"></i> Email Người Mua
                     </a>
                 </div>
             </div>

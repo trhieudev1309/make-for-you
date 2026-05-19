@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Seller.ProfileModel
 @{
-    ViewData["Title"] = "My Profile — MakeForYou";
+    ViewData["Title"] = "Hồ Sơ Của Tôi — MakeForYou";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -225,7 +225,7 @@
     <!-- Page Label -->
     <div class="sp-label">
         <span class="sp-label-rule"></span>
-        <span class="sp-label-text">Seller Dashboard</span>
+        <span class="sp-label-text">Bảng Điều Khiển Người Bán</span>
         <span class="sp-label-rule"></span>
     </div>
 
@@ -233,14 +233,14 @@
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2.5rem;">
         <div>
             <h1 style="font-family:var(--serif);font-size:2.25rem;font-weight:400;margin-bottom:.375rem;">
-                My Profile
+                Hồ Sơ Của Tôi
             </h1>
             <p style="font-size:.9rem;color:var(--fg-muted);margin:0;">
-                Manage how buyers discover and experience your work.
+                Quản lý cách người mua khám phá và trải nghiệm tác phẩm của bạn.
             </p>
         </div>
         <a href="https://localhost:7175/Seller/Requests" class="sp-requests-link">
-            <i class="bi bi-inbox-fill"></i> My Requests
+            <i class="bi bi-inbox-fill"></i> Yêu Cầu Của Tôi
         </a>
     </div>
 
@@ -265,15 +265,15 @@
         <div class="sp-stats">
             <div>
                 <span class="sp-stat-val">@(Model.Seller.AverageRating ?? 0)</span>
-                <span class="sp-stat-lbl">Avg Rating</span>
+                <span class="sp-stat-lbl">Đánh giá TB</span>
             </div>
             <div>
                 <span class="sp-stat-val">@(Model.Seller.TotalReviews ?? 0)</span>
-                <span class="sp-stat-lbl">Reviews</span>
+                <span class="sp-stat-lbl">Đánh giá</span>
             </div>
             <div>
                 <span class="sp-stat-val">@(Model.Seller.PortfolioItems?.Count ?? 0)</span>
-                <span class="sp-stat-lbl">Portfolio Items</span>
+                <span class="sp-stat-lbl">Mục Hồ sơ</span>
             </div>
             <div>
                 @{
@@ -283,24 +283,24 @@
                         _ => "sp-avail-unavailable"
                     };
                     var avLabel = Model.Seller.AvailabilityStatus switch {
-                        1 => "Available",
-                        2 => "Busy",
-                        _ => "Unavailable"
+                        1 => "Có sẵn",
+                        2 => "Bận",
+                        _ => "Không có sẵn"
                     };
                 }
                 <span class="sp-avail @avClass" style="margin-top:.45rem;display:inline-flex;">
                     <span class="sp-avail-dot"></span>@avLabel
                 </span>
-                <span class="sp-stat-lbl" style="margin-top:.3rem;">Status</span>
+                <span class="sp-stat-lbl" style="margin-top:.3rem;">Trạng thái</span>
             </div>
         </div>
     }
 
     <!-- Tab Nav -->
     <div class="sp-tabs">
-        <button class="sp-tab active" onclick="switchTab('profile', this)">Profile</button>
-        <button class="sp-tab" onclick="switchTab('portfolio', this)">Portfolio</button>
-        <button class="sp-tab" onclick="switchTab('account', this)">Account</button>
+        <button class="sp-tab active" onclick="switchTab('profile', this)">Hồ Sơ</button>
+        <button class="sp-tab" onclick="switchTab('portfolio', this)">Danh Mục</button>
+        <button class="sp-tab" onclick="switchTab('account', this)">Tài Khoản</button>
     </div>
 
     <!-- ══ TAB: PROFILE ══ -->
@@ -309,13 +309,13 @@
             @Html.AntiForgeryToken()
 
             <div class="sp-card sp-card-accent">
-                <h2 class="sp-section-title">Artisan Identity</h2>
+                <h2 class="sp-section-title">Danh Tính Nghệ Nhân</h2>
 
                 <div class="sp-row">
                     <div class="sp-field">
-                        <label class="sp-label-field">Full Name</label>
+                        <label class="sp-label-field">Họ và Tên</label>
                         <input class="sp-input" type="text" name="FullName"
-                               value="@Model.Seller?.User?.FullName" placeholder="Your display name" />
+                               value="@Model.Seller?.User?.FullName" placeholder="Tên hiển thị của bạn" />
                     </div>
                     <div class="sp-field">
                         <label class="sp-label-field">Email</label>
@@ -325,30 +325,30 @@
                 </div>
 
                 <div class="sp-field">
-                    <label class="sp-label-field">Skill / Craft Description</label>
+                    <label class="sp-label-field">Mô Tả Kỹ Năng / Nghề Thủ Công</label>
                     <input class="sp-input" type="text" name="SkillDescription"
                            value="@Model.Seller?.SkillDescription"
-                           placeholder="e.g. Hand-poured soy candles &amp; botanical prints" />
+                           placeholder="vd: Nến đậu nành tự đổ & tranh in thực vật" />
                 </div>
 
                 <div class="sp-field">
-                    <label class="sp-label-field">Bio</label>
+                    <label class="sp-label-field">Tiểu sử</label>
                     <textarea class="sp-input" name="Bio" rows="5"
-                              placeholder="Tell buyers about yourself, your craft, and your story…">@Model.Seller?.Bio</textarea>
+                              placeholder="Kể cho người mua nghe về bản thân, nghề thủ công và câu chuyện của bạn…">@Model.Seller?.Bio</textarea>
                 </div>
 
                 <div class="sp-row">
                     <div class="sp-field">
-                        <label class="sp-label-field">Starting Price (VNĐ)</label>
+                        <label class="sp-label-field">Giá Khởi Điểm (VNĐ)</label>
                         <input class="sp-input" type="number" name="PriceRange"
-                               value="@Model.Seller?.PriceRange" placeholder="e.g. 150000" />
+                               value="@Model.Seller?.PriceRange" placeholder="vd: 150000" />
                     </div>
                     <div class="sp-field">
-                        <label class="sp-label-field">Availability</label>
+                        <label class="sp-label-field">Khả năng phục vụ</label>
                         <select class="sp-input" name="AvailabilityStatus">
-                           <option value="1" selected="@(Model.Seller?.AvailabilityStatus == 1)">Available</option>
-                           <option value="2" selected="@(Model.Seller?.AvailabilityStatus == 2)">Busy — limited slots</option>
-                           <option value="0" selected="@(Model.Seller?.AvailabilityStatus == 0)">Unavailable</option> 
+                           <option value="1" selected="@(Model.Seller?.AvailabilityStatus == 1)">Có sẵn</option>
+                           <option value="2" selected="@(Model.Seller?.AvailabilityStatus == 2)">Bận — số lượng giới hạn</option>
+                           <option value="0" selected="@(Model.Seller?.AvailabilityStatus == 0)">Không có sẵn</option> 
                         </select>
                     </div>
                 </div>
@@ -356,7 +356,7 @@
 
             <div style="display:flex;justify-content:flex-end;gap:.75rem;">
                 <button type="submit" class="sp-btn">
-                    <i class="bi bi-check2"></i> Save Changes
+                    <i class="bi bi-check2"></i> Lưu Thay Đổi
                 </button>
             </div>
         </form>
@@ -407,37 +407,37 @@
         {
             <div style="text-align:center;padding:3rem 0;color:var(--fg-muted);">
                 <i class="bi bi-images" style="font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.4;"></i>
-                <p style="font-family:var(--serif);font-size:1.1rem;margin-bottom:.25rem;color:var(--fg);">No portfolio items yet</p>
-                <p style="font-size:.875rem;">Add your first piece below to showcase your craft.</p>
+                <p style="font-family:var(--serif);font-size:1.1rem;margin-bottom:.25rem;color:var(--fg);">Chưa có mục danh mục nào</p>
+                <p style="font-size:.875rem;">Thêm tác phẩm đầu tiên của bạn dưới đây để thể hiện nghề thủ công của bạn.</p>
             </div>
         }
 
         <!-- Add new item -->
         <div class="sp-card">
-            <h2 class="sp-section-title">Add Portfolio Piece</h2>
+            <h2 class="sp-section-title">Thêm Mục Danh Mục</h2>
             <form method="post" asp-page-handler="AddPortfolio" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
                 <div class="sp-row">
                     <div class="sp-field">
-                        <label class="sp-label-field">Title</label>
-                        <input class="sp-input" type="text" name="Title" placeholder="Name of this piece" />
+                        <label class="sp-label-field">Tiêu đề</label>
+                        <input class="sp-input" type="text" name="Title" placeholder="Tên của tác phẩm này" />
                     </div>
                     <div class="sp-field">
-                        <label class="sp-label-field">Image URL</label>
+                        <label class="sp-label-field">Đường dẫn hình ảnh</label>
                         <input class="sp-input" type="url" name="ImageUrl" placeholder="https://..." />
                     </div>
                 </div>
 
                 <div class="sp-field">
-                    <label class="sp-label-field">Description</label>
+                    <label class="sp-label-field">Mô tả</label>
                     <textarea class="sp-input" name="Description" rows="3"
-                              placeholder="Materials used, technique, story behind this piece…"></textarea>
+                              placeholder="Vật liệu được sử dụng, kỹ thuật, câu chuyện đằng sau tác phẩm này…"></textarea>
                 </div>
 
                 <div style="display:flex;justify-content:flex-end;">
                     <button type="submit" class="sp-btn">
-                        <i class="bi bi-plus-lg"></i> Add to Portfolio
+                        <i class="bi bi-plus-lg"></i> Thêm vào Danh Mục
                     </button>
                 </div>
             </form>
@@ -447,40 +447,40 @@
     <!-- ══ TAB: ACCOUNT ══ -->
     <div id="tab-account" class="sp-tab-panel">
         <div class="sp-card">
-            <h2 class="sp-section-title">Change Password</h2>
+            <h2 class="sp-section-title">Đổi Mật Khẩu</h2>
             <form method="post" asp-page-handler="ChangePassword">
                 @Html.AntiForgeryToken()
 
                 <div class="sp-field">
-                    <label class="sp-label-field">Current Password</label>
+                    <label class="sp-label-field">Mật khẩu hiện tại</label>
                     <input class="sp-input" type="password" name="CurrentPassword" />
                 </div>
                 <div class="sp-row">
                     <div class="sp-field">
-                        <label class="sp-label-field">New Password</label>
+                        <label class="sp-label-field">Mật khẩu mới</label>
                         <input class="sp-input" type="password" name="NewPassword" />
                     </div>
                     <div class="sp-field">
-                        <label class="sp-label-field">Confirm Password</label>
+                        <label class="sp-label-field">Xác nhận Mật khẩu</label>
                         <input class="sp-input" type="password" name="ConfirmPassword" />
                     </div>
                 </div>
                 <div style="display:flex;justify-content:flex-end;">
                     <button type="submit" class="sp-btn">
-                        <i class="bi bi-shield-lock"></i> Update Password
+                        <i class="bi bi-shield-lock"></i> Cập Nhật Mật Khẩu
                     </button>
                 </div>
             </form>
         </div>
 
         <div class="sp-card" style="border-top:2px solid #f0c0c0;">
-            <h2 class="sp-section-title" style="color:#b02020;">Danger Zone</h2>
+            <h2 class="sp-section-title" style="color:#b02020;">Khu Vực Nguy Hiểm</h2>
             <p style="font-size:.875rem;color:var(--fg-muted);margin-bottom:1.25rem;">
-                Deactivating your account will hide your profile and listings from buyers.
-                This action can be reversed by contacting support.
+                Vô hiệu hóa tài khoản của bạn sẽ ẩn hồ sơ và danh sách của bạn khỏi người mua.
+                Hành động này có thể được đảo ngược bằng cách liên hệ với bộ phận hỗ trợ.
             </p>
-            <button class="sp-btn-danger" onclick="return confirm('Deactivate your account?')">
-                <i class="bi bi-person-x"></i> Deactivate Account
+            <button class="sp-btn-danger" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa tài khoản?')">
+                <i class="bi bi-person-x"></i> Vô Hiệu Hóa Tài Khoản
             </button>
         </div>
     </div>

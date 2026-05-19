@@ -1,9 +1,9 @@
-﻿@page "{id:long}"
+@page "{id:long}"
 @model MakeForYou.Presentation.Pages.Seller.OrderDetailModel
 @using MakeForYou.BusinessLogic.Enums
 @using MakeForYou.Presentation.Pages.Seller
 @{
-    ViewData["Title"] = $"Manage Order #{Model.Order?.OrderId}";
+    ViewData["Title"] = $"Quản lý Đơn Hàng #{Model.Order?.OrderId}";
     var isLocked = Model.Order?.Status == (int)OrderStatus.Completed
                 || Model.Order?.Status == (int)OrderStatus.Cancelled;
     var isCartOrder = Model.Order?.OrderItems != null && Model.Order.OrderItems.Any();
@@ -106,18 +106,18 @@
     {
         <!-- Breadcrumb -->
         <nav class="od-breadcrumb">
-            <a asp-page="/Seller/Dashboard">Dashboard</a>
+            <a asp-page="/Seller/Dashboard">Bảng Điều Khiển</a>
             <span class="mx-2">/</span>
-            <span>Order #@Model.Order.OrderId</span>
+            <span>Đơn hàng #@Model.Order.OrderId</span>
         </nav>
 
         <!-- Header -->
         <div class="od-header">
             <div>
-                <h1 class="od-title">Order #@Model.Order.OrderId</h1>
+                <h1 class="od-title">Đơn hàng #@Model.Order.OrderId</h1>
                 <div class="od-date">
-                    From <strong>@Model.Order.Buyer?.FullName</strong> ·
-                    @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'at' HH:mm")
+                    Từ <strong>@Model.Order.Buyer?.FullName</strong> ·
+                    @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'lúc' HH:mm")
                 </div>
             </div>
             <span class="od-status @Model.BadgeClass(Model.Order.Status)">
@@ -147,7 +147,7 @@
 
                 <!-- Order Items -->
                 <div class="od-card">
-                    <div class="od-card-title"><i class="bi bi-bag"></i> Order Items</div>
+                    <div class="od-card-title"><i class="bi bi-bag"></i> Mục Đơn Hàng</div>
 
                     <!-- Buyer strip -->
                     <div class="od-artisan-strip">
@@ -159,9 +159,9 @@
                             <div class="od-artisan-skill">@Model.Order.Buyer?.Phone</div>
                         </div>
                         <div class="od-strip-price">
-                            <div class="label">@(isCartOrder ? "Cart order" : "Custom order")</div>
+                            <div class="label">@(isCartOrder ? "Đơn hàng giỏ" : "Đơn hàng tùy chỉnh")</div>
                             <div class="val">
-                                @(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Price pending")
+                                @(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Đang chờ giá")
                             </div>
                         </div>
                     </div>
@@ -182,17 +182,17 @@
                                 <div class="flex-grow-1">
                                     <div class="od-item-name">@item.Product?.Title</div>
                                     <div class="od-item-meta">
-                                        Qty: @item.Quantity &nbsp;·&nbsp; @item.Price.ToString("N0") VNĐ each
+                                        SL: @item.Quantity &nbsp;·&nbsp; @item.Price.ToString("N0") VNĐ mỗi món
                                     </div>
                                 </div>
                                 <div class="od-item-price">
-                                    <div class="unit">Subtotal</div>
+                                    <div class="unit">Tạm tính</div>
                                     <div class="total">@((item.Price * item.Quantity).ToString("N0")) VNĐ</div>
                                 </div>
                             </div>
                         }
                         <div class="od-total-row mt-3">
-                            <span>Total</span>
+                            <span>Tổng cộng</span>
                             <span>@(displayTotal?.ToString("N0") ?? "—") VNĐ</span>
                         </div>
                     }
@@ -204,13 +204,13 @@
 
                 <!-- Update Progress -->
                 <div class="od-card">
-                    <div class="od-card-title"><i class="bi bi-pencil-square"></i> Update Progress</div>
+                    <div class="od-card-title"><i class="bi bi-pencil-square"></i> Cập Nhật Tiến Độ</div>
 
                     @if (isLocked)
                     {
                         <div class="od-locked-notice">
                             <i class="bi bi-lock fs-5"></i>
-                            This order is <strong>&nbsp;@((OrderStatus)Model.Order.Status)</strong>&nbsp; and cannot be updated.
+                            Đơn hàng này <strong>&nbsp;@((OrderStatus)Model.Order.Status)</strong>&nbsp; và không thể cập nhật.
                         </div>
                     }
                     else
@@ -219,7 +219,7 @@
                             @Html.AntiForgeryToken()
 
                             <div class="mb-3">
-                                <label class="od-form-label">New Status <span class="text-danger">*</span></label>
+                                <label class="od-form-label">Trạng Thái Mới <span class="text-danger">*</span></label>
                                 <select asp-for="ProgressInput.NewStatus" class="form-select rounded-3">
                                     @foreach (var (value, label) in Model.AllowedStatuses())
                                     {
@@ -230,14 +230,14 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="od-form-label">Progress Note <span class="text-danger">*</span></label>
+                                <label class="od-form-label">Ghi chú Tiến Độ <span class="text-danger">*</span></label>
                                 <textarea asp-for="ProgressInput.Note" class="form-control rounded-3" rows="3"
-                                          placeholder="Describe what you've done, e.g. 'Frame carved and sanded, starting paint...'"></textarea>
+                                          placeholder="Mô tả những gì bạn đã làm, vd: 'Khung đã được chạm khắc và chà nhám, bắt đầu sơn...'"></textarea>
                                 <span asp-validation-for="ProgressInput.Note" class="text-danger small"></span>
                             </div>
 
                             <div class="mb-4">
-                                <label class="od-form-label">Progress Photo <span class="text-muted fw-normal">(optional)</span></label>
+                                <label class="od-form-label">Ảnh Tiến Độ <span class="text-muted fw-normal">(tùy chọn)</span></label>
                                 <input asp-for="ProgressInput.Image" type="file" class="form-control rounded-3"
                                        accept=".jpg,.jpeg,.png,.webp" onchange="previewImg(event)" />
                                 <div id="imgPreview" class="mt-2 d-none">
@@ -247,7 +247,7 @@
                             </div>
 
                             <button type="submit" class="od-contact-btn" style="width:auto;padding:.65rem 2rem;">
-                                <i class="bi bi-arrow-up-circle me-2"></i>Post Update
+                                <i class="bi bi-arrow-up-circle me-2"></i>Đăng Cập Nhật
                             </button>
                         </form>
                     }
@@ -255,11 +255,11 @@
 
                 <!-- Progress Timeline -->
                 <div class="od-card">
-                    <div class="od-card-title"><i class="bi bi-clock-history"></i> Progress Timeline</div>
+                    <div class="od-card-title"><i class="bi bi-clock-history"></i> Dòng Thời Gian Tiến Độ</div>
 
                     @if (Model.Order.ProgressLogs == null || !Model.Order.ProgressLogs.Any())
                     {
-                        <p class="text-muted fst-italic mb-0" style="font-size:.875rem;">No updates posted yet.</p>
+                        <p class="text-muted fst-italic mb-0" style="font-size:.875rem;">Chưa có cập nhật nào được đăng.</p>
                     }
                     else
                     {
@@ -304,7 +304,7 @@
 
                 <!-- Buyer Card -->
                 <div class="od-card">
-                    <div class="od-card-title"><i class="bi bi-person"></i> Buyer</div>
+                    <div class="od-card-title"><i class="bi bi-person"></i> Người Mua</div>
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="od-side-avatar">
                             @(Model.Order.Buyer?.FullName?.Substring(0,1).ToUpper())
@@ -317,34 +317,34 @@
                     @if (!string.IsNullOrEmpty(Model.Order.Buyer?.Email))
                     {
                         <a href="mailto:@Model.Order.Buyer.Email" class="od-contact-btn">
-                            <i class="bi bi-envelope me-1"></i>Email Buyer
+                            <i class="bi bi-envelope me-1"></i>Email Người Mua
                         </a>
                     }
                 </div>
 
                 <!-- Order Summary -->
                 <div class="od-card">
-                    <div class="od-card-title"><i class="bi bi-clipboard-check"></i> Order Summary</div>
+                    <div class="od-card-title"><i class="bi bi-clipboard-check"></i> Tóm Tắt Đơn Hàng</div>
 
                     <div class="od-summary-row">
-                        <span class="lbl">Order #</span>
+                        <span class="lbl">Đơn hàng #</span>
                         <span class="val">@Model.Order.OrderId</span>
                     </div>
                     <div class="od-summary-row">
-                        <span class="lbl">Status</span>
+                        <span class="lbl">Trạng Thái</span>
                         <span class="od-status @Model.BadgeClass(Model.Order.Status)"
                               style="padding:.2rem .7rem;font-size:.75rem;">
                             @((OrderStatus)Model.Order.Status)
                         </span>
                     </div>
                     <div class="od-summary-row">
-                        <span class="lbl">Placed</span>
+                        <span class="lbl">Ngày đặt</span>
                         <span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span>
                     </div>
                     @if (Model.Order.CompletedAt.HasValue)
                     {
                         <div class="od-summary-row">
-                            <span class="lbl">Completed</span>
+                            <span class="lbl">Ngày hoàn thành</span>
                             <span class="val">@Model.Order.CompletedAt.Value.ToLocalTime().ToString("MMM d, yyyy")</span>
                         </div>
                     }
@@ -365,8 +365,8 @@
                     }
 
                     <div class="od-total-row mt-2">
-                        <span>Total</span>
-                        <span>@(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Pending")</span>
+                        <span>Tổng cộng</span>
+                        <span>@(displayTotal.HasValue ? displayTotal.Value.ToString("N0") + " VNĐ" : "Đang chờ")</span>
                     </div>
                 </div>
 

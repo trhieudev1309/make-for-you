@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Auth.RegisterModel
 @{
-    ViewData["Title"] = "Create Account";
+    ViewData["Title"] = "Tạo Tài Khoản";
 }
 
 <!-- Page-specific styles -->
@@ -57,16 +57,16 @@
                 <!-- Editorial Section Label -->
                 <div class="d-flex align-items-center gap-3 mb-4">
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
-                    <span class="small-caps">Join Us</span>
+                    <span class="small-caps">Tham Gia Cùng Chúng Tôi</span>
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
                 </div>
 
                 <!-- Headline -->
                 <h1 class="serif-heading display-5 mb-2 text-center" style="color: var(--foreground);">
-                    Create Account
+                    Tạo Tài Khoản
                 </h1>
                 <p class="text-center mb-5" style="color: var(--muted-foreground);">
-                    Join MakeForYou as a Buyer or Seller
+                    Tham gia MakeForYou với tư cách Người mua hoặc Người bán
                 </p>
 
                 <!-- Error Message -->
@@ -92,21 +92,21 @@
 
                     <!-- Full Name -->
                     <div class="mb-4">
-                        <label asp-for="Input.FullName" class="form-label small-caps">Full Name</label>
+                        <label asp-for="Input.FullName" class="form-label small-caps">Họ và Tên</label>
                         <input asp-for="Input.FullName" class="form-control" placeholder="Nguyen Van A" />
                         <span asp-validation-for="Input.FullName" class="text-danger small mt-1"></span>
                     </div>
 
                     <!-- Email -->
                     <div class="mb-4">
-                        <label asp-for="Input.Email" class="form-label small-caps">Email Address</label>
+                        <label asp-for="Input.Email" class="form-label small-caps">Địa chỉ Email</label>
                         <input asp-for="Input.Email" class="form-control" placeholder="example@email.com" />
                         <span asp-validation-for="Input.Email" class="text-danger small mt-1"></span>
                     </div>
 
                     <!-- Password -->
                     <div class="mb-4">
-                        <label asp-for="Input.Password" class="form-label small-caps">Password</label>
+                        <label asp-for="Input.Password" class="form-label small-caps">Mật khẩu</label>
                         <div class="input-group">
                             <input asp-for="Input.Password"
                                    type="password"
@@ -122,18 +122,18 @@
                         </div>
                         <span asp-validation-for="Input.Password" class="text-danger small mt-1"></span>
                         <div class="form-text small" style="color: var(--muted-foreground);">
-                            8–15 characters · uppercase · lowercase · digit · special character
+                            8–15 ký tự · chữ hoa · chữ thường · chữ số · ký tự đặc biệt
                         </div>
                     </div>
 
                     <!-- Confirm Password -->
                     <div class="mb-5">
-                        <label asp-for="Input.ConfirmPassword" class="form-label small-caps">Confirm Password</label>
+                        <label asp-for="Input.ConfirmPassword" class="form-label small-caps">Xác nhận Mật khẩu</label>
                         <div class="input-group">
                             <input asp-for="Input.ConfirmPassword"
                                    type="password"
                                    class="form-control"
-                                   placeholder="Repeat your password"
+                                   placeholder="Nhập lại mật khẩu của bạn"
                                    id="confirmPasswordInput" />
                             <button class="btn border"
                                     type="button"
@@ -147,25 +147,25 @@
 
                     <!-- Phone -->
                     <div class="mb-4">
-                        <label asp-for="Input.Phone" class="form-label small-caps">Phone Number</label>
+                        <label asp-for="Input.Phone" class="form-label small-caps">Số điện thoại</label>
                         <input asp-for="Input.Phone" class="form-control" placeholder="0912345678" />
                         <span asp-validation-for="Input.Phone" class="text-danger small mt-1"></span>
                     </div>
 
                     <!-- Role Selection -->
                     <div class="mb-5">
-                        <label class="form-label small-caps">Register as</label>
+                        <label class="form-label small-caps">Đăng ký với tư cách</label>
                         <div class="d-flex gap-4 mt-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" asp-for="Input.Role" value="0" id="roleBuyer" checked />
                                 <label class="form-check-label" for="roleBuyer">
-                                    <i class="bi bi-bag me-1"></i>Buyer
+                                    <i class="bi bi-bag me-1"></i>Người mua
                                 </label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" asp-for="Input.Role" value="1" id="roleSeller" />
                                 <label class="form-check-label" for="roleSeller">
-                                    <i class="bi bi-tools me-1"></i>Seller
+                                    <i class="bi bi-tools me-1"></i>Người bán
                                 </label>
                             </div>
                         </div>
@@ -174,23 +174,23 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-register w-100">
-                        Create Account
+                        Tạo Tài Khoản
                     </button>
                 </form>
 
                 <!-- Divider -->
                 <div class="d-flex align-items-center gap-3 my-5">
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
-                    <span class="small-caps" style="color: var(--muted-foreground);">or</span>
+                    <span class="small-caps" style="color: var(--muted-foreground);">hoặc</span>
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
                 </div>
 
                 <!-- Login Link -->
                 <p class="text-center" style="color: var(--muted-foreground);">
-                    Already have an account?
+                    Đã có tài khoản?
                     <a asp-page="/Auth/Login"
                            style="color: var(--accent); font-weight: 500; text-decoration: none;">
-                        Sign in
+                        Đăng nhập
                     </a>
                 </p>
 

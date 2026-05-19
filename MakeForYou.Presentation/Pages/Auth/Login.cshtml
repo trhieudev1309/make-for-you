@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Auth.LoginModel
 @{
-    ViewData["Title"] = "Sign In";
+    ViewData["Title"] = "Đăng Nhập";
 }
 
 <!-- Page-specific styles -->
@@ -52,16 +52,16 @@
                 <!-- Editorial Section Label -->
                 <div class="d-flex align-items-center gap-3 mb-4">
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
-                    <span class="small-caps">Welcome Back</span>
+                    <span class="small-caps">Chào Mừng Trở Lại</span>
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
                 </div>
 
                 <!-- Headline -->
                 <h1 class="serif-heading display-5 mb-2 text-center" style="color: var(--foreground);">
-                    Sign In
+                    Đăng Nhập
                 </h1>
                 <p class="text-center mb-5" style="color: var(--muted-foreground);">
-                    Continue your creative journey with Make For You
+                    Tiếp tục hành trình sáng tạo của bạn cùng Make For You
                 </p>
 
                 <!-- Success Message -->
@@ -69,7 +69,7 @@
                 {
                     <div class="alert mb-4" style="background:#F0EDE6; color:#1A1A1A; border:1px solid #E8E4DF;">
                         <i class="bi bi-check-circle me-2"></i>
-                        Account created successfully. Please sign in.
+                        Tạo tài khoản thành công. Vui lòng đăng nhập.
                     </div>
                 }
 
@@ -88,7 +88,7 @@
 
                     <!-- Email -->
                     <div class="mb-4">
-                        <label asp-for="Input.Email" class="form-label small-caps">Email Address</label>
+                        <label asp-for="Input.Email" class="form-label small-caps">Địa chỉ Email</label>
                         <input asp-for="Input.Email"
                                class="form-control"
                                placeholder="hello@example.com"
@@ -99,21 +99,21 @@
                     <!-- Password -->
                     <div class="mb-5">
                         <div class="d-flex justify-content-between align-items-baseline mb-2">
-                            <label asp-for="Input.Password" class="form-label small-caps">Password</label>
+                            <label asp-for="Input.Password" class="form-label small-caps">Mật khẩu</label>
                             <a asp-page="/Auth/ForgotPassword"
-                                   class="small"
-                                   style="color: var(--muted-foreground); text-decoration: none;">
-                                Forgot password?
+                               class="small"
+                               style="color: var(--muted-foreground); text-decoration: none;">
+                                Quên mật khẩu?
                             </a>
                         </div>
-                        
+
                         <div class="input-group">
                             <input asp-for="Input.Password"
                                    type="password"
                                    class="form-control"
                                    placeholder="••••••••"
                                    id="passwordInput" />
-                            
+
                             <button class="btn border"
                                     type="button"
                                     style="border-color: var(--border);"
@@ -126,23 +126,23 @@
 
                     <!-- Sign In Button -->
                     <button type="submit" class="btn btn-signin w-100">
-                        Sign In
+                        Đăng Nhập
                     </button>
                 </form>
 
                 <!-- Divider -->
                 <div class="d-flex align-items-center gap-3 my-5">
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
-                    <span class="small-caps" style="color: var(--muted-foreground);">or</span>
+                    <span class="small-caps" style="color: var(--muted-foreground);">hoặc</span>
                     <div class="flex-grow-1 h-px" style="background: var(--border);"></div>
                 </div>
 
                 <!-- Register Link -->
                 <p class="text-center" style="color: var(--muted-foreground);">
-                    Don’t have an account?
+                    Chưa có tài khoản?
                     <a asp-page="/Auth/Register"
-                           style="color: var(--accent); font-weight: 500; text-decoration: none;">
-                        Create one
+                       style="color: var(--accent); font-weight: 500; text-decoration: none;">
+                        Tạo tài khoản
                     </a>
                 </p>
 
@@ -163,7 +163,7 @@
         function togglePassword() {
             const input = document.getElementById('passwordInput');
             const icon = document.getElementById('eyeIcon');
-            
+
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.className = 'bi bi-eye-slash';
