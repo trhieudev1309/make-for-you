@@ -1,4 +1,4 @@
-﻿using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +55,8 @@ namespace MakeForYou.Repositories.Repository
             {
                 var search = searchTerm.Trim().ToLower();
                 query = query.Where(p => p.Title.ToLower().Contains(search)
-                                      || p.Description.ToLower().Contains(search));
+                                      || (p.Description != null && p.Description.ToLower().Contains(search))
+                                      || (p.Seller != null && p.Seller.User != null && p.Seller.User.FullName != null && p.Seller.User.FullName.ToLower().Contains(search)));
             }
 
             // Nếu có chọn category, lọc đúng category đó
