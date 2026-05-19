@@ -24,6 +24,9 @@ namespace MakeForYou.Presentation.Pages.Products
         public Product? Product { get; set; }
         public int CartCount { get; set; }
 
+        // danh sách sản phẩm liên quan / gợi ý
+        public List<Product> RelatedProducts { get; set; } = new();
+
         public async Task<IActionResult> OnGetAsync(long id)
         {
             Id = id;
@@ -38,6 +41,16 @@ namespace MakeForYou.Presentation.Pages.Products
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
             CartCount = await _cartService.GetTotalItemsCountAsync(userId);
+
+            // Lấy sản phẩm liên quan bằng phương thức chuyên dụng
+            try
+            {
+                RelatedProducts = await _productRepo.GetRelatedProductsAsync(id, 4);
+            }
+            catch
+            {
+                RelatedProducts = new List<Product>();
+            }
 
             return Page();
         }

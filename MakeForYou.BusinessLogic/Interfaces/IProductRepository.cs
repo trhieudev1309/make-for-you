@@ -15,5 +15,8 @@ namespace MakeForYou.BusinessLogic.Interfaces
         Task<List<Product>> SearchAsync(string? searchTerm, long? categoryId); // Tìm kiếm cho trang Index
 
         Task<Seller?> GetSellerDetailsAsync(long id);
+
+        // Trả về danh sách sản phẩm liên quan (cùng danh mục > cùng nghệ nhân > gần đây)
+        Task<List<Product>> GetRelatedProductsAsync(long productId, int count);
     }
 }

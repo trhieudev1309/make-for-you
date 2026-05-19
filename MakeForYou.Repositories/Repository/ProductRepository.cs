@@ -76,6 +76,65 @@ namespace MakeForYou.Repositories.Repository
                     .ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(s => s.SellerId == id);
         }
+
+        // New: Tìm sản phẩm liên quan theo chiến lược:
+        // 1) cùng danh mục (loại ưu tiên)
+        // 2) nếu chưa đủ, bổ sung theo cùng nghệ nhân
+        // 3) nếu vẫn chưa đủ, bổ sung sản phẩm gần đây khác
+        public async Task<List<Product>> GetRelatedProductsAsync(long productId, int count)
+        {
+            var current = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.ProductId == productId);
+            if (current == null) return new List<Product>();
+
+            var related = new List<Product>();
+
+            // 1) cùng danh mục
+            if (current.CategoryId > 0)
+            {
+                var sameCategory = await _context.Products
+                    .Include(p => p.Category)
+                    .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Where(p => p.ProductId != productId && p.CategoryId == current.CategoryId)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(count)
+                    .ToListAsync();
+
+                related.AddRange(sameCategory);
+            }
+
+            // 2) bổ sung theo cùng nghệ nhân nếu cần
+            if (related.Count < count && current.SellerId > 0)
+            {
+                var existingIds = related.Select(p => p.ProductId).Append(productId).ToList();
+                var sameSeller = await _context.Products
+                    .Include(p => p.Category)
+                    .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Where(p => !existingIds.Contains(p.ProductId) && p.SellerId == current.SellerId)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(count - related.Count)
+                    .ToListAsync();
+
+                related.AddRange(sameSeller);
+            }
+
+            // 3) nếu vẫn chưa đủ, bổ sung các sản phẩm gần đây khác
+            if (related.Count < count)
+            {
+                var existingIds = related.Select(p => p.ProductId).Append(productId).ToList();
+                var recent = await _context.Products
+                    .Include(p => p.Category)
+                    .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Where(p => !existingIds.Contains(p.ProductId))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(count - related.Count)
+                    .ToListAsync();
+
+                related.AddRange(recent);
+            }
+
+            // đảm bảo không vượt quá số lượng yêu cầu
+            return related.Take(count).ToList();
+        }
     }
 
-    }
+}
