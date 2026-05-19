@@ -31,6 +31,9 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<Notification> Notifications => Set<Notification>();
 
+        public DbSet<CustomizationGroup> CustomizationGroups => Set<CustomizationGroup>();
+        public DbSet<CustomizationOption> CustomizationOptions => Set<CustomizationOption>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -128,6 +131,20 @@ namespace MakeForYou.BusinessLogic
                 entity.Property(m => m.Message).IsRequired();
                 entity.Property(m => m.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             });
+
+            // CustomizationGroup -> Product relationship
+            modelBuilder.Entity<CustomizationGroup>()
+                .HasOne(cg => cg.Product)
+                .WithMany(p => p.CustomizationGroups)
+                .HasForeignKey(cg => cg.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CustomizationOption -> CustomizationGroup relationship
+            modelBuilder.Entity<CustomizationOption>()
+                .HasOne(co => co.CustomizationGroup)
+                .WithMany(cg => cg.Options)
+                .HasForeignKey(co => co.CustomizationGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

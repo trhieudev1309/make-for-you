@@ -2,6 +2,7 @@
 @model MakeForYou.Presentation.Pages.Orders.DetailModel
 @using MakeForYou.BusinessLogic.Enums
 @using MakeForYou.Presentation.Pages.Orders
+@using System.Text.Json
 @{
     ViewData["Title"] = $"Đơn hàng #{Model.Order?.OrderId}";
     var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
@@ -544,6 +545,29 @@
                                             Số lượng: @item.Quantity &nbsp;·&nbsp; @item.Price.ToString("N0") đ / sản phẩm
                                         </div>
                                     </div>
+                                    @if (!string.IsNullOrEmpty(item.CustomizationsJson))
+                                    {
+                                        var customizations = JsonSerializer.Deserialize<List<JsonElement>>(item.CustomizationsJson);
+
+                                        if (customizations != null && customizations.Any())
+                                        {
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @foreach (var customization in customizations)
+                                                {
+                                                    var groupTitle = customization.GetProperty("groupTitle").GetString();
+                                                    var optionName = customization.GetProperty("optionName").GetString();
+
+                                                    <span class="badge rounded-pill"
+                                                          style="background:#F3EEE8; color:var(--bark); padding:.45rem .8rem; font-size:.75rem; border:1px solid var(--border);">
+                                                        <span style="font-weight:700;">
+                                                            @groupTitle:
+                                                        </span>
+                                                        @optionName
+                                                    </span>
+                                                }
+                                            </div>
+                                        }
+                                    }
                                     <div class="od-item-price">
                                         <div class="unit">Tạm tính</div>
                                         <div class="total">@((item.Price * item.Quantity).ToString("N0")) đ</div>

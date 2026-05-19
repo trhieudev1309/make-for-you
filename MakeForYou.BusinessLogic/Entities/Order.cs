@@ -30,6 +30,7 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public DateTime? CompletedAt { get; set; }
 
+
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<ChatMessage>? ChatMessages { get; set; }
         public ICollection<Quotation>? Quotations { get; set; }

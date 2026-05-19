@@ -32,5 +32,8 @@ namespace MakeForYou.BusinessLogic.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int Status { get; set; }
+
+        // Navigation - Add this line
+        public ICollection<CustomizationGroup> CustomizationGroups { get; set; } = new List<CustomizationGroup>();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
+using MakeForYou.BusinessLogic.Entities.DTOs;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
-using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,6 +25,10 @@ namespace MakeForYou.Presentation.Pages.Cart
             CartItems = await _cartService.GetCartAsync(userId);
             GrandTotal = CartItems.Sum(x => x.TotalPrice);
             CartCount = CartItems.Sum(x => x.Quantity);
+            foreach (var item in CartItems)
+            {
+                var customizations = JsonSerializer.Deserialize<List<CartCustomizationDto>>(item.CustomizationsJson);
+            }
         }
 
         public async Task<IActionResult> OnPostUpdateQuantityAsync(long productId, int change)

@@ -24,19 +24,22 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task AddToCartAsync(long? userId, long productId, int quantity)
+
+        public async Task AddToCartAsync(long? userId, long productId, int quantity, string? customizationsJson = null)
         {
             if (userId.HasValue) // --- TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP (Lưu Database) ---
             {
                 var existing = await _cartRepo.GetExistingItemAsync(userId.Value, productId);
-                if (existing != null)
+
+                if (existing != null && existing.CustomizationsJson == customizationsJson)
                 {
+                    // Same customizations, just increase quantity
                     existing.Quantity += quantity;
                     await _cartRepo.UpdateItemAsync(existing);
                 }
-                else
+                else if (existing != null && existing.CustomizationsJson != customizationsJson)
                 {
-                    // Lấy thông tin sản phẩm để chốt giá lúc thêm vào
+                    // Different customizations, add as new item
                     var product = await _productRepo.FindByIdAsync(productId);
 
                     await _cartRepo.AddItemAsync(new CartItem
@@ -44,7 +47,22 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                         UserId = userId,
                         ProductId = productId,
                         Quantity = quantity,
-                        PriceAtAdd = product?.Price ?? 0
+                        PriceAtAdd = product?.Price ?? 0,
+                        CustomizationsJson = customizationsJson
+                    });
+                }
+                else
+                {
+                    // New item
+                    var product = await _productRepo.FindByIdAsync(productId);
+
+                    await _cartRepo.AddItemAsync(new CartItem
+                    {
+                        UserId = userId,
+                        ProductId = productId,
+                        Quantity = quantity,
+                        PriceAtAdd = product?.Price ?? 0,
+                        CustomizationsJson = customizationsJson
                     });
                 }
             }
@@ -57,14 +75,21 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                     ? new List<CartItem>()
                     : JsonSerializer.Deserialize<List<CartItem>>(cartJson) ?? new List<CartItem>();
 
-                var item = cart.FirstOrDefault(x => x.ProductId == productId);
+                // Look for matching item with same customizations
+                var item = cart.FirstOrDefault(x => x.ProductId == productId && x.CustomizationsJson == customizationsJson);
+
                 if (item != null)
                 {
                     item.Quantity += quantity;
                 }
                 else
                 {
-                    cart.Add(new CartItem { ProductId = productId, Quantity = quantity });
+                    cart.Add(new CartItem
+                    {
+                        ProductId = productId,
+                        Quantity = quantity,
+                        CustomizationsJson = customizationsJson
+                    });
                 }
 
                 session?.SetString(CART_SESSION_KEY, JsonSerializer.Serialize(cart));
@@ -98,23 +123,30 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             {
                 var json = _httpContextAccessor.HttpContext?.Session.GetString(CART_SESSION_KEY);
                 rawItems = string.IsNullOrEmpty(json) ? new List<CartItem>()
-                           : JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>();
+                    : JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>();
+            }
 
-                // Khách vãng lai: Trong Session chỉ có ProductId, cần tìm thêm info từ ProductRepo
-                foreach (var item in rawItems)
+            // Map to ViewModels
+            var viewModels = new List<CartItemViewModel>();
+            foreach (var item in rawItems)
+            {
+                var product = await _productRepo.FindByIdAsync(item.ProductId);
+                if (product != null)
                 {
-                    item.Product = await _productRepo.FindByIdAsync(item.ProductId);
+                    viewModels.Add(new CartItemViewModel
+                    {
+                        CartItemId = item.CartItemId,
+                        ProductId = item.ProductId,
+                        ProductName = product.Title,
+                        ImageUrl = product.ImageUrl,
+                        Quantity = item.Quantity,
+                        Price = item.PriceAtAdd,
+                        CustomizationsJson = item.CustomizationsJson,
+                    });
                 }
             }
 
-            return rawItems.Select(x => new CartItemViewModel
-            {
-                ProductId = x.ProductId,
-                ProductName = x.Product?.Title,
-                ImageUrl = x.Product?.ImageUrl,
-                Price = x.Product?.Price ?? 0,
-                Quantity = x.Quantity
-            }).ToList();
+            return viewModels;
         }
 
         public async Task UpdateQuantityAsync(long? userId, long productId, int quantity)

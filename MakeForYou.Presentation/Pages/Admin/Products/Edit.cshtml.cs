@@ -1,6 +1,7 @@
-﻿using MakeForYou.BusinessLogic;
-using MakeForYou.BusinessLogic.Entities;
+﻿using System.Text.Json;
+using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,12 +13,17 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
     {
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
+        private readonly ICustomizationService _customizationService;
         private readonly ApplicationDbContext _context;
 
-        public EditModel(IProductService productService, ICategoryService categoryService, ApplicationDbContext context)
+        public EditModel(IProductService productService,
+                        ICategoryService categoryService,
+                        ICustomizationService customizationService,
+                        ApplicationDbContext context)
         {
             _productService = productService;
             _categoryService = categoryService;
+            _customizationService = customizationService;
             _context = context;
         }
 
@@ -27,10 +33,15 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
         [BindProperty]
         public long ProductId { get; set; }
 
+        [BindProperty]
+        public string? CustomizationsJson { get; set; }
+
         public List<MakeForYou.BusinessLogic.Entities.DTOs.Respond.CategoryViewModel> Categories { get; set; } = new();
 
-        // SỬA TẠI ĐÂY: Chỉ định rõ namespace để tránh bị hiểu nhầm thành Namespace Seller
         public List<MakeForYou.BusinessLogic.Entities.Seller> Sellers { get; set; } = new();
+
+        // Use ViewModel instead of Entity to avoid circular references
+        public List<CustomizationGroupViewModel> ExistingCustomizations { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(long id)
         {
@@ -53,6 +64,9 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
             Categories = await _categoryService.GetAllCategoriesAsync();
             Sellers = await _context.Sellers.ToListAsync();
 
+            // Load existing customizations as ViewModels
+            ExistingCustomizations = await _customizationService.GetCustomizationViewModelsByProductIdAsync(id);
+
             return Page();
         }
 
@@ -62,13 +76,42 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
             {
                 Categories = await _categoryService.GetAllCategoriesAsync();
                 Sellers = await _context.Sellers.ToListAsync();
+                ExistingCustomizations = await _customizationService.GetCustomizationViewModelsByProductIdAsync(ProductId);
                 return Page();
             }
 
             var result = await _productService.UpdateProductAsync(ProductId, Product);
-            if (result) return RedirectToPage("/Admin/Products");
+            if (!result)
+            {
+                Categories = await _categoryService.GetAllCategoriesAsync();
+                Sellers = await _context.Sellers.ToListAsync();
+                ExistingCustomizations = await _customizationService.GetCustomizationViewModelsByProductIdAsync(ProductId);
+                ModelState.AddModelError("", "Lỗi khi cập nhật sản phẩm");
+                return Page();
+            }
 
-            return Page();
+            // Delete all existing customizations for this product
+            await _customizationService.DeleteAllCustomizationsByProductIdAsync(ProductId);
+
+            // Add new customizations if provided
+            if (!string.IsNullOrWhiteSpace(CustomizationsJson))
+            {
+                try
+                {
+                    var customizations = JsonSerializer.Deserialize<List<CustomizationGroupRequest>>(CustomizationsJson);
+
+                    if (customizations != null && customizations.Count > 0)
+                    {
+                        await _customizationService.CreateCustomizationGroupsAsync(ProductId, customizations);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error creating customizations: {ex.Message}");
+                }
+            }
+
+            return RedirectToPage("/Admin/Products");
         }
     }
 }

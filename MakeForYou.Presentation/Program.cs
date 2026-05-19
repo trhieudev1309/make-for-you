@@ -75,6 +75,8 @@ builder.Services.AddScoped<IQuotationService, QuotationService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
+builder.Services.AddScoped<ICustomizationRepository, CustomizationRepository>();
+builder.Services.AddScoped<ICustomizationService, CustomizationService>();
 
 builder.Configuration.GetSection("Email"); // Ensure email section read
 

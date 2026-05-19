@@ -19,5 +19,10 @@ namespace MakeForYou.BusinessLogic.Entities
         public int Quantity { get; set; }
 
         public int PriceAtAdd { get; set; } // Lưu giá tại thời điểm thêm để tránh biến động giá sau này
+
+        // NEW: Store selected customizations as JSON
+        // Format: {"123": {"groupId": "123", "optionId": "456", "optionName": "S"}, ...}
+        [MaxLength(2000)]
+        public string? CustomizationsJson { get; set; }
     }
 }

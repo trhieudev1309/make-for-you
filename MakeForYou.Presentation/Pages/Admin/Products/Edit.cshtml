@@ -4,6 +4,7 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Chỉnh sửa sản phẩm";
     ViewData["ActivePage"] = "Products";
+    var lmao = Model.ExistingCustomizations;
 }
 
 <style>
@@ -12,19 +13,74 @@
         border: none;
     }
 
-        .btn-clay:hover {
-            background-color: #b0724a !important;
-            color: white !important;
-        }
+    .btn-clay:hover {
+        background-color: #b0724a !important;
+        color: white !important;
+    }
+
+    .btn-outline-clay {
+        color: var(--mfy-clay);
+        border-color: var(--mfy-clay);
+    }
+
+    .btn-outline-clay:hover {
+        background-color: var(--mfy-clay);
+        color: white;
+    }
 
     .serif-heading {
         font-family: 'Playfair Display', serif;
     }
-    /* Style bổ sung để trường disabled trông rõ ràng hơn */
+
     .form-control:disabled, .form-select:disabled {
         cursor: not-allowed;
         background-color: #f8f9fa !important;
         color: #6c757d;
+    }
+
+    .customization-group {
+        background: #f8f7f5;
+        border: 1px solid #e8e3dd;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        position: relative;
+    }
+
+    .customization-options-list {
+        background: white;
+        border: 1px solid #e8e3dd;
+        border-radius: 6px;
+        padding: 12px;
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+    }
+
+    .customization-option-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        background: #f8f7f5;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+
+    .customization-option-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .remove-option-btn, .remove-group-btn {
+        background: none;
+        border: none;
+        color: #d32f2f;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+
+    .remove-option-btn:hover, .remove-group-btn:hover {
+        opacity: 0.7;
     }
 </style>
 
@@ -36,6 +92,11 @@
 
     <form method="post">
         <input type="hidden" asp-for="ProductId" />
+        
+        <!-- ADD THIS LINE: Store existing customizations as JSON for JavaScript -->
+        <script id="existingCustomizationsData" type="application/json">
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExistingCustomizations ?? new List<MakeForYou.BusinessLogic.Entities.DTOs.Respond.CustomizationGroupViewModel>()))
+        </script>
 
         <div class="row">
             <div class="col-md-12 mb-3">
@@ -55,24 +116,19 @@
                 </div>
             </div>
 
-            @* PHẦN NGHỆ NHÂN - ĐÃ SỬA LẠI ĐỂ KHÔNG BỊ MẤT FIELD *@
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Nghệ nhân (Seller)</label>
-                @* Sử dụng disabled để khóa và bg-light để hiện màu xám *@
                 <select class="form-select bg-light" disabled>
                     @if (Model.Sellers != null)
                     {
                         foreach (var s in Model.Sellers)
                         {
-                            @* Logic để chọn đúng Seller hiện tại *@
                             <option value="@s.SellerId" selected="@(s.SellerId == Model.Product.SellerId ? "selected" : null)">
                                 ID: @s.SellerId - @(string.IsNullOrEmpty(s.Bio) ? "Nghệ nhân" : s.Bio)
                             </option>
                         }
                     }
                 </select>
-
-                @* QUAN TRỌNG: Thẻ hidden để gửi SellerId về server vì thẻ disabled không gửi dữ liệu *@
                 <input type="hidden" asp-for="Product.SellerId" />
             </div>
 
@@ -105,6 +161,24 @@
             </div>
         </div>
 
+        <!-- NEW: CUSTOMIZATION SECTION -->
+        <div class="mb-4 border-top pt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="serif-heading fw-bold" style="color: var(--mfy-bark)">Tùy chỉnh nhanh (Optional)</h5>
+                <button type="button" class="btn btn-sm btn-outline-clay" id="addCustomizationGroupBtn">
+                    <i class="bi bi-plus-lg me-1"></i>Thêm nhóm tùy chỉnh
+                </button>
+            </div>
+            <p class="text-muted small mb-3">Thêm các lựa chọn tùy chỉnh như Kích thước, Chất liệu, v.v.</p>
+
+            <div id="customizationGroupsContainer">
+                <!-- Customization groups will be added here dynamically -->
+            </div>
+
+            <!-- Hidden input to store customizations as JSON -->
+            <input type="hidden" id="customizationsJson" name="CustomizationsJson" value="" />
+        </div>
+
         <div class="d-flex justify-content-end gap-2 border-top pt-4">
             <a href="/Admin/Products" class="btn btn-light rounded-pill px-4">Hủy</a>
             <button type="submit" class="btn btn-clay rounded-pill px-5 shadow-sm text-white">
@@ -116,8 +190,261 @@
 
 @section Scripts {
     <script>
-        document.getElementById('imageUrlInput').addEventListener('input', function() {
-            document.getElementById('imagePreview').src = this.value;
+        let groupCounter = 0;
+        let optionCounter = {};
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const addGroupBtn = document.getElementById('addCustomizationGroupBtn');
+            addGroupBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                addCustomizationGroup();
+            });
+
+            // Load existing customizations
+            loadExistingCustomizations();
+
+            // Initialize delete handlers
+            updateDeleteHandlers();
+
+            // Image preview handler
+            document.getElementById('imageUrlInput').addEventListener('input', function () {
+                document.getElementById('imagePreview').src = this.value;
+            });
+        });
+
+        function loadExistingCustomizations() {
+            try {
+                // Get customizations from the page model (server-side rendered)
+                const existingCustomizationsElement = document.getElementById('existingCustomizationsData');
+                if (!existingCustomizationsElement) {
+                    console.log('No existing customizations element found');
+                    return;
+                }
+
+                const existingData = JSON.parse(existingCustomizationsElement.textContent || '[]');
+                console.log('Loaded customizations:', existingData);
+
+                if (!existingData || existingData.length === 0) {
+                    console.log('No customizations to load');
+                    return;
+                }
+
+                const container = document.getElementById('customizationGroupsContainer');
+                existingData.forEach((group) => {
+                    const groupId = groupCounter++;
+                    optionCounter[groupId] = 0;
+
+                    // Use PascalCase property names to match the JSON from server
+                    const groupHtml = `
+                        <div class="customization-group" data-group-id="${groupId}">
+                            <button type="button" class="remove-group-btn" style="float: right;">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tiêu đề nhóm tùy chỉnh</label>
+                                    <input type="text" class="form-control shadow-sm group-title" value="${escapeHtml(group.Title || '')}" placeholder="VD: Kích thước, Chất liệu" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Thứ tự hiển thị</label>
+                                    <input type="number" class="form-control shadow-sm group-display-order" value="${group.DisplayOrder || 0}" min="0" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-bold mb-0">Các tùy chọn</label>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary add-option-btn">
+                                        <i class="bi bi-plus-lg me-1"></i>Thêm lựa chọn
+                                    </button>
+                                </div>
+                                <div class="customization-options-list" data-group-id="${groupId}">
+                                    <!-- Options will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', groupHtml);
+
+                    // Load options for this group
+                    if (group.Options && group.Options.length > 0) {
+                        const optionList = container.querySelector(`.customization-options-list[data-group-id="${groupId}"]`);
+                        group.Options.forEach((option) => {
+                            const optionId = optionCounter[groupId]++;
+                            const optionHtml = `
+                                <div class="customization-option-item" data-option-id="${optionId}">
+                                    <input type="text" class="form-control form-control-sm option-value" value="${escapeHtml(option.OptionValue || '')}" placeholder="VD: S, M, L, XL" required style="flex: 1;" />
+                                    <input type="number" class="form-control form-control-sm option-display-order" value="${option.DisplayOrder || 0}" min="0" style="width: 80px;" />
+                                    <button type="button" class="remove-option-btn" title="Xóa">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            `;
+                            optionList.insertAdjacentHTML('beforeend', optionHtml);
+                        });
+                    }
+
+                    // Add option handler for this group
+                    const addOptionBtn = container.querySelector(`[data-group-id="${groupId}"] .add-option-btn`);
+                    addOptionBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        addCustomizationOption(groupId);
+                    });
+                });
+
+                updateDeleteHandlers();
+                console.log('Customizations loaded successfully');
+            } catch (error) {
+                console.error('Error loading existing customizations:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function addCustomizationGroup() {
+            const container = document.getElementById('customizationGroupsContainer');
+            const groupId = groupCounter++;
+            optionCounter[groupId] = 0;
+
+            const groupHtml = `
+                <div class="customization-group" data-group-id="${groupId}">
+                    <button type="button" class="remove-group-btn" style="float: right;">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tiêu đề nhóm tùy chỉnh</label>
+                            <input type="text" class="form-control shadow-sm group-title" placeholder="VD: Kích thước, Chất liệu" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Thứ tự hiển thị</label>
+                            <input type="number" class="form-control shadow-sm group-display-order" value="0" min="0" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Các tùy chọn</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-option-btn">
+                                <i class="bi bi-plus-lg me-1"></i>Thêm lựa chọn
+                            </button>
+                        </div>
+                        <div class="customization-options-list" data-group-id="${groupId}">
+                            <!-- Options will be added here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', groupHtml);
+            updateDeleteHandlers();
+
+            // Add option handler
+            const addOptionBtn = container.querySelector(`[data-group-id="${groupId}"] .add-option-btn`);
+            addOptionBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                addCustomizationOption(groupId);
+            });
+        }
+
+        function addCustomizationOption(groupId) {
+            const optionList = document.querySelector(`.customization-options-list[data-group-id="${groupId}"]`);
+            const optionId = optionCounter[groupId]++;
+
+            const optionHtml = `
+                <div class="customization-option-item" data-option-id="${optionId}">
+                    <input type="text" class="form-control form-control-sm option-value" placeholder="VD: S, M, L, XL" required style="flex: 1;" />
+                    <input type="number" class="form-control form-control-sm option-display-order" value="0" min="0" style="width: 80px;" />
+                    <button type="button" class="remove-option-btn" title="Xóa">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `;
+
+            optionList.insertAdjacentHTML('beforeend', optionHtml);
+            updateDeleteHandlers();
+        }
+
+        function updateDeleteHandlers() {
+            // Delete group handlers
+            document.querySelectorAll('.remove-group-btn').forEach(btn => {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    const group = this.closest('.customization-group');
+                    group.remove();
+                    serializeCustomizations();
+                };
+            });
+
+            // Delete option handlers
+            document.querySelectorAll('.remove-option-btn').forEach(btn => {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    const option = this.closest('.customization-option-item');
+                    option.remove();
+                    serializeCustomizations();
+                };
+            });
+        }
+
+        function serializeCustomizations() {
+            const customizations = [];
+
+            document.querySelectorAll('.customization-group').forEach((group) => {
+                const title = group.querySelector('.group-title').value.trim();
+                const displayOrder = parseInt(group.querySelector('.group-display-order').value) || 0;
+
+                const options = [];
+                group.querySelectorAll('.customization-option-item').forEach((item) => {
+                    const optionValue = item.querySelector('.option-value').value.trim();
+                    const optionOrder = parseInt(item.querySelector('.option-display-order').value) || 0;
+
+                    if (optionValue) {
+                        options.push({
+                            optionValue: optionValue,
+                            displayOrder: optionOrder
+                        });
+                    }
+                });
+
+                if (title) {
+                    customizations.push({
+                        title: title,
+                        displayOrder: displayOrder,
+                        options: options
+                    });
+                }
+            });
+
+            console.log('Serialized customizations:', customizations);
+            document.getElementById('customizationsJson').value = JSON.stringify(customizations);
+        }
+
+        // Serialize customizations before form submission
+        document.querySelector('form').addEventListener('submit', function () {
+            serializeCustomizations();
+        });
+
+        // Also serialize when changes are made
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('group-title') ||
+                e.target.classList.contains('group-display-order') ||
+                e.target.classList.contains('option-value') ||
+                e.target.classList.contains('option-display-order')) {
+                serializeCustomizations();
+            }
         });
     </script>
 }

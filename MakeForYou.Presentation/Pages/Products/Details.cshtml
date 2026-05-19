@@ -120,6 +120,67 @@
     .card-fade {
         transition: opacity .28s, transform .28s;
     }
+
+    /* Customization Styles */
+    .customization-group-card {
+        background: #fafaf8;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--serif-border, #e8e3dd);
+    }
+
+    .customization-options-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .customization-option-btn {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .customization-input {
+        display: none;
+    }
+
+    .option-label {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border: 1.5px solid var(--mfy-clay, #C8855A);
+        border-radius: 6px;
+        background: white;
+        color: var(--mfy-clay, #C8855A);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .customization-input:checked + .option-label {
+        background: var(--mfy-clay, #C8855A);
+        color: white;
+        box-shadow: 0 2px 8px rgba(200, 133, 90, 0.3);
+    }
+
+    .customization-input:hover + .option-label {
+        border-color: var(--mfy-bark, #2D2926);
+        transform: translateY(-1px);
+    }
+
+    .customizations-section {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 </style>
 
 <div class="serif-scope">
@@ -197,6 +258,42 @@
                                 <div>@((Model.Product.Seller?.AvailabilityStatus == 1) ? "Sẵn sàng giao" : "Liên hệ kiểm tra")</div>
                             </div>
                         </div>
+
+                        <hr style="border-color:var(--serif-border);" />
+
+                        @* CUSTOMIZATION OPTIONS SECTION *@
+                        @if (Model.Customizations != null && Model.Customizations.Count > 0)
+                        {
+                            <div class="customizations-section mb-4">
+                                <div class="small-caps mb-3" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chỉnh sản phẩm</div>
+                                
+                                @foreach (var group in Model.Customizations.OrderBy(cg => cg.DisplayOrder))
+                                {
+                                    <div class="customization-group-card mb-3">
+                                        <label class="form-label fw-bold" style="color: var(--mfy-bark); margin-bottom: 0.75rem;">
+                                            @group.Title
+                                        </label>
+                                        
+                                        <div class="customization-options-wrapper d-flex flex-wrap gap-2" data-group-id="@group.CustomizationGroupId">
+                                            @foreach (var option in group.Options.OrderBy(o => o.DisplayOrder))
+                                            {
+                                                <label class="customization-option-btn">
+                                                    <input type="radio" 
+                                                           name="customization_@group.CustomizationGroupId" 
+                                                           value="@option.CustomizationOptionId" 
+                                                           data-option-name="@option.OptionValue"
+                                                           class="customization-input" />
+                                                    <span class="option-label">@option.OptionValue</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Hidden input to store selected customizations as JSON -->
+                                <input type="hidden" id="selectedCustomizationsJson" value="" />
+                            </div>
+                        }
 
                         <hr style="border-color:var(--serif-border);" />
 
@@ -434,19 +531,58 @@
             const quantity = document.getElementById('purchaseQty').value;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+            // Collect selected customizations
+            const selectedCustomizations = [];
+
+            document.querySelectorAll('.customization-options-wrapper').forEach(group => {
+                const groupId = group.dataset.groupId;
+
+                const selected = group.querySelector('input[type="radio"]:checked');
+
+                if (selected) {
+                    const groupTitle = group.closest('.customization-group-card')
+                        ?.querySelector('.form-label')
+                        ?.innerText
+                        ?.trim();
+
+                    selectedCustomizations.push({
+                        customizationGroupId: parseInt(groupId),
+                        customizationOptionId: parseInt(selected.value),
+                        groupTitle: groupTitle,
+                        optionName: selected.dataset.optionName
+                    });
+                }
+            });
+
+            const customizationJson = JSON.stringify(selectedCustomizations);
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
 
             try {
-                const response = await fetch(`?handler=AddToCart&productId=${productId}&quantity=${quantity}`, {
+
+                const response = await fetch(`?handler=AddToCart`, {
                     method: 'POST',
-                    headers: { "RequestVerificationToken": token }
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": token
+                    },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: quantity,
+                        customizationJson: customizationJson
+                    })
                 });
+
                 const result = await response.json();
 
                 if (result.success) {
+
                     const badge = document.getElementById('cartBadgeCount');
-                    if (badge) badge.innerText = result.newCount;
+
+                    if (badge) {
+                        badge.innerText = result.newCount;
+                    }
 
                     Swal.fire({
                         title: 'Đã thêm vào giỏ hàng!',
@@ -463,9 +599,13 @@
                         }
                     });
                 }
+
             } catch (err) {
+
                 console.error("Cart Error:", err);
+
             } finally {
+
                 btn.disabled = false;
                 btn.innerText = 'Thêm vào giỏ hàng';
             }

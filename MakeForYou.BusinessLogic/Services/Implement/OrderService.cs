@@ -108,7 +108,8 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 {
                     ProductId = x.CartItem.ProductId,
                     Quantity = x.CartItem.Quantity,
-                    Price = x.CartItem.Price
+                    Price = x.CartItem.Price,
+                    CustomizationsJson = x.CartItem.CustomizationsJson
                 }).ToList();
 
                 // 5. Lưu vào Database (Mỗi đơn 1 lần gọi Repo)
@@ -142,10 +143,10 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
         public Task<Order?> GetRequestDetailAsync(long orderId, long sellerId) =>
             _orderRepo.GetOrderWithDetailsBySellerAsync(orderId, sellerId);
-    
 
-    public Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
-    _orderRepo.GetOrderForSellerAsync(orderId, sellerId);
+
+        public Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId) =>
+        _orderRepo.GetOrderForSellerAsync(orderId, sellerId);
 
         public async Task<AuthResult> UpdateProgressAsync(long orderId, long sellerId, UpdateProgressRequest req)
         {
