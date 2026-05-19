@@ -2,14 +2,14 @@
 @model MakeForYou.Presentation.Pages.Orders.IndexModel
 @using MakeForYou.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "My Orders";
+    ViewData["Title"] = "Đơn hàng của tôi";
 }
 
 <div class="container py-5" style="max-width: 860px;">
 
     <div class="mb-4">
-        <h2 style="font-family: var(--serif); font-weight: 700;">My Orders</h2>
-        <p class="text-muted">Track and manage all your custom orders.</p>
+        <h2 style="font-family: var(--serif); font-weight: 700;">Đơn hàng của tôi</h2>
+        <p class="text-muted">Theo dõi và quản lý tất cả các đơn hàng của bạn.</p>
     </div>
 
     @if (!Model.Orders.Any())
@@ -17,9 +17,9 @@
         <div class="card border-0 shadow-sm text-center py-5">
             <div class="card-body">
                 <i class="bi bi-bag-x fs-1 text-muted mb-3 d-block"></i>
-                <h5 class="fw-bold">No orders yet</h5>
-                <p class="text-muted">Once you place a custom order it will appear here.</p>
-                <a asp-page="/Products/Index" class="btn btn-dark rounded-pill px-4">Browse Products</a>
+                <h5 class="fw-bold">Chưa có đơn hàng nào</h5>
+                <p class="text-muted">Sau khi bạn đặt mua hoặc tạo yêu cầu thiết kế riêng, đơn hàng sẽ xuất hiện tại đây.</p>
+                <a asp-page="/Products/Index" class="btn btn-dark rounded-pill px-4">Khám phá tác phẩm</a>
             </div>
         </div>
     }
@@ -32,8 +32,8 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <div>
-                                <div class="text-muted small mb-1">Order #@order.OrderId</div>
-                                <h6 class="fw-bold mb-1">@(order.Seller?.User?.FullName ?? "Artisan")</h6>
+                                <div class="text-muted small mb-1">Đơn hàng #@order.OrderId</div>
+                                <h6 class="fw-bold mb-1">@(order.Seller?.User?.FullName ?? "Nghệ nhân")</h6>
                                 <div class="text-muted small">@order.Seller?.SkillDescription</div>
                             </div>
                             <span class="badge rounded-pill @MakeForYou.Presentation.Pages.Orders.IndexModel.BadgeClass(order.Status) px-3 py-2">
@@ -45,20 +45,20 @@
 
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div class="d-flex gap-4 small text-muted">
-                                <span><i class="bi bi-calendar3 me-1"></i>@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span>
+                                <span><i class="bi bi-calendar3 me-1"></i>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
                                 @if (order.AgreedPrice.HasValue)
                                 {
-                                    <span><i class="bi bi-cash me-1"></i>@order.AgreedPrice.Value.ToString("N0") VNĐ</span>
+                                    <span><i class="bi bi-cash me-1"></i>@order.AgreedPrice.Value.ToString("N0") đ</span>
                                 }
                                 else
                                 {
-                                    <span class="fst-italic">Price pending</span>
+                                    <span class="fst-italic">Chờ báo giá</span>
                                 }
-                                <span><i class="bi bi-chat-dots me-1"></i>@(order.Quotations?.Count ?? 0) quote(s)</span>
+                                <span><i class="bi bi-chat-dots me-1"></i>@(order.Quotations?.Count ?? 0) phản hồi báo giá</span>
                             </div>
                             <a asp-page="/Orders/Detail" asp-route-id="@order.OrderId"
                                class="btn btn-outline-dark btn-sm rounded-pill px-4">
-                                View Detail
+                                Xem chi tiết
                             </a>
                         </div>
                     </div>

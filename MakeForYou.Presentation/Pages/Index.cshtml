@@ -1,33 +1,64 @@
 ﻿@page
 @model MakeForYou.Presentation.Pages.IndexModel
 @{
-	ViewData["Title"] = "MakeForYou – Handcrafted Marketplace";
+	ViewData["Title"] = "MakeForYou – Sàn thương mại điện tử đồ thủ công";
 }
 
 <style>
+	/* ── CẢI TIẾN THANH PHÂN LOẠI DANH MỤC (QUICK NAV) ── */
+	.quick-nav-wrapper {
+		border-top: 1px solid rgba(0, 0, 0, 0.05);
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+		background-color: #fbfbfb;
+		width: 100%;
+	}
+
 	.quick-nav {
 		display: flex;
 		justify-content: center;
-		gap: 2.5rem;
-		padding: 0.75rem 0;
-		background: white;
+		gap: 3.5rem;
+		padding: 1.1rem 0;
 		overflow-x: auto;
 		white-space: nowrap;
+		scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
 	}
 
-		.quick-nav a {
-			font-family: var(--mono);
-			font-size: 0.65rem;
-			text-transform: uppercase;
-			letter-spacing: 0.15em;
-			text-decoration: none;
-			color: #888;
-			transition: 0.3s;
+		.quick-nav::-webkit-scrollbar {
+			display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
 		}
 
-			.quick-nav a:hover {
-				color: var(--mfy-clay);
+		.quick-nav a {
+			font-family: 'Urbanist', var(--sans, sans-serif);
+			font-size: 0.85rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			text-decoration: none;
+			color: #333333; /* Đậm màu hơn để tăng độ tương phản rõ rệt */
+			position: relative;
+			padding: 0.25rem 0;
+			transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+			/* Hiệu ứng gạch chân chạy cao cấp khi di chuột */
+			.quick-nav a::after {
+				content: "";
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 0;
+				height: 2px;
+				background-color: var(--mfy-clay, #C8855A);
+				transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 			}
+
+			.quick-nav a:hover {
+				color: var(--mfy-clay, #C8855A) !important;
+			}
+
+				.quick-nav a:hover::after {
+					width: 100%;
+				}
 
 	/* ── HERO BANNER ── */
 	.hero-banner {
@@ -51,9 +82,9 @@
 
 		.hero-content h1 {
 			font-family: var(--serif);
-			font-size: 4rem;
+			font-size: 3.5rem;
 			font-weight: 700;
-			line-height: 1.1;
+			line-height: 1.15;
 			margin-bottom: 1.5rem;
 			text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 		}
@@ -135,8 +166,6 @@
 		transform: scale(1.05);
 	}
 
-
-
 	/* Responsive */
 	@@media (max-width: 768px) {
 		.hero-banner {
@@ -150,50 +179,57 @@
 		}
 
 		.quick-nav {
-			gap: 1.5rem;
+			gap: 1.8rem;
+			justify-content: flex-start;
+			padding: 1rem 1rem;
 		}
 	}
 </style>
 <body>
 
-	<div class="container py-3 d-flex align-items-center justify-content-between">
-		<div class="container d-none d-md-block">
+	@* THANH PHÂN LOẠI MỚI TOÀN MÀN HÌNH *@
+	<div class="quick-nav-wrapper d-none d-md-block">
+		<div class="container">
 			<nav class="quick-nav">
-				<a href="/Products?categoryId=1">Home Decor</a>
-				<a href="/Products?categoryId=2">Jewelry</a>
-				<a href="/Products?categoryId=3">Vintage</a>
-				<a href="/Products?categoryId=4">Pottery</a>
-				<a href="/Products?categoryId=5">Art & Prints</a>
-				<a href="/Products?categoryId=6">Gifts</a>
+				<a href="/Products?categoryId=1">Trang trí nhà cửa</a>
+				<a href="/Products?categoryId=2">Trang sức</a>
+				<a href="/Products?categoryId=3">Cổ điển</a>
+				<a href="/Products?categoryId=4">Gốm sứ</a>
+				<a href="/Products?categoryId=5">Tranh & Bản in</a>
+				<a href="/Products?categoryId=6">Quà tặng</a>
 			</nav>
 		</div>
 	</div>
+
 	<div class="container mt-5">
-		<section class="hero-banner shadow-lg">
+		@* HERO BANNER BIẾN ĐỔI NGÔN NGỮ *@
+		<section class="hero-banner shadow-lg mb-5">
 			<div class="hero-content">
-				<h1>Elevate your space with soul.</h1>
-				<p class="lead mb-5 opacity-90">Experience the beauty of handcrafted goods. Every piece is a testament to human creativity and passion.</p>
-				<a href="/Products" class="btn-mfy-solid">Explore Gallery</a>
+				<h1>Nâng tầm không gian sống bằng cả tâm hồn.</h1>
+				<p class="lead mb-5 opacity-90">Trải nghiệm vẻ đẹp tinh tế từ các sản phẩm thủ công. Mỗi tác phẩm là một minh chứng rõ nét cho sự sáng tạo và niềm đam mê sáng tạo của con người.</p>
+				<a href="/Products" class="btn-mfy-solid">Khám phá ngay</a>
 			</div>
 		</section>
 
+		@* ĐOẠN ĐẶT LÀM ĐỒ THEO YÊU CẦU *@
 		<section class="custom-section text-center shadow-lg">
 			<div class="container position-relative" style="z-index: 2;">
-				<span class="custom-tag">Premium Custom Service</span>
-				<h2 class="display-4 fw-bold mb-4" style="font-family: var(--serif); letter-spacing: -0.01em;">Can't find exactly what you need?</h2>
-				<p class="opacity-75 mb-5 mx-auto fs-5" style="max-width: 650px;">Collaborate with our world-class artisans to create a masterpiece that is uniquely yours. From custom dimensions to personal engravings.</p>
+				<span class="custom-tag">Dịch vụ thiết kế theo yêu cầu cao cấp</span>
+				<h2 class="display-5 fw-bold mb-4" style="font-family: var(--serif); letter-spacing: -0.01em;">Bạn chưa tìm thấy sản phẩm mong muốn?</h2>
+				<p class="opacity-75 mb-5 mx-auto fs-5" style="max-width: 700px;">Hãy kết nối trực tiếp cùng đội ngũ nghệ nhân xuất sắc của chúng tôi để tạo dựng nên tác phẩm độc bản mang đậm dấu ấn cá nhân. Toàn vẹn từ kích thước riêng biệt cho đến điêu khắc tên kỷ niệm.</p>
 				<a href="/CustomOrders/Create" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow">
-					Start Custom Project <i class="bi bi-stars ms-2 text-warning"></i>
+					Bắt đầu thiết kế ngay <i class="bi bi-stars ms-2 text-warning"></i>
 				</a>
 			</div>
 		</section>
 
+		@* SẢN PHẨM KHUYÊN DÙNG *@
 		<div class="d-flex justify-content-between align-items-end mb-4">
 			<div>
-				<h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.5rem;">Editor's Picks</h2>
-				<p class="text-muted">Handpicked treasures from our artisan community.</p>
+				<h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.2rem;">Gợi ý từ Biên tập viên</h2>
+				<p class="text-muted">Những tuyệt tác tinh tuyển được lựa chọn cẩn thận từ cộng đồng nghệ nhân.</p>
 			</div>
-			<a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">See all creations</a>
+			<a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">Xem tất cả tác phẩm</a>
 		</div>
 
 		<div class="row g-4 mb-5">
@@ -212,10 +248,10 @@
 							<div class="p-4">
 								<span class="text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--mfy-clay);">@product.Category?.Name</span>
 								<h5 class="fw-bold my-2 text-truncate" style="font-family: var(--serif);">@product.Title</h5>
-								<div class="small text-muted mb-4"><i class="bi bi-person-circle"></i> By @product.Seller?.User?.FullName</div>
+								<div class="small text-muted mb-4"><i class="bi bi-person-circle"></i> Bởi @product.Seller?.User?.FullName</div>
 								<div class="d-flex justify-content-between align-items-center pt-3 border-top">
-									<span class="fw-bold fs-5" style="color: var(--mfy-bark);">@product.Price?.ToString("N0") VNĐ</span>
-									<a asp-page="/Products/Details" asp-route-id="@product.ProductId" class="btn btn-dark btn-sm rounded-pill px-4">View</a>
+									<span class="fw-bold fs-5" style="color: var(--mfy-bark);">@product.Price?.ToString("N0") đ</span>
+									<a asp-page="/Products/Details" asp-route-id="@product.ProductId" class="btn btn-dark btn-sm rounded-pill px-4">Xem</a>
 								</div>
 							</div>
 						</div>
@@ -225,6 +261,7 @@
 		</div>
 	</div>
 
+	@* FOOTER VIỆT HÓA *@
 	<footer class="py-5" style="background: var(--mfy-bark); color: white; margin-top: 8rem;">
 		<div class="container">
 			<div class="row align-items-center">
@@ -233,13 +270,13 @@
 				</div>
 				<div class="col-md-4 text-center mb-4 mb-md-0">
 					<div class="d-flex justify-content-center gap-4">
-						<a href="/Products" class="text-white text-decoration-none opacity-75">Shop</a>
-						<a href="/Artisans" class="text-white text-decoration-none opacity-75">Artisans</a>
-						<a href="#" class="text-white text-decoration-none opacity-75">About</a>
+						<a href="/Products" class="text-white text-decoration-none opacity-75">Cửa hàng</a>
+						<a href="/Artisans" class="text-white text-decoration-none opacity-75">Nghệ nhân</a>
+						<a href="#" class="text-white text-decoration-none opacity-75">Giới thiệu</a>
 					</div>
 				</div>
 				<div class="col-md-4 text-center text-md-end">
-					<p class="small opacity-50 mb-0">Handcrafted with Heart &middot; 2026</p>
+					<p class="small opacity-50 mb-0">Chế tác hoàn toàn thủ công từ trái tim &middot; 2026</p>
 				</div>
 			</div>
 		</div>
