@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MakeForYou.BusinessLogic;                           // ApplicationDbContext
 using MakeForYou.BusinessLogic.Hubs;
 using MakeForYou.BusinessLogic.Interfaces;
@@ -77,6 +77,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 builder.Services.AddScoped<ICustomizationRepository, CustomizationRepository>();
 builder.Services.AddScoped<ICustomizationService, CustomizationService>();
+builder.Services.AddSingleton<IPaymentService, PaymentService>();
 
 builder.Configuration.GetSection("Email"); // Ensure email section read
 

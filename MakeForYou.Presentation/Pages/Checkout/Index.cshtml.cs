@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
@@ -11,11 +11,13 @@ namespace MakeForYou.Presentation.Pages.Checkout
     {
         private readonly ICartService _cartService;
         private readonly IOrderService _orderService;
+        private readonly IPaymentService _paymentService;
 
-        public IndexModel(ICartService cartService, IOrderService orderService)
+        public IndexModel(ICartService cartService, IOrderService orderService, IPaymentService paymentService)
         {
             _cartService = cartService;
             _orderService = orderService;
+            _paymentService = paymentService;
         }
 
         public List<CartItemViewModel> CartItems { get; set; } = new();
@@ -43,20 +45,24 @@ namespace MakeForYou.Presentation.Pages.Checkout
             if (string.IsNullOrEmpty(userIdStr)) return RedirectToPage("/Auth/Login");
             long userId = long.Parse(userIdStr);
 
-            // Tạo các đơn hàng (đã được group theo Seller bên trong Service)
+            // Generate a unique payment code (10-digit, fits PayOS orderCode constraints)
+            var paymentCode = Random.Shared.NextInt64(1_000_000_000L, 9_999_999_999L);
+
             var orders = await _orderService.CreateOrderFromCartAsync(
                 userId,
                 OrderRequest.FullName,
                 OrderRequest.PhoneNumber,
-                OrderRequest.ShippingAddress);
+                OrderRequest.ShippingAddress,
+                paymentCode);
 
             if (orders == null || !orders.Any()) return Page();
 
-            // Lấy tất cả ID đơn hàng nối lại thành chuỗi "1,2,3"
-            var allOrderIds = string.Join(",", orders.Select(o => o.OrderId));
+            var totalAmount = orders.Sum(o => o.AgreedPrice ?? 0);
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-            // Truyền chuỗi ID sang trang Success
-            return RedirectToPage("/Checkout/Success", new { orderIds = allOrderIds });
+            var checkoutUrl = await _paymentService.CreatePaymentLinkAsync(paymentCode, totalAmount, baseUrl);
+
+            return Redirect(checkoutUrl);
         }
     }
 }

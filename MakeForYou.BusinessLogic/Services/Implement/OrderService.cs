@@ -60,7 +60,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             return saved;
         }
 
-        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address)
+        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address, long paymentCode)
         {
             // 1. Lấy toàn bộ giỏ hàng
             var cartItems = await _cartService.GetCartAsync(userId);
@@ -96,11 +96,13 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 var order = new Order
                 {
                     BuyerId = userId,
-                    SellerId = sellerId, // Gán SellerId đúng cho từng đơn
+                    SellerId = sellerId,
                     CreatedAt = DateTime.Now,
                     Status = (int)OrderStatus.Pending,
                     AgreedPrice = itemsInGroup.Sum(x => x.CartItem.TotalPrice),
-                    OrderDescription = $"Đơn hàng từ giỏ - Khách: {fullName} - ĐC: {address}"
+                    OrderDescription = $"Đơn hàng từ giỏ - Khách: {fullName} - ĐC: {address}",
+                    PaymentCode = paymentCode,
+                    IsPaid = false
                 };
 
                 // Tạo danh sách OrderItem cho đơn hàng này

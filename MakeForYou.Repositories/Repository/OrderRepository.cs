@@ -152,5 +152,23 @@ namespace MakeForYou.Repositories.Repository
                 .Include(o => o.OrderItems).ThenInclude(i => i.Product)
                 .Include(o => o.ProgressLogs)
                 .FirstOrDefaultAsync();
+
+        public async Task UpdatePaymentStatusByCodeAsync(long paymentCode, bool isPaid)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.PaymentCode == paymentCode)
+                .ToListAsync();
+            foreach (var order in orders)
+            {
+                order.IsPaid = isPaid;
+                order.Status = (int)OrderStatus.Confirmed;
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Order>> FindByPaymentCodeAsync(long paymentCode) =>
+            await _context.Orders
+                .Where(o => o.PaymentCode == paymentCode)
+                .ToListAsync();
     }
 }
