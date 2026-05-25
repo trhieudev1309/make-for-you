@@ -20,5 +20,7 @@ namespace MakeForYou.BusinessLogic.Interfaces
         Task<List<Order>> FindBySellerIdAsync(long sellerId);
         Task<Order?> GetOrderWithDetailsBySellerAsync(long orderId, long sellerId);
         Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId);
+        Task UpdatePaymentStatusByCodeAsync(long paymentCode, bool isPaid);
+        Task<List<Order>> FindByPaymentCodeAsync(long paymentCode);
     }
 }

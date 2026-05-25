@@ -39,5 +39,8 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Notification>? Notifications { get; set; }
 
         public ICollection<OrderProgress>? ProgressLogs { get; set; }
+
+        public long? PaymentCode { get; set; }
+        public bool IsPaid { get; set; } = false;
     }
 }

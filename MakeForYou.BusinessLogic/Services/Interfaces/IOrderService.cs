@@ -13,7 +13,7 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<List<Order>> GetOrdersByUserAsync(long buyerId);
         Task<Order?> GetOrderDetailAsync(long orderId, long buyerId);
         Task<Order> CreateOrderAsync(long buyerId, long sellerId, string description);
-        Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address);
+        Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address, long paymentCode);
         Task<List<Order>> GetRequestsBySellerAsync(long sellerId);
         Task<Order?> GetRequestDetailAsync(long orderId, long sellerId);
         Task UpdateStatusAsync(long orderId, int status);
