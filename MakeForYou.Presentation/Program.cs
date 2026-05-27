@@ -79,6 +79,9 @@ builder.Services.AddScoped<ICustomizationRepository, CustomizationRepository>();
 builder.Services.AddScoped<ICustomizationService, CustomizationService>();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<ISellerPostRepository, SellerPostRepository>();
+builder.Services.AddScoped<ISellerPostService, SellerPostService>();
+
 builder.Configuration.GetSection("Email"); // Ensure email section read
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

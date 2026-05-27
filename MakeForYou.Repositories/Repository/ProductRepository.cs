@@ -74,6 +74,7 @@ namespace MakeForYou.Repositories.Repository
                 .Include(s => s.User)
                 .Include(s => s.Products)
                     .ThenInclude(p => p.Category)
+                .Include(s => s.PortfolioItems)
                 .FirstOrDefaultAsync(s => s.SellerId == id);
         }
 

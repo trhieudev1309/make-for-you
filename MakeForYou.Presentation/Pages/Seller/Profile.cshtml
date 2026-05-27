@@ -218,6 +218,154 @@
         background: var(--accent); color: #fff;
         box-shadow: 0 4px 12px rgba(184,134,11,.2);
     }
+
+    /* ══ POSTS TAB ══ */
+
+    /* compose / edit panel */
+    .post-compose-panel {
+        background: var(--card);
+        border: 1px solid var(--border); border-top: 2px solid var(--accent);
+        border-radius: 4px; padding: 1.5rem 1.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(26,26,26,.07);
+        display: none;
+    }
+    .post-compose-panel.open {
+        display: block;
+        animation: postPanelIn .22s ease-out;
+    }
+    @@keyframes postPanelIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .post-panel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.25rem;
+    }
+    .post-panel-title { font-family: var(--serif); font-size: 1.15rem; margin: 0; }
+    .post-panel-close {
+        background: none; border: none; font-size: 1.1rem; cursor: pointer;
+        color: var(--fg-muted); padding: .3rem; border-radius: 3px;
+        transition: color .15s, background .15s; line-height: 1;
+    }
+    .post-panel-close:hover { color: var(--fg); background: var(--muted); }
+
+    /* image + fields side-by-side */
+    .post-compose-body {
+        display: grid; grid-template-columns: 140px 1fr; gap: 1.25rem; align-items: start;
+    }
+    @@media (max-width: 560px) { .post-compose-body { grid-template-columns: 1fr; } }
+
+    /* square image picker */
+    .post-img-drop {
+        border: 2px dashed var(--border); border-radius: 4px;
+        background: var(--muted); cursor: pointer;
+        transition: border-color .2s, background .2s;
+        position: relative; overflow: hidden; aspect-ratio: 1/1;
+    }
+    .post-img-drop:hover { border-color: var(--accent); background: rgba(184,134,11,.04); }
+    .post-drop-inner {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: .35rem; color: var(--fg-muted); pointer-events: none;
+    }
+    .post-drop-inner i { font-size: 1.5rem; }
+    .post-drop-inner span { font-size: .68rem; font-family: var(--mono); letter-spacing: .06em; }
+    .post-img-drop input[type=file] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .post-drop-preview {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        object-fit: cover; display: none; border-radius: 2px; pointer-events: none;
+    }
+    .post-img-drop.has-preview .post-drop-preview { display: block; }
+    .post-img-drop.has-preview .post-drop-inner   { display: none; }
+
+    /* current image in edit mode */
+    .post-cur-img-wrap { margin-bottom: .5rem; display: none; }
+    .post-cur-img-wrap img {
+        width: 100%; aspect-ratio: 1/1; object-fit: cover;
+        border-radius: 4px; border: 1px solid var(--border); display: block;
+    }
+    .post-cur-img-label {
+        font-family: var(--mono); font-size: .6rem; letter-spacing: .08em;
+        text-transform: uppercase; color: var(--fg-muted);
+        margin-top: .3rem; text-align: center;
+    }
+
+    /* ── Instagram grid ── */
+    .post-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @@media (max-width: 640px) { .post-grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 380px) { .post-grid { grid-template-columns: 1fr; } }
+
+    .post-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 6px; overflow: hidden;
+        transition: box-shadow .2s, transform .2s;
+    }
+    .post-card:hover { box-shadow: 0 6px 20px rgba(26,26,26,.1); transform: translateY(-2px); }
+
+    .post-img-wrap {
+        position: relative; aspect-ratio: 1/1;
+        background: var(--muted); overflow: hidden;
+    }
+    .post-img-wrap img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        transition: transform .4s ease-out;
+    }
+    .post-card:hover .post-img-wrap img { transform: scale(1.04); }
+
+    .post-img-placeholder {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center; color: var(--border);
+    }
+    .post-img-placeholder i { font-size: 2rem; }
+
+    .post-overlay {
+        position: absolute; inset: 0; background: rgba(26,26,26,.48);
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+        opacity: 0; transition: opacity .2s;
+    }
+    .post-card:hover .post-overlay { opacity: 1; }
+
+    .post-action-btn {
+        display: inline-flex; align-items: center; gap: .3rem;
+        height: 32px; padding: 0 .75rem; border-radius: 3px; border: none;
+        font-family: var(--mono); font-size: .65rem; font-weight: 500;
+        letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+        transition: background .15s, color .15s;
+    }
+    .post-action-edit   { background: rgba(255,255,255,.92); color: var(--fg); }
+    .post-action-edit:hover { background: #fff; color: var(--accent); }
+    .post-action-delete { background: rgba(176,32,32,.82); color: #fff; }
+    .post-action-delete:hover { background: #b02020; }
+
+    .post-caption { padding: .65rem .75rem .75rem; border-top: 1px solid var(--border); }
+    .post-caption-title {
+        font-family: var(--serif); font-size: .9rem; font-weight: 600;
+        color: var(--fg); margin: 0 0 .25rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .post-caption-body {
+        font-size: .78rem; color: var(--fg-muted); line-height: 1.5;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .post-caption-date {
+        font-family: var(--mono); font-size: .6rem; color: var(--border);
+        margin-top: .4rem; letter-spacing: .06em;
+    }
+
+    .post-empty-state {
+        text-align: center; padding: 3.5rem 1rem; color: var(--fg-muted);
+        grid-column: 1 / -1;
+    }
+    .post-empty-state i { font-size: 2.5rem; display: block; margin-bottom: .65rem; opacity: .3; }
+    .post-empty-state p { font-family: var(--serif); font-size: 1.05rem; color: var(--fg); margin-bottom: .3rem; }
+    .post-empty-state small { font-size: .85rem; }
 </style>
 
 <div class="sp-wrap">
@@ -298,9 +446,20 @@
 
     <!-- Tab Nav -->
     <div class="sp-tabs">
-        <button class="sp-tab active" onclick="switchTab('profile', this)">Hồ Sơ</button>
-        <button class="sp-tab" onclick="switchTab('portfolio', this)">Danh Mục</button>
-        <button class="sp-tab" onclick="switchTab('account', this)">Tài Khoản</button>
+        <button class="sp-tab active" data-tab="profile"   onclick="switchTab('profile',   this)">Hồ Sơ</button>
+        <button class="sp-tab"        data-tab="portfolio" onclick="switchTab('portfolio', this)">Danh Mục</button>
+        <button class="sp-tab"        data-tab="posts"     onclick="switchTab('posts',     this)">
+            Bài Đăng
+            @if (Model.Posts.Any())
+            {
+                <span style="display:inline-flex;align-items:center;justify-content:center;
+                             width:18px;height:18px;border-radius:50%;background:var(--accent);
+                             color:#fff;font-size:.6rem;margin-left:.35rem;font-family:var(--mono);">
+                    @Model.Posts.Count
+                </span>
+            }
+        </button>
+        <button class="sp-tab"        data-tab="account"   onclick="switchTab('account',   this)">Tài Khoản</button>
     </div>
 
     <!-- ══ TAB: PROFILE ══ -->
@@ -444,6 +603,233 @@
         </div>
     </div>
 
+    <!-- ══ TAB: POSTS ══ -->
+    <div id="tab-posts" class="sp-tab-panel">
+
+        <!-- Tab header: title + New Post button -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+            <div>
+                <h2 style="font-family:var(--serif);font-size:1.4rem;font-weight:400;margin:0 0 .2rem;">Bài Đăng Của Tôi</h2>
+                <p style="font-size:.85rem;color:var(--fg-muted);margin:0;">Chia sẻ tác phẩm, quy trình và câu chuyện của bạn.</p>
+            </div>
+            <button class="sp-btn" id="btnNewPost" onclick="openPostCreate()" style="height:38px;padding:0 1.25rem;font-size:.85rem;">
+                <i class="bi bi-plus-lg"></i> Bài Viết Mới
+            </button>
+        </div>
+
+        <!-- Compose / edit panel (hidden by default) -->
+        <div class="post-compose-panel" id="postComposePanel">
+            <div class="post-panel-header">
+                <h3 class="post-panel-title" id="postPanelHeading">Bài Viết Mới</h3>
+                <button type="button" class="post-panel-close" onclick="closePostPanel()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form id="postComposeForm" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PostId" id="postPanelId" value="" />
+
+                <div class="post-compose-body">
+                    <!-- left: image picker -->
+                    <div>
+                        <label class="sp-label-field">Ảnh</label>
+                        <div class="post-cur-img-wrap" id="postCurImgWrap">
+                            <img id="postCurImg" src="" alt="ảnh hiện tại" />
+                            <p class="post-cur-img-label">Ảnh hiện tại</p>
+                        </div>
+                        <div class="post-img-drop" id="postImgDrop">
+                            <div class="post-drop-inner">
+                                <i class="bi bi-image"></i>
+                                <span id="postDropLabel">Tải ảnh lên</span>
+                            </div>
+                            <img class="post-drop-preview" id="postDropPreview" src="" alt="" />
+                            <input type="file" id="postFileInput" name="Image"
+                                   accept=".jpg,.jpeg,.png,.webp"
+                                   onchange="onPostFileChosen(this)" />
+                        </div>
+                        <p style="font-size:.62rem;color:var(--fg-muted);margin-top:.35rem;font-family:var(--mono);">
+                            JPG · PNG · WEBP
+                        </p>
+                    </div>
+
+                    <!-- right: text fields -->
+                    <div>
+                        <div class="sp-field">
+                            <label class="sp-label-field">Tiêu Đề</label>
+                            <input class="sp-input" type="text" name="Title" id="postTitleInput"
+                                   maxlength="300" placeholder="Tiêu đề ngắn cho bài viết…" required />
+                        </div>
+                        <div class="sp-field" style="margin-bottom:0;">
+                            <label class="sp-label-field">Nội Dung</label>
+                            <textarea class="sp-input" name="Content" id="postPanelContent"
+                                      rows="6" placeholder="Kể câu chuyện đằng sau tác phẩm này…" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:.75rem;
+                            margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+                    <button type="button" class="sp-btn-ghost" onclick="closePostPanel()">Huỷ</button>
+                    <button type="submit" class="sp-btn" id="postPanelSubmit" style="height:38px;padding:0 1.25rem;font-size:.85rem;">
+                        <i class="bi bi-send"></i> Đăng
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Instagram grid -->
+        @{
+            var postsJson = System.Text.Json.JsonSerializer.Serialize(
+                Model.Posts.Select(p => new {
+                    id      = p.PostId,
+                    title   = p.Title,
+                    content = p.Content,
+                    image   = p.ImageUrl ?? ""
+                })
+            ).Replace("</", @"<\/");
+        }
+
+        @if (!Model.Posts.Any())
+        {
+            <div class="post-grid">
+                <div class="post-empty-state">
+                    <i class="bi bi-camera"></i>
+                    <p>Chưa có bài viết nào</p>
+                    <small>Nhấn <strong>Bài Viết Mới</strong> để chia sẻ tác phẩm đầu tiên.</small>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="post-grid">
+                @foreach (var post in Model.Posts)
+                {
+                    <div class="post-card" data-post-id="@post.PostId">
+                        <div class="post-img-wrap">
+                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                            {
+                                <img src="@post.ImageUrl" alt="@post.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="post-img-placeholder">
+                                    <i class="bi bi-file-text"></i>
+                                </div>
+                            }
+                            <div class="post-overlay">
+                                <button type="button" class="post-action-btn post-action-edit"
+                                        onclick="openPostEdit(this)">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </button>
+                                <form method="post" asp-page-handler="DeletePost" style="display:contents;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="PostId" value="@post.PostId" />
+                                    <button type="submit" class="post-action-btn post-action-delete"
+                                            onclick="return confirm('Xoá bài viết này?')">
+                                        <i class="bi bi-trash3"></i> Xoá
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="post-caption">
+                            <p class="post-caption-title">@post.Title</p>
+                            <p class="post-caption-body">@post.Content</p>
+                            <p class="post-caption-date">
+                                @post.CreatedAt.ToString("MMM d, yyyy")
+                                @if (post.UpdatedAt.HasValue)
+                                {
+                                    <span> · đã sửa</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+            <p style="font-family:var(--mono);font-size:.62rem;color:var(--border);text-align:right;letter-spacing:.08em;">
+                @Model.Posts.Count BÀI VIẾT
+            </p>
+        }
+
+        <script>
+        const POSTS = @Html.Raw(postsJson);
+
+        const postPanel      = document.getElementById('postComposePanel');
+        const postForm       = document.getElementById('postComposeForm');
+        const postHeading    = document.getElementById('postPanelHeading');
+        const postPanelId    = document.getElementById('postPanelId');
+        const postTitleIn    = document.getElementById('postTitleInput');
+        const postContentIn  = document.getElementById('postPanelContent');
+        const postSubmitBtn  = document.getElementById('postPanelSubmit');
+        const postImgDrop    = document.getElementById('postImgDrop');
+        const postDropLabel  = document.getElementById('postDropLabel');
+        const postPreview    = document.getElementById('postDropPreview');
+        const postFileIn     = document.getElementById('postFileInput');
+        const postCurWrap    = document.getElementById('postCurImgWrap');
+        const postCurImg     = document.getElementById('postCurImg');
+
+        function resetPostImagePicker() {
+            postFileIn.value = '';
+            postPreview.src  = '';
+            postImgDrop.classList.remove('has-preview');
+        }
+
+        function onPostFileChosen(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                postPreview.src = e.target.result;
+                postImgDrop.classList.add('has-preview');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openPostCreate() {
+            postHeading.textContent   = 'Bài Viết Mới';
+            postPanelId.value         = '';
+            postTitleIn.value         = '';
+            postContentIn.value       = '';
+            postSubmitBtn.innerHTML   = '<i class="bi bi-send"></i> Đăng';
+            postDropLabel.textContent = 'Tải ảnh lên';
+            postCurWrap.style.display = 'none';
+            resetPostImagePicker();
+            postForm.action = '?handler=CreatePost';
+            postPanel.classList.add('open');
+            postPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function openPostEdit(btn) {
+            const id   = btn.closest('.post-card').dataset.postId;
+            const post = POSTS.find(p => String(p.id) === id);
+            if (!post) return;
+
+            postHeading.textContent   = 'Sửa Bài Viết';
+            postPanelId.value         = post.id;
+            postTitleIn.value         = post.title;
+            postContentIn.value       = post.content;
+            postSubmitBtn.innerHTML   = '<i class="bi bi-check2"></i> Lưu';
+            postDropLabel.textContent = 'Thay ảnh (tuỳ chọn)';
+            postForm.action           = '?handler=UpdatePost';
+
+            if (post.image) {
+                postCurImg.src            = post.image;
+                postCurWrap.style.display = 'block';
+            } else {
+                postCurWrap.style.display = 'none';
+            }
+            resetPostImagePicker();
+            postPanel.classList.add('open');
+            postPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closePostPanel() {
+            postPanel.classList.remove('open');
+            resetPostImagePicker();
+        }
+        </script>
+    </div>
+
     <!-- ══ TAB: ACCOUNT ══ -->
     <div id="tab-account" class="sp-tab-panel">
         <div class="sp-card">
@@ -494,4 +880,19 @@ function switchTab(name, btn) {
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
 }
+
+// Restore whichever tab the server says was active (after a form POST redirect)
+(function () {
+    const active = '@Model.ActiveTab';
+    if (active && active !== 'profile') {
+        const panel = document.getElementById('tab-' + active);
+        const btn   = document.querySelector('[data-tab="' + active + '"]');
+        if (panel && btn) {
+            document.querySelectorAll('.sp-tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sp-tab').forEach(b => b.classList.remove('active'));
+            panel.classList.add('active');
+            btn.classList.add('active');
+        }
+    }
+})();
 </script>

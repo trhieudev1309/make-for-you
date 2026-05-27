@@ -34,6 +34,8 @@ namespace MakeForYou.BusinessLogic
         public DbSet<CustomizationGroup> CustomizationGroups => Set<CustomizationGroup>();
         public DbSet<CustomizationOption> CustomizationOptions => Set<CustomizationOption>();
 
+        public DbSet<SellerPost> SellerPosts => Set<SellerPost>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -144,6 +146,13 @@ namespace MakeForYou.BusinessLogic
                 .HasOne(co => co.CustomizationGroup)
                 .WithMany(cg => cg.Options)
                 .HasForeignKey(co => co.CustomizationGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // SellerPost -> Seller relationship
+            modelBuilder.Entity<SellerPost>()
+                .HasOne(p => p.Seller)
+                .WithMany(s => s.Posts)
+                .HasForeignKey(p => p.SellerId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
