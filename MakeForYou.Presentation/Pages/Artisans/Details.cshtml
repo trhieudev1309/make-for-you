@@ -1,143 +1,276 @@
-﻿@page "/Artisans/{id:long}"
+@page "/Artisans/{id:long}"
 @model MakeForYou.Presentation.Pages.Artisans.DetailsModel
 @{
-    Layout = "_Layout"; 
+    Layout = "_Layout";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap" rel="stylesheet">
 
 <style>
     :root {
-        --serif-gold: #B8860B;
-        --serif-gold-light: #D4A017;
-        --serif-ink: #1A1A1A;
-        --serif-ivory: #FAFAF8; /* Ivory chuẩn không bị tối */
-        --serif-border: #E8E4DF;
-        --serif-muted: #6B6B6B;
-        --signature-font: 'La Belle Aurore', cursive;
+        --sg:       #B8860B;
+        --sg-light: #D4A017;
+        --ink:      #1A1A1A;
+        --ivory:    #FAFAF8;
+        --border:   #E8E4DF;
+        --muted:    #6B6B6B;
+        --sig:      'La Belle Aurore', cursive;
     }
 
-    .artisan-container { 
-        background-color: var(--serif-ivory); 
+    .artisan-wrap {
+        background-color: var(--ivory);
         background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
-        background-size: 20px 20px; /* Chấm nhẹ tinh tế thay vì vân giấy đậm */
+        background-size: 20px 20px;
         min-height: 100vh;
         padding-bottom: 6rem;
     }
 
-    /* ── HEADER SECTION ── */
+    /* ── HEADER ── */
     .header-wrapper {
-        padding: 5rem 0;
-        border-bottom: 1px solid var(--serif-border);
-        margin-bottom: 4rem;
-        background: #fff; /* Làm Header trắng tinh khôi khớp Navbar */
+        padding: 5rem 0; border-bottom: 1px solid var(--border);
+        background: #fff; margin-bottom: 0;
     }
-
-    .artisan-profile-header { 
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 4rem;
-        align-items: center;
-        animation: fadeInUp 0.8s ease;
+    .artisan-profile-header {
+        display: grid; grid-template-columns: auto 1fr auto;
+        gap: 4rem; align-items: center;
+        animation: fadeInUp .8s ease;
     }
-
-    .artisan-avatar-big { 
-        width: 180px; height: 180px; border-radius: 50%; 
-        background: var(--serif-gold); 
-        display: flex; align-items: center; justify-content: center; 
-        font-family: 'Playfair Display', serif; font-size: 4.5rem; color: white;
-        box-shadow: 0 10px 40px rgba(184, 134, 11, 0.2);
-        border: 8px solid var(--serif-ivory);
+    .artisan-avatar-big {
+        width: 180px; height: 180px; border-radius: 50%;
+        background: var(--sg);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: 4.5rem; color: #fff;
+        box-shadow: 0 10px 40px rgba(184,134,11,.2);
+        border: 8px solid var(--ivory);
+        flex-shrink: 0;
     }
-
-    .artisan-info h1 { 
-        font-family: 'Playfair Display', serif; 
-        font-size: 3.8rem; 
-        margin: 0.5rem 0; 
-        color: var(--serif-ink);
-        letter-spacing: -0.03em;
+    .artisan-info h1 {
+        font-family: 'Playfair Display', serif; font-size: 3.8rem;
+        margin: .5rem 0; color: var(--ink); letter-spacing: -.03em;
     }
-
-    .skill-badge { 
-        font-family: 'IBM Plex Mono', monospace; 
-        text-transform: uppercase; 
-        letter-spacing: 0.3em; 
-        color: var(--serif-gold); 
-        font-size: 0.75rem; 
+    .skill-badge {
+        font-family: 'IBM Plex Mono', monospace; text-transform: uppercase;
+        letter-spacing: .3em; color: var(--sg); font-size: .75rem;
     }
-
     .artisan-bio-quote {
-        font-family: var(--signature-font);
-        font-size: 2rem;
-        color: var(--serif-muted);
-        margin-top: 1rem;
+        font-family: var(--sig); font-size: 2rem; color: var(--muted); margin-top: 1rem;
     }
-
-    /* ── STATS BOX ── */
     .stat-vertical {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        border-left: 1px solid var(--serif-border);
-        padding-left: 3rem;
+        display: flex; flex-direction: column; gap: 1.5rem;
+        border-left: 1px solid var(--border); padding-left: 3rem;
     }
     .stat-item-v .value { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: bold; line-height: 1; }
-    .stat-item-v .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--serif-gold); }
+    .stat-item-v .label { font-size: .65rem; text-transform: uppercase; letter-spacing: .15em; color: var(--sg); }
 
-    /* ── STORY SECTION (MỤC MỚI ĐẶC SẮC) ── */
+    /* ── STORY ── */
     .story-section {
-        background: white;
-        padding: 4rem;
-        border: 1px solid var(--serif-border);
-        margin-bottom: 5rem;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-        align-items: center;
+        background: #fff; padding: 4rem; border: 1px solid var(--border);
+        display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+        margin-bottom: 0;
     }
 
-    /* ── PRODUCT CARD ── */
-    .gallery-title-wrap { text-align: center; margin-bottom: 4rem; }
-    .gallery-title-wrap h2 { font-family: 'Playfair Display', serif; font-size: 3rem; }
+    /* ── TAB NAV ── */
+    .store-tabs-wrap {
+        background: #fff; border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 2px 8px rgba(26,26,26,.04);
+    }
+    .store-tabs {
+        display: flex; gap: 0; max-width: 1200px; margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+    .store-tab {
+        padding: 1.1rem 1.75rem;
+        font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
+        letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+        border: none; background: none; cursor: pointer;
+        border-bottom: 2px solid transparent; margin-bottom: -1px;
+        transition: color .2s, border-color .2s;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .store-tab.active { color: var(--sg); border-bottom-color: var(--sg); }
+    .store-tab:hover:not(.active) { color: var(--ink); }
+    .tab-count {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+        background: var(--border); color: var(--muted);
+        font-size: .6rem; font-family: 'IBM Plex Mono', monospace;
+    }
+    .store-tab.active .tab-count { background: var(--sg); color: #fff; }
 
+    .store-tab-panel { display: none; }
+    .store-tab-panel.active { display: block; }
+
+    /* ── TAB CONTENT WRAPPER ── */
+    .tab-content-wrap { max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem 2rem; }
+
+    /* ── PRODUCTS ── */
     .card-editorial {
-        background: white;
-        border: 1px solid var(--serif-border);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        overflow: hidden;
+        background: #fff; border: 1px solid var(--border);
+        transition: all .4s cubic-bezier(.165,.84,.44,1); overflow: hidden;
     }
-    .card-editorial:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--serif-gold); }
-    .card-img-editorial { height: 350px; overflow: hidden; position: relative; }
-    .card-img-editorial img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+    .card-editorial:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,.08); border-color: var(--sg); }
+    .card-img-editorial { height: 300px; overflow: hidden; position: relative; }
+    .card-img-editorial img { width: 100%; height: 100%; object-fit: cover; transition: .6s; }
     .card-editorial:hover img { transform: scale(1.08); }
-
     .card-overlay-btn {
         position: absolute; bottom: 0; left: 0; right: 0;
-        background: rgba(26, 26, 26, 0.9); color: white;
-        padding: 1rem; text-align: center; font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
-        transform: translateY(100%); transition: 0.3s;
+        background: rgba(26,26,26,.9); color: #fff; padding: 1rem;
+        text-align: center; font-family: 'IBM Plex Mono', monospace;
+        font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+        transform: translateY(100%); transition: .3s;
     }
     .card-editorial:hover .card-overlay-btn { transform: translateY(0); }
 
-    @@keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* ── PORTFOLIO ── */
+    .portfolio-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+    .portfolio-card {
+        position: relative; overflow: hidden; border-radius: 2px;
+        border: 1px solid var(--border); aspect-ratio: 4/3;
+        background: var(--ivory); transition: box-shadow .3s, border-color .3s;
+    }
+    .portfolio-card:hover { box-shadow: 0 12px 36px rgba(0,0,0,.1); border-color: var(--sg); }
+    .portfolio-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s; }
+    .portfolio-card:hover img { transform: scale(1.06); }
+    .portfolio-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(26,26,26,.72) 0%, transparent 55%);
+        display: flex; flex-direction: column; justify-content: flex-end;
+        padding: 1rem; opacity: 0; transition: opacity .25s;
+    }
+    .portfolio-card:hover .portfolio-overlay { opacity: 1; }
+    .portfolio-overlay-title { font-family: 'Playfair Display', serif; color: #fff; font-size: 1rem; margin: 0 0 .2rem; }
+    .portfolio-overlay-desc  { font-size: .75rem; color: rgba(255,255,255,.75); margin: 0; }
+    .portfolio-no-img {
+        width: 100%; height: 100%; display: flex; align-items: center;
+        justify-content: center; color: var(--border);
+    }
+    .portfolio-no-img i { font-size: 2.5rem; }
+
+    /* ══ INSTAGRAM FEED ══ */
+    .feed-wrap {
+        max-width: 560px; margin: 0 auto;
+        display: flex; flex-direction: column; gap: 2.5rem;
     }
 
+    .feed-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    /* post header row */
+    .feed-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .feed-author {
+        display: flex; align-items: center; gap: .65rem;
+    }
+    .feed-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--sg); flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: .9rem; color: #fff;
+        font-weight: 600;
+    }
+    .feed-author-name {
+        font-family: 'Playfair Display', serif; font-size: .92rem;
+        font-weight: 600; color: var(--ink); line-height: 1.2;
+    }
+    .feed-author-skill {
+        font-family: 'IBM Plex Mono', monospace; font-size: .58rem;
+        letter-spacing: .1em; text-transform: uppercase; color: var(--sg);
+    }
+    .feed-date {
+        font-family: 'IBM Plex Mono', monospace; font-size: .62rem;
+        color: var(--muted); letter-spacing: .04em;
+    }
+
+    /* square image */
+    .feed-img {
+        aspect-ratio: 1 / 1; overflow: hidden;
+        background: var(--ivory);
+    }
+    .feed-img img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        transition: transform .5s ease-out;
+    }
+    .feed-card:hover .feed-img img { transform: scale(1.025); }
+    .feed-no-img {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--border);
+    }
+    .feed-no-img i { font-size: 3.5rem; }
+
+    /* caption */
+    .feed-caption { padding: 1rem 1rem 1.1rem; }
+    .feed-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem; font-weight: 600;
+        color: var(--ink); margin: 0 0 .5rem; line-height: 1.35;
+    }
+    .feed-body {
+        font-size: .88rem; color: var(--muted); line-height: 1.65; margin: 0;
+        white-space: pre-line;     /* honour line breaks in the body */
+        display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .feed-body.expanded {
+        -webkit-line-clamp: unset; display: block;
+    }
+    .feed-more {
+        background: none; border: none; padding: 0; margin-top: .4rem;
+        font-family: 'IBM Plex Mono', monospace; font-size: .65rem;
+        letter-spacing: .1em; text-transform: uppercase;
+        color: var(--sg); cursor: pointer; transition: color .15s;
+        display: block;
+    }
+    .feed-more:hover { color: var(--sg-light); }
+    .feed-edited {
+        display: inline-block; margin-top: .6rem;
+        font-family: 'IBM Plex Mono', monospace; font-size: .6rem;
+        letter-spacing: .08em; color: var(--border); text-transform: uppercase;
+    }
+
+    /* empty state */
+    .feed-empty {
+        text-align: center; padding: 4rem 1rem; color: var(--muted);
+    }
+    .feed-empty i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: .3; }
+    .feed-empty p { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--ink); margin-bottom: .3rem; }
+
+    /* ── RESPONSIVE ── */
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
     @@media (max-width: 992px) {
-        .artisan-profile-header, .story-section { grid-template-columns: 1fr; text-align: center; }
-        .stat-vertical { flex-direction: row; border-left: none; padding-left: 0; justify-content: center; border-top: 1px solid var(--serif-border); padding-top: 2rem; }
+        .artisan-profile-header { grid-template-columns: 1fr; text-align: center; }
+        .stat-vertical { flex-direction: row; border-left: none; padding-left: 0; justify-content: center; border-top: 1px solid var(--border); padding-top: 2rem; }
         .artisan-avatar-big { margin: 0 auto; }
+        .story-section { grid-template-columns: 1fr; }
+    }
+    @@media (max-width: 600px) {
+        .artisan-info h1 { font-size: 2.6rem; }
+        .store-tab { padding: .9rem 1rem; font-size: .65rem; letter-spacing: .08em; }
     }
 </style>
 
-<div class="artisan-container">
+<div class="artisan-wrap">
+
+    <!-- ══ HEADER ══ -->
     <div class="header-wrapper">
         <div class="container">
             <div class="artisan-profile-header">
                 <div class="artisan-avatar-big">@Model.GetMonogram()</div>
-                
+
                 <div class="artisan-info">
                     <span class="skill-badge">@Model.Artisan.SkillDescription</span>
                     <h1>@Model.Artisan.User.FullName</h1>
@@ -162,68 +295,212 @@
         </div>
     </div>
 
+    <!-- ══ STORY ══ -->
     <div class="container">
-        <div class="story-section shadow-sm">
+        <div class="story-section shadow-sm" style="margin-top:2.5rem;margin-bottom:0;">
             <div>
-                <span class="skill-badge" style="font-size: 0.6rem;">The Philosophy</span>
-                <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin: 1rem 0;">Chế tác bằng tâm hồn & Đôi tay</h3>
-                <p class="text-muted" style="line-height: 1.8;">
-                    Mỗi sản phẩm từ <strong>@Model.Artisan.User.FullName</strong> không chỉ là một món đồ, mà là một câu chuyện về chất liệu tự nhiên và sự kiên nhẫn. 
+                <span class="skill-badge" style="font-size:.6rem;">The Philosophy</span>
+                <h3 style="font-family:'Playfair Display',serif;font-size:2rem;margin:1rem 0;">Chế tác bằng tâm hồn &amp; Đôi tay</h3>
+                <p class="text-muted" style="line-height:1.8;">
+                    Mỗi sản phẩm từ <strong>@Model.Artisan.User.FullName</strong> không chỉ là một món đồ, mà là một câu chuyện về chất liệu tự nhiên và sự kiên nhẫn.
                     Chúng tôi tin rằng sự hoàn hảo nằm ở những chi tiết không hoàn hảo của thủ công.
                 </p>
                 <div class="mt-4">
-                    <a href="/CustomOrders/Create?sellerId=@Model.Artisan.SellerId" class="btn btn-dark rounded-0 px-4 py-2 small-caps" style="font-size: 0.7rem; letter-spacing: 0.2em;">
+                    <a href="/CustomOrders/Create?sellerId=@Model.Artisan.SellerId"
+                       class="btn btn-dark rounded-0 px-4 py-2"
+                       style="font-size:.7rem;letter-spacing:.2em;font-family:'IBM Plex Mono',monospace;">
                         ✦ Request Custom Work
                     </a>
                 </div>
             </div>
-            <div style="background: var(--serif-ivory); padding: 2rem; border: 1px dashed var(--serif-gold);">
-                <h5 style="font-family: 'Playfair Display', serif;">Giao hàng & Đóng gói</h5>
+            <div style="background:var(--ivory);padding:2rem;border:1px dashed var(--sg);">
+                <h5 style="font-family:'Playfair Display',serif;">Giao hàng &amp; Đóng gói</h5>
                 <p class="small text-muted">Sản phẩm được đóng gói thân thiện với môi trường, kèm thư tay từ nghệ nhân. Thời gian chế tác trung bình: 3-5 ngày.</p>
                 <hr>
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="small-caps" style="font-size: 0.6rem;">Status</span>
-                    <span class="badge rounded-pill bg-success" style="font-size: 0.6rem; letter-spacing: 0.1em;">READY TO SHIP</span>
+                    <span style="font-size:.6rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;">Status</span>
+                    <span class="badge rounded-pill bg-success" style="font-size:.6rem;letter-spacing:.1em;">READY TO SHIP</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="gallery-title-wrap">
-            <span class="skill-badge">Curated Collection</span>
-            <h2>Works & Gallery</h2>
+    <!-- ══ TAB NAV (sticky) ══ -->
+    <div class="store-tabs-wrap" style="margin-top:2.5rem;">
+        <div class="store-tabs">
+            <button class="store-tab active" data-tab="works" onclick="storeTab('works', this)">
+                <i class="bi bi-grid"></i> Works
+                <span class="tab-count">@Model.Products.Count</span>
+            </button>
+            <button class="store-tab" data-tab="portfolio" onclick="storeTab('portfolio', this)">
+                <i class="bi bi-images"></i> Portfolio
+                <span class="tab-count">@Model.Portfolio.Count</span>
+            </button>
+            <button class="store-tab" data-tab="posts" onclick="storeTab('posts', this)">
+                <i class="bi bi-camera"></i> Posts
+                <span class="tab-count">@Model.Posts.Count</span>
+            </button>
         </div>
+    </div>
 
-        <div class="row g-4">
-            @if (Model.Products.Any())
-            {
-                @foreach (var p in Model.Products)
+    <!-- ══ TAB: WORKS ══ -->
+    <div id="tab-works" class="store-tab-panel active">
+        <div class="tab-content-wrap">
+            <div class="row g-4">
+                @if (Model.Products.Any())
                 {
-                    <div class="col-md-4 col-lg-3">
-                        @* Đã sửa lại Link chính xác dẫn về trang Details *@
-                        <a href="/Products/Details/@p.ProductId" class="text-decoration-none">
-                            <div class="card-editorial">
-                                <div class="card-img-editorial">
-                                    <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.jpg" : p.ImageUrl)" alt="@p.Title">
-                                    <div class="card-overlay-btn">Discover Piece</div>
-                                </div>
-                                <div class="p-4">
-                                    <span class="skill-badge" style="font-size: 0.55rem; letter-spacing: 0.1em;">@p.Category?.Name</span>
-                                    <h5 class="item-title" style="font-family: 'Playfair Display', serif; color: var(--serif-ink); margin: 0.5rem 0;">@p.Title</h5>
-                                    <div class="pt-3 border-top mt-3 fw-bold" style="color: var(--serif-gold); font-family: 'Playfair Display', serif;">
-                                        @Model.FormatPrice(p.Price)
+                    @foreach (var p in Model.Products)
+                    {
+                        <div class="col-md-4 col-lg-3">
+                            <a href="/Products/Details/@p.ProductId" class="text-decoration-none">
+                                <div class="card-editorial">
+                                    <div class="card-img-editorial">
+                                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.jpg" : p.ImageUrl)" alt="@p.Title">
+                                        <div class="card-overlay-btn">Discover Piece</div>
+                                    </div>
+                                    <div class="p-4">
+                                        <span class="skill-badge" style="font-size:.55rem;letter-spacing:.1em;">@p.Category?.Name</span>
+                                        <h5 style="font-family:'Playfair Display',serif;color:var(--ink);margin:.5rem 0;">@p.Title</h5>
+                                        <div class="pt-3 border-top mt-3 fw-bold" style="color:var(--sg);font-family:'Playfair Display',serif;">
+                                            @Model.FormatPrice(p.Price)
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">Nghệ nhân chưa đăng tải sản phẩm nào.</p>
                     </div>
                 }
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TAB: PORTFOLIO ══ -->
+    <div id="tab-portfolio" class="store-tab-panel">
+        <div class="tab-content-wrap">
+            @if (Model.Portfolio.Any())
+            {
+                <div class="portfolio-grid">
+                    @foreach (var item in Model.Portfolio)
+                    {
+                        <div class="portfolio-card">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="@item.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="portfolio-no-img"><i class="bi bi-image"></i></div>
+                            }
+                            <div class="portfolio-overlay">
+                                @if (!string.IsNullOrEmpty(item.Title))
+                                {
+                                    <p class="portfolio-overlay-title">@item.Title</p>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <p class="portfolio-overlay-desc">@item.Description</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
             }
             else
             {
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted italic">Nghệ nhân chưa đăng tải sản phẩm nào.</p>
+                <div class="feed-empty">
+                    <i class="bi bi-images"></i>
+                    <p>No portfolio items yet</p>
                 </div>
             }
         </div>
     </div>
-</div>
+
+    <!-- ══ TAB: POSTS (Instagram feed) ══ -->
+    <div id="tab-posts" class="store-tab-panel">
+        <div class="tab-content-wrap">
+            @if (Model.Posts.Any())
+            {
+                <div class="feed-wrap">
+                    @foreach (var post in Model.Posts)
+                    {
+                        <article class="feed-card">
+
+                            <!-- post header -->
+                            <div class="feed-header">
+                                <div class="feed-author">
+                                    <div class="feed-avatar">@Model.GetMonogram()</div>
+                                    <div>
+                                        <div class="feed-author-name">@Model.Artisan.User.FullName</div>
+                                        <div class="feed-author-skill">@Model.Artisan.SkillDescription</div>
+                                    </div>
+                                </div>
+                                <time class="feed-date" datetime="@post.CreatedAt.ToString("yyyy-MM-dd")">
+                                    @post.CreatedAt.ToString("MMM d, yyyy")
+                                </time>
+                            </div>
+
+                            <!-- square image -->
+                            <div class="feed-img">
+                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                {
+                                    <img src="@post.ImageUrl" alt="@post.Title" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="feed-no-img"><i class="bi bi-chat-quote"></i></div>
+                                }
+                            </div>
+
+                            <!-- caption -->
+                            <div class="feed-caption">
+                                <p class="feed-title">@post.Title</p>
+                                <p class="feed-body" id="fb-@post.PostId">@post.Content</p>
+                                @if (post.Content.Length > 200)
+                                {
+                                    <button class="feed-more" onclick="toggleFeed('@post.PostId', this)">
+                                        more ↓
+                                    </button>
+                                }
+                                @if (post.UpdatedAt.HasValue)
+                                {
+                                    <span class="feed-edited">edited</span>
+                                }
+                            </div>
+
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="feed-empty">
+                    <i class="bi bi-camera"></i>
+                    <p>No posts yet</p>
+                    <small class="text-muted">Check back soon.</small>
+                </div>
+            }
+        </div>
+    </div>
+
+</div><!-- /.artisan-wrap -->
+
+<script>
+function storeTab(name, btn) {
+    document.querySelectorAll('.store-tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.store-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+function toggleFeed(postId, btn) {
+    const body = document.getElementById('fb-' + postId);
+    const expanded = body.classList.toggle('expanded');
+    btn.textContent = expanded ? 'less ↑' : 'more ↓';
+}
+</script>

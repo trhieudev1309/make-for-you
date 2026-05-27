@@ -23,5 +23,6 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<PortfolioItem>? PortfolioItems { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Review>? Reviews { get; set; }
+        public ICollection<SellerPost>? Posts { get; set; }
     }
 }
