@@ -229,6 +229,7 @@
 
         connection.start()
             .then(() => loadConversations())
+            .then(() => autoSelectFromUrl())
             .catch(err => console.error('Chat connection failed:', err));
     }
 
@@ -575,6 +576,27 @@
         if (unsafe == null) return '';
         return String(unsafe).replace(/[&<"'>]/g, m =>
             ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m]));
+    }
+
+    // ── Auto-select artisan when arriving from product page ──────────────────
+    async function autoSelectFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const artisanId   = params.get('artisanId');
+        const artisanName = params.get('artisanName') || 'Nghệ nhân';
+        if (!artisanId || artisanId === currentUserId) return;
+
+        if (!conversations.has(artisanId)) {
+            conversations.set(artisanId, {
+                userId: artisanId,
+                fullName: artisanName,
+                orderId: null,
+                messages: [],
+                lastMessage: null,
+                lastMessageAt: null
+            });
+            renderConversations();
+        }
+        await selectConversation(artisanId, artisanName, conversations.get(artisanId)?.orderId || '');
     }
 
     initSignalR();
