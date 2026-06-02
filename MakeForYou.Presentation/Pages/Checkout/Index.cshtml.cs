@@ -45,6 +45,9 @@ namespace MakeForYou.Presentation.Pages.Checkout
             if (string.IsNullOrEmpty(userIdStr)) return RedirectToPage("/Auth/Login");
             long userId = long.Parse(userIdStr);
 
+            var cartItems = await _cartService.GetCartAsync(userId);
+            if (!cartItems.Any()) return RedirectToPage("/Cart/Index");
+
             // Generate a unique payment code (10-digit, fits PayOS orderCode constraints)
             var paymentCode = Random.Shared.NextInt64(1_000_000_000L, 9_999_999_999L);
 
@@ -60,7 +63,7 @@ namespace MakeForYou.Presentation.Pages.Checkout
             var totalAmount = orders.Sum(o => o.AgreedPrice ?? 0);
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-            var checkoutUrl = await _paymentService.CreatePaymentLinkAsync(paymentCode, totalAmount, baseUrl);
+            var checkoutUrl = await _paymentService.CreatePaymentLinkAsync(paymentCode, totalAmount, baseUrl, cartItems);
 
             return Redirect(checkoutUrl);
         }
