@@ -1,3 +1,4 @@
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using PayOS;
@@ -23,21 +24,27 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             });
         }
 
-        public async Task<string> CreatePaymentLinkAsync(long paymentCode, int amount, string baseUrl)
+        public async Task<string> CreatePaymentLinkAsync(long paymentCode, int amount, string baseUrl, IEnumerable<CartItemViewModel> items)
         {
             var description = $"MFY {paymentCode}";
             if (description.Length > 25)
                 description = description[..25];
+
+            var paymentItems = items.Select(i => new PaymentLinkItem
+            {
+                Name = (i.ProductName ?? "San pham").Length > 50
+                    ? (i.ProductName ?? "San pham")[..50]
+                    : (i.ProductName ?? "San pham"),
+                Quantity = i.Quantity,
+                Price = i.Price
+            }).ToList();
 
             var request = new CreatePaymentLinkRequest
             {
                 OrderCode = paymentCode,
                 Amount = amount,
                 Description = description,
-                Items = new List<PaymentLinkItem>
-                {
-                    new PaymentLinkItem { Name = "Don hang", Quantity = 1, Price = amount }
-                },
+                Items = paymentItems,
                 CancelUrl = $"{baseUrl}/Checkout/Cancel?orderCode={paymentCode}",
                 ReturnUrl = $"{baseUrl}/Checkout/Return?orderCode={paymentCode}"
             };
