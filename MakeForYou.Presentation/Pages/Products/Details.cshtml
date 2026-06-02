@@ -357,10 +357,11 @@
                             {
                                 @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName) && Model.Product.SellerId != 0)
                                 {
-                                    <a class="btn btn-primary serif" 
-                                       href="javascript:void(0);" 
-                                       onclick="if(window.startChatWithArtisan('@Model.Product.SellerId', '@Html.Raw(Model.Product.Seller.User.FullName.Replace("'", "\\'"))')) { window.location.href='/Chat'; } return false;">
-                                         Liên hệ Nghệ nhân
+                                    <a class="btn btn-primary serif"
+                                       asp-page="/Chat/Index"
+                                       asp-route-artisanId="@Model.Product.SellerId"
+                                       asp-route-artisanName="@Model.Product.Seller.User.FullName">
+                                        Liên hệ Nghệ nhân
                                     </a>
                                 }
                                 else
