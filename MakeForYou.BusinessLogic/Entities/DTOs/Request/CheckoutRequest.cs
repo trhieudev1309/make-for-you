@@ -7,5 +7,16 @@
         public string ShippingAddress { get; set; } = null!;
         public string? Note { get; set; }
         public string PaymentMethod { get; set; } = "Online"; // Mặc định online
+
+        public int ShippingProvinceId { get; set; }
+        public string ShippingProvinceName { get; set; } = null!;
+
+        public int ShippingDistrictId { get; set; }
+        public string ShippingDistrictName { get; set; } = null!;
+
+        public string ShippingWardCode { get; set; } = null!;
+        public string ShippingWardName { get; set; } = null!;
+
+        public string ShippingAddressDetail { get; set; } = null!;
     }
 }

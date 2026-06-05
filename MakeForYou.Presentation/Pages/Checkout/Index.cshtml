@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Checkout.IndexModel
 <div class="container py-5">
     <div class="row g-5">
@@ -15,10 +15,40 @@
                         <input asp-for="OrderRequest.PhoneNumber" class="form-control rounded-pill" required />
                     </div>
                 </div>
+
                 <div class="mb-3">
-                    <label class="small-caps">Shipping Address</label>
-                    <textarea asp-for="OrderRequest.ShippingAddress" class="form-control rounded-3" rows="3" required></textarea>
+                    <label class="small-caps">Province / City</label>
+                    <select id="ddlProvince" class="form-select form-control rounded-pill" required>
+                        <option value="">-- Select Province / City --</option>
+                    </select>
                 </div>
+
+                <div class="mb-3">
+                    <label class="small-caps">District</label>
+                    <select id="ddlDistrict" class="form-select form-control rounded-pill" required disabled>
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small-caps">Ward</label>
+                    <select id="ddlWard" class="form-select form-control rounded-pill" required disabled>
+                        <option value="">-- Select Ward --</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small-caps">Detail Address (House Number, Street Name)</label>
+                    <input type="text" id="txtAddressDetail" class="form-control rounded-pill" placeholder="e.g. 123 Nguyen Van Cu Street" required />
+                </div>
+
+                <input type="hidden" asp-for="OrderRequest.ShippingProvinceId" id="hdnProvinceId" />
+                <input type="hidden" asp-for="OrderRequest.ShippingProvinceName" id="hdnProvinceName" />
+                <input type="hidden" asp-for="OrderRequest.ShippingDistrictId" id="hdnDistrictId" />
+                <input type="hidden" asp-for="OrderRequest.ShippingDistrictName" id="hdnDistrictName" />
+                <input type="hidden" asp-for="OrderRequest.ShippingWardCode" id="hdnWardCode" />
+                <input type="hidden" asp-for="OrderRequest.ShippingWardName" id="hdnWardName" />
+                <input type="hidden" asp-for="OrderRequest.ShippingAddressDetail" id="hdnAddressDetail" />
                 <button type="submit" class="btn btn-dark w-100 rounded-pill py-3 fw-bold mt-4">
                     PROCEED TO ONLINE PAYMENT
                 </button>
@@ -28,7 +58,8 @@
         <div class="col-md-5">
             <div class="card border-0 shadow-sm p-4 bg-light">
                 <h5 class="serif-title mb-3">Order Summary</h5>
-                @foreach(var item in Model.CartItems) {
+                @foreach (var item in Model.CartItems)
+                {
                     <div class="d-flex justify-content-between mb-2">
                         <span>@item.ProductName x @item.Quantity</span>
                         <span>@item.TotalPrice.ToString("N0") VNĐ</span>
@@ -43,3 +74,103 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+        // 1. Tải danh sách Tỉnh/Thành
+        $.ajax({
+            url: '/api/ghn/provinces',
+            type: 'GET',
+            success: function (res) {
+                let ddl = $('#ddlProvince');
+                res.forEach(function (item) {
+                    ddl.append(`<option value="${item.ProvinceID}">${item.ProvinceName}</option>`);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load provinces:", xhr.responseText || error);
+                alert("Không thể tải danh sách Tỉnh/Thành phố. Vui lòng kiểm tra cấu hình GHN Token trong appsettings.json. Chi tiết lỗi: " + (xhr.responseJSON?.error || xhr.responseText || error));
+            }
+        });
+
+            // 2. Thay đổi Tỉnh/Thành -> Tải Quận/Huyện
+            $('#ddlProvince').change(function () {
+                let provinceId = $(this).val();
+                let provinceName = $("#ddlProvince option:selected").text();
+
+                $('#ddlDistrict').empty().append('<option value="">-- Select District --</option>').prop('disabled', true);
+                $('#ddlWard').empty().append('<option value="">-- Select Ward --</option>').prop('disabled', true);
+
+                $('#hdnProvinceId').val(provinceId);
+                $('#hdnProvinceName').val(provinceId ? provinceName : '');
+                $('#hdnDistrictId').val('');
+                $('#hdnDistrictName').val('');
+                $('#hdnWardCode').val('');
+                $('#hdnWardName').val('');
+
+                if (provinceId) {
+                    $.ajax({
+                        url: `/api/ghn/districts?provinceId=${provinceId}`,
+                        type: 'GET',
+                        success: function (res) {
+                            let ddl = $('#ddlDistrict');
+                            res.forEach(function (item) {
+                                ddl.append(`<option value="${item.DistrictID}">${item.DistrictName}</option>`);
+                            });
+                            ddl.prop('disabled', false);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Failed to load districts:", xhr.responseText || error);
+                            alert("Không thể tải danh sách Quận/Huyện. Chi tiết lỗi: " + (xhr.responseJSON?.error || xhr.responseText || error));
+                        }
+                    });
+                }
+            });
+
+            // 3. Thay đổi Quận/Huyện -> Tải Phường/Xã
+            $('#ddlDistrict').change(function () {
+                let districtId = $(this).val();
+                let districtName = $("#ddlDistrict option:selected").text();
+
+                $('#ddlWard').empty().append('<option value="">-- Select Ward --</option>').prop('disabled', true);
+
+                $('#hdnDistrictId').val(districtId);
+                $('#hdnDistrictName').val(districtId ? districtName : '');
+                $('#hdnWardCode').val('');
+                $('#hdnWardName').val('');
+
+                if (districtId) {
+                    $.ajax({
+                        url: `/api/ghn/wards?districtId=${districtId}`,
+                        type: 'GET',
+                        success: function (res) {
+                            let ddl = $('#ddlWard');
+                            res.forEach(function (item) {
+                                ddl.append(`<option value="${item.WardCode}">${item.WardName}</option>`);
+                            });
+                            ddl.prop('disabled', false);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Failed to load wards:", xhr.responseText || error);
+                            alert("Không thể tải danh sách Phường/Xã. Chi tiết lỗi: " + (xhr.responseJSON?.error || xhr.responseText || error));
+                        }
+                    });
+                }
+            });
+
+            // 4. Đồng bộ hóa dữ liệu Text Detail và Ward
+            $('#ddlWard').change(function () {
+                let wardCode = $(this).val();
+                let wardName = $("#ddlWard option:selected").text();
+                $('#hdnWardCode').val(wardCode);
+                $('#hdnWardName').val(wardCode ? wardName : '');
+            });
+
+            $('#txtAddressDetail').on('input', function () {
+                $('#hdnAddressDetail').val($(this).val());
+            });
+        });
+    </script>
+}
