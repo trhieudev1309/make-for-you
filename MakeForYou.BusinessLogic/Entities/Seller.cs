@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MakeForYou.BusinessLogic.Entities
@@ -16,6 +16,12 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? AvailabilityStatus { get; set; }
         public int? AverageRating { get; set; }
         public int? TotalReviews { get; set; }
+
+        /// <summary>
+        /// GHN Shop ID liên kết với tài khoản GHN của seller.
+        /// Nullable vì seller có thể chưa đăng ký GHN.
+        /// </summary>
+        public int? GhnShopId { get; set; }
 
         // Products authored by this seller
         public ICollection<Product>? Products { get; set; }
