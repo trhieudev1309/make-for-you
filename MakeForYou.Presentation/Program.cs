@@ -84,6 +84,7 @@ builder.Services.AddScoped<ISellerPostRepository, SellerPostRepository>();
 builder.Services.AddScoped<ISellerPostService, SellerPostService>();
 
 builder.Configuration.GetSection("Email"); // Ensure email section read
+builder.Services.AddScoped<IGhnStoreService, GhnStoreService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opts =>
@@ -97,6 +98,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization();
+
+// Đăng ký HttpClient có tên "GHN" (timeout hợp lý cho API bên thứ 3)
+builder.Services.AddHttpClient("GHN", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 
 var app = builder.Build();
 

@@ -1,0 +1,601 @@
+﻿@page
+@model MakeForYou.Presentation.Pages.Seller.GhnConfigModel
+@{
+    ViewData["Title"] = "Liên kết cửa hàng GHN – MakeForYou";
+}
+
+<style>
+    .ghn-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .breadcrumb-nav {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 15px;
+    }
+
+        .breadcrumb-nav a {
+            color: #555;
+            text-decoration: none;
+        }
+
+    .ghn-header-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 8px;
+    }
+
+    .ghn-subtext {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .status-banner {
+        padding: 20px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+        .status-banner.unlinked {
+            background-color: #fff9f1;
+            border: 1px solid #ffe7c4;
+        }
+
+        .status-banner.linked {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+    .status-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+
+        .status-badge.unlinked {
+            background-color: #f97316;
+            color: #fff;
+        }
+
+        .status-badge.linked {
+            background-color: #16a34a;
+            color: #fff;
+        }
+
+    .tab-control-wrapper {
+        border-bottom: 2px solid #f3f4f6;
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 12px 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+    }
+
+        .tab-btn:hover { color: #111; }
+
+        .tab-btn.active { color: #f97316; }
+
+            .tab-btn.active::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background-color: #f97316;
+            }
+
+    .tab-content {
+        display: none;
+        background: #fff;
+        border: 1px solid #f3f4f6;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+
+        .tab-content.active { display: block; }
+
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+        .form-field.full-width { grid-column: span 2; }
+
+        .form-field label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #111;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+            .form-field input:focus,
+            .form-field select:focus {
+                border-color: #f97316;
+                box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+            }
+
+            .form-field input:disabled,
+            .form-field select:disabled {
+                background-color: #f3f4f6;
+                cursor: not-allowed;
+            }
+
+    .field-hint {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+
+    .env-info {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #475569;
+        margin-top: 20px;
+        border-left: 4px solid #cbd5e1;
+    }
+
+    .alert-box {
+        padding: 14px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+        .alert-box.error   { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; }
+        .alert-box.success { background-color: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+        .alert-box.info    { background-color: #e0f2fe; border: 1px solid #bae6fd; color: #0c4a6e; }
+        .alert-box.warning { background-color: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+
+    .alert-icon    { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .alert-content { flex: 1; }
+    .alert-title   { font-weight: 600; margin-bottom: 4px; }
+    .alert-detail  { font-size: 13px; opacity: 0.9; font-family: 'Monaco','Courier New',monospace; word-break: break-word; }
+
+    .btn-actions-group { display: flex; gap: 12px; margin-top: 25px; }
+
+    .btn-submit {
+        background-color: #f97316;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .btn-submit:hover     { background-color: #ea580c; }
+        .btn-submit:disabled  { background-color: #d97706; cursor: not-allowed; opacity: 0.7; }
+
+    .btn-cancel {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        border: none;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .btn-cancel:hover { background-color: #e5e7eb; }
+
+    .store-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 14px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+        .store-item:hover { border-color: #f97316; background-color: #fffbeb; }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #f3f4f6;
+        border-top-color: #f97316;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+@@keyframes spin { to { transform: rotate(360deg); } }
+    .select-loading {
+        color: #6b7280;
+        font-style: italic;
+    }
+</style>
+
+<div class="ghn-container">
+    <div class="breadcrumb-nav">
+        <a href="/Account">Tài khoản</a> &rsaquo;
+        <a href="/Seller/Profile">Hồ sơ người bán</a> &rsaquo;
+        <span style="color:#f97316;">Liên kết GHN</span>
+    </div>
+
+    <h1 class="ghn-header-title">Liên kết cửa hàng GHN</h1>
+    <p class="ghn-subtext">Kết nối tài khoản Giao Hàng Nhanh để tự động tạo vận đơn cho đơn hàng của bạn.</p>
+
+    @if (Model.CurrentGhnShopId == null)
+    {
+        <div class="status-banner unlinked">
+            <span class="status-badge unlinked">Chưa liên kết</span>
+            <div style="font-size:14px; color:#c2410c;">
+                Hồ sơ của bạn chưa có GHN Shop ID. Hãy đăng ký hoặc liên kết bên dưới để kích hoạt vận chuyển.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="status-banner linked">
+            <span class="status-badge linked">Đã liên kết</span>
+            <div style="font-size:14px; color:#15803d;">
+                Hồ sơ của bạn đã được kết nối với GHN Shop ID: <strong>@Model.CurrentGhnShopId</strong>
+            </div>
+        </div>
+    }
+
+    <div id="apiAlertContainer"></div>
+
+    <div class="tab-control-wrapper">
+        <button class="tab-btn active" onclick="switchTab(event,'create-tab')">Tạo cửa hàng mới</button>
+        <button class="tab-btn"        onclick="switchTab(event,'list-tab')">Chọn cửa hàng sẵn có</button>
+        <button class="tab-btn"        onclick="switchTab(event,'manual-tab')">Nhập Shop ID thủ công</button>
+    </div>
+
+    <!-- TAB 1: Tạo cửa hàng mới -->
+    <div id="create-tab" class="tab-content active">
+        <div class="form-section-title">🏪 Đăng ký cửa hàng trên GHN</div>
+        <p style="font-size:13px; color:#666; margin-bottom:20px;">
+            Gọi GHN Create Store API để tạo shop mới và tự động kết nối vào hệ thống.
+        </p>
+
+        <form method="post" asp-page-handler="CreateStore">
+            <div class="form-group-grid">
+                <div class="form-field">
+                    <label>Tên cửa hàng *</label>
+                    <input type="text" name="request.Name" placeholder="VD: Gốm Sứ Hoà An" required />
+                </div>
+                <div class="form-field">
+                    <label>Số điện thoại cửa hàng *</label>
+                    <input type="tel" name="request.Phone" placeholder="VD: 0912 345 678" required />
+                </div>
+
+                <!-- Province -->
+                <div class="form-field">
+                    <label>Tỉnh / Thành phố *</label>
+                    <select id="provinceSelect" name="request.ProvinceId"
+                            onchange="loadDistricts()" required>
+                        <option value="">-- Đang tải... --</option>
+                    </select>
+                </div>
+
+                <!-- District -->
+                <div class="form-field">
+                    <label>Quận / Huyện *</label>
+                    <select id="districtSelect" name="request.DistrictId"
+                            onchange="loadWards()" required disabled>
+                        <option value="">-- Chọn Quận/Huyện --</option>
+                    </select>
+                    <div class="field-hint">Mã District ID dùng cho GHN API</div>
+                </div>
+
+                <!-- Ward -->
+                <div class="form-field">
+                    <label>Phường / Xã *</label>
+                    <select id="wardSelect" name="request.WardCode" required disabled>
+                        <option value="">-- Chọn Phường/Xã --</option>
+                    </select>
+                    <div class="field-hint">Ward Code (chuỗi) dùng cho GHN API</div>
+                </div>
+
+                <div class="form-field">
+                    <label>Địa chỉ chi tiết *</label>
+                    <input type="text" name="request.Address"
+                           placeholder="Số nhà, tên đường..." required />
+                </div>
+            </div>
+
+            <div class="env-info">
+                ⚠️ <strong>Lưu ý:</strong> Môi trường hiện tại:
+                <span style="color:#ef4444; font-weight:bold;">Sandbox (Thử nghiệm)</span>.
+            </div>
+
+            <div class="btn-actions-group">
+                <button type="submit" class="btn-submit">Tạo cửa hàng trên GHN</button>
+                <button type="button" class="btn-cancel">Hủy</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TAB 2: Danh sách cửa hàng sẵn có -->
+    <div id="list-tab" class="tab-content">
+        <div class="form-section-title">📋 Danh sách cửa hàng của bạn trên GHN</div>
+        <p style="font-size:13px; color:#666; margin-bottom:20px;">
+            Lấy danh sách các cửa hàng đã đăng ký với token GHN này.
+        </p>
+        <div id="ghnStoresList">
+            <p style="color:#888; font-style:italic;">Nhấp vào tab để tải danh sách...</p>
+        </div>
+    </div>
+
+    <!-- TAB 3: Nhập thủ công -->
+    <div id="manual-tab" class="tab-content">
+        <div class="form-section-title">🔑 Kết nối bằng Shop ID thủ công</div>
+        <p style="font-size:13px; color:#666; margin-bottom:20px;">
+            Nếu bạn đã biết mã Shop ID của mình trên GHN, nhập trực tiếp vào đây.
+        </p>
+        <form method="post" asp-page-handler="LinkManual">
+            <div class="form-field" style="max-width:400px;">
+                <label>Nhập GHN Shop ID *</label>
+                <input type="number" name="GhnShopId"
+                       placeholder="Mã số gồm 5-6 chữ số..." required />
+            </div>
+            <div class="btn-actions-group">
+                <button type="submit" class="btn-submit">Xác nhận liên kết</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ── HELPERS ──────────────────────────────────────────────────────────────
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showAlert(type, title, message, details) {
+        const container = document.getElementById('apiAlertContainer');
+        const icons = { error: '❌', success: '✅', info: 'ℹ️', warning: '⚠️' };
+        const detailsHtml = details
+            ? `<div class="alert-detail">${escapeHtml(details)}</div>`
+            : '';
+        const box = document.createElement('div');
+        box.className = `alert-box ${type}`;
+        box.innerHTML = `
+            <div class="alert-icon">${icons[type]}</div>
+            <div class="alert-content">
+                <div class="alert-title">${escapeHtml(title)}</div>
+                ${detailsHtml}
+            </div>`;
+        container.innerHTML = '';
+        container.appendChild(box);
+        setTimeout(() => {
+            box.style.transition = 'opacity 0.3s ease';
+            box.style.opacity = '0';
+            setTimeout(() => box.remove(), 300);
+        }, 8000);
+    }
+
+    // ── TAB SWITCHING ─────────────────────────────────────────────────────────
+
+    function switchTab(evt, tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+        if (tabId === 'list-tab') fetchGhnStores();
+    }
+
+    // ── GHN LOCATION CASCADE (proxy through Razor handlers) ──────────────────
+    //
+    //  Province → GET ?handler=Provinces
+    //  District → GET ?handler=Districts&provinceId={id}
+    //  Ward     → GET ?handler=Wards&districtId={id}
+    //
+    //  GHN field names:
+    //    Province : ProvinceID  (int),  ProvinceName  (string)
+    //    District : DistrictID  (int),  DistrictName  (string)
+    //    Ward     : WardCode    (string), WardName    (string)
+
+    async function ghnProxy(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        // Proxy returns the unwrapped array directly via JsonResult
+        return Array.isArray(json) ? json : (json.data ?? json);
+    }
+
+    async function loadProvinces() {
+        const sel = document.getElementById('provinceSelect');
+        sel.innerHTML = '<option value="">-- Đang tải tỉnh/thành... --</option>';
+        sel.disabled = true;
+        try {
+            const data = await ghnProxy('?handler=Provinces');
+            sel.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố --</option>';
+            data.forEach(p => {
+                sel.options[sel.options.length] = new Option(p.ProvinceName, p.ProvinceID);
+            });
+            sel.disabled = false;
+        } catch (err) {
+            console.error('loadProvinces:', err);
+            sel.innerHTML = '<option value="">-- Lỗi tải tỉnh/thành --</option>';
+            showAlert('error', 'Không thể tải tỉnh/thành', 'Lỗi kết nối GHN API', err.message);
+        }
+    }
+
+    async function loadDistricts() {
+        const provinceId = document.getElementById('provinceSelect').value;
+        const districtSel = document.getElementById('districtSelect');
+        const wardSel = document.getElementById('wardSelect');
+
+        // Reset downstream
+        wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+        wardSel.disabled = true;
+        districtSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+
+        if (!provinceId) { districtSel.disabled = true; return; }
+
+        districtSel.innerHTML = '<option value="">-- Đang tải... --</option>';
+        districtSel.disabled = true;
+
+        try {
+            const data = await ghnProxy(`?handler=Districts&provinceId=${provinceId}`);
+            districtSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+            data.forEach(d => {
+                districtSel.options[districtSel.options.length] = new Option(d.DistrictName, d.DistrictID);
+            });
+            districtSel.disabled = false;
+        } catch (err) {
+            console.error('loadDistricts:', err);
+            districtSel.innerHTML = '<option value="">-- Lỗi tải quận/huyện --</option>';
+            showAlert('error', 'Không thể tải quận/huyện', 'Lỗi kết nối GHN API', err.message);
+        }
+    }
+
+    async function loadWards() {
+        const districtId = document.getElementById('districtSelect').value;
+        const wardSel = document.getElementById('wardSelect');
+
+        wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+
+        if (!districtId) { wardSel.disabled = true; return; }
+
+        wardSel.innerHTML = '<option value="">-- Đang tải... --</option>';
+        wardSel.disabled = true;
+
+        try {
+            // WardCode is a STRING — use w.WardCode not w.WardID
+            const data = await ghnProxy(`?handler=Wards&districtId=${districtId}`);
+            wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+            data.forEach(w => {
+                wardSel.options[wardSel.options.length] = new Option(w.WardName, w.WardCode);
+            });
+            wardSel.disabled = false;
+        } catch (err) {
+            console.error('loadWards:', err);
+            wardSel.innerHTML = '<option value="">-- Lỗi tải phường/xã --</option>';
+            showAlert('error', 'Không thể tải phường/xã', 'Lỗi kết nối GHN API', err.message);
+        }
+    }
+
+    // ── FETCH STORE LIST FOR TAB 2 ────────────────────────────────────────────
+
+    async function fetchGhnStores() {
+        const container = document.getElementById('ghnStoresList');
+        container.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="loading-spinner"></div>
+                <span>Đang tải danh sách cửa hàng...</span>
+            </div>`;
+        try {
+            const res = await fetch('/api/ghn/stores');
+            const text = await res.text();
+            if (!res.ok) throw new Error(`HTTP ${res.status} – ${text}`);
+
+            const data = JSON.parse(text);
+            if (!data || data.length === 0) {
+                showAlert('warning', 'Không có cửa hàng',
+                    'Không tìm thấy cửa hàng nào trên tài khoản GHN này.');
+                container.innerHTML =
+                    '<p style="color:#ca8a04; text-align:center; padding:20px;">' +
+                    'Không tìm thấy cửa hàng nào. Vui lòng tạo cửa hàng mới hoặc kiểm tra API token GHN.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(store => `
+                <div class="store-item">
+                    <div>
+                        <strong style="color:#111;">${escapeHtml(store.shopName || store.name || 'N/A')}</strong><br/>
+                        <span style="font-size:12px; color:#666;">
+                            ID: ${escapeHtml(String(store.shopId || store._id || 'N/A'))} |
+                            SĐT: ${escapeHtml(store.phone || 'N/A')}
+                        </span>
+                    </div>
+                    <form method="post" action="?handler=LinkManual" style="margin:0;">
+                        <input type="hidden" name="GhnShopId"
+                               value="${escapeHtml(String(store.shopId || store._id))}" />
+                        <button type="submit" class="btn-submit"
+                                style="padding:6px 12px; font-size:12px;">
+                            Liên kết Shop này
+                        </button>
+                    </form>
+                </div>`).join('');
+
+            showAlert('success', 'Tải danh sách thành công', `Tìm thấy ${data.length} cửa hàng`);
+        } catch (err) {
+            console.error('fetchGhnStores:', err);
+            container.innerHTML =
+                '<p style="color:#dc2626; text-align:center; padding:20px;">❌ Lỗi kết nối API</p>';
+            showAlert('error', 'Lỗi API',
+                'Không thể tải danh sách cửa hàng từ GHN', err.message);
+        }
+    }
+
+    // ── BOOT ─────────────────────────────────────────────────────────────────
+
+    document.addEventListener('DOMContentLoaded', loadProvinces);
+</script>
