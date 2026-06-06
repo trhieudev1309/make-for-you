@@ -2,6 +2,7 @@ using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -9,11 +10,13 @@ namespace MakeForYou.BusinessLogic.Services.Implement
     {
         private readonly IQuotationRepository _quotationRepo;
         private readonly IOrderRepository _orderRepo;
+        private readonly ILogger<QuotationService> _logger;
 
-        public QuotationService(IQuotationRepository quotationRepo, IOrderRepository orderRepo)
+        public QuotationService(IQuotationRepository quotationRepo, IOrderRepository orderRepo, ILogger<QuotationService> logger)
         {
             _quotationRepo = quotationRepo;
             _orderRepo = orderRepo;
+            _logger = logger;
         }
 
         public Task CreateAsync(Quotation quotation) => _quotationRepo.CreateAsync(quotation);
@@ -40,6 +43,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             {
                 var newPrice = (order.AgreedPrice ?? 0) + q.ProposedPrice.Value;
                 await _orderRepo.UpdateAgreedPriceAsync(order.OrderId, newPrice);
+                _logger.LogInformation("Quotation {QuotationId} approved by buyer {BuyerId}: order {OrderId} agreed price set to {NewPrice}", quotationId, buyerId, order.OrderId, newPrice);
+            }
+            else
+            {
+                _logger.LogInformation("Quotation {QuotationId} approved by buyer {BuyerId}: order {OrderId} (no price change)", quotationId, buyerId, order.OrderId);
             }
 
             // 3. Gate on payment — buyer must pay before the order can proceed
@@ -60,6 +68,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 throw new InvalidOperationException("Only a pending quotation can be cancelled.");
 
             await _quotationRepo.UpdateStatusAsync(quotationId, 2);
+            _logger.LogInformation("Quotation {QuotationId} cancelled by user {UserId} for order {OrderId}", quotationId, userId, order.OrderId);
         }
 
         private async Task<(Quotation q, Order order)> Load(long quotationId)
