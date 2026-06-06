@@ -1,6 +1,7 @@
 @page
 @model MakeForYou.Presentation.Pages.Seller.RequestsModel
 @using MakeForYou.BusinessLogic.Entities.Enums
+@using MakeForYou.Presentation.Pages.Seller
 @{
     ViewData["Title"] = "Yêu Cầu Đến";
 }
@@ -232,7 +233,7 @@
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.75rem;">
                         <span class="rq-badge @badgeClass">
                             <span class="rq-badge-dot"></span>
-                            @((OrderStatus)order.Status)
+                            @RequestsModel.StatusLabel(order.Status)
                         </span>
                         <div class="rq-card-price">
                             @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")

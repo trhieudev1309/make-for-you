@@ -17,13 +17,15 @@ namespace MakeForYou.Presentation.Pages.Orders
         private readonly ApplicationDbContext _db;
         private readonly IQuotationService _quotationService;
         private readonly IPaymentService _paymentService;
+        private readonly IPayoutService _payoutService;
 
-        public DetailModel(IOrderService orderService, ApplicationDbContext db, IQuotationService quotationService, IPaymentService paymentService)
+        public DetailModel(IOrderService orderService, ApplicationDbContext db, IQuotationService quotationService, IPaymentService paymentService, IPayoutService payoutService)
         {
             _orderService = orderService;
             _db = db;
             _quotationService = quotationService;
             _paymentService = paymentService;
+            _payoutService = payoutService;
         }
 
         public Order? Order { get; set; }
@@ -193,7 +195,7 @@ namespace MakeForYou.Presentation.Pages.Orders
             return RedirectToPage(new { id });
         }
 
-        // Buyer confirms the order has been physically received → Done
+        // Buyer confirms the order has been physically received → Done, then pay seller
         public async Task<IActionResult> OnPostConfirmDeliveryAsync(long id)
         {
             var buyerId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -204,6 +206,7 @@ namespace MakeForYou.Presentation.Pages.Orders
                 return RedirectToPage(new { id });
 
             await _orderService.UpdateStatusAsync(order.OrderId, (int)OrderStatus.Done);
+            await _payoutService.PaySellerAsync(order.OrderId);
             return RedirectToPage(new { id });
         }
 
@@ -284,6 +287,23 @@ namespace MakeForYou.Presentation.Pages.Orders
             OrderStatus.PendingQuotationAccept  => "bi-tag",
             OrderStatus.PendingQuotationPayment => "bi-credit-card",
             _                                  => "bi-circle"
+        };
+
+        public static string StatusLabel(int status) => (OrderStatus)status switch
+        {
+            OrderStatus.Pending                => "Chờ xác nhận",
+            OrderStatus.Confirmed              => "Đã xác nhận",
+            OrderStatus.Quoted                 => "Đã báo giá",
+            OrderStatus.InProgress             => "Đang thực hiện",
+            OrderStatus.Completed              => "Hoàn thành",
+            OrderStatus.Delivering             => "Đang giao hàng",
+            OrderStatus.Delivered              => "Đã giao hàng",
+            OrderStatus.Done                   => "Đã xong",
+            OrderStatus.Cancelled              => "Đã hủy",
+            OrderStatus.PendingQuotationSubmit  => "Chờ nghệ nhân báo giá",
+            OrderStatus.PendingQuotationAccept  => "Chờ chấp nhận báo giá",
+            OrderStatus.PendingQuotationPayment => "Chờ thanh toán báo giá",
+            _                                  => "Không xác định"
         };
     }
 }

@@ -1,4 +1,5 @@
 using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,5 +22,22 @@ namespace MakeForYou.Presentation.Pages.Seller
             Orders = await _orderService.GetRequestsBySellerAsync(sellerId);
             return Page();
         }
+
+        public static string StatusLabel(int status) => (OrderStatus)status switch
+        {
+            OrderStatus.Pending                => "Chờ xác nhận",
+            OrderStatus.Confirmed              => "Đã xác nhận",
+            OrderStatus.Quoted                 => "Đã báo giá",
+            OrderStatus.InProgress             => "Đang thực hiện",
+            OrderStatus.Completed              => "Hoàn thành",
+            OrderStatus.Delivering             => "Đang giao hàng",
+            OrderStatus.Delivered              => "Đã giao hàng",
+            OrderStatus.Done                   => "Đã xong",
+            OrderStatus.Cancelled              => "Đã hủy",
+            OrderStatus.PendingQuotationSubmit  => "Chờ nghệ nhân báo giá",
+            OrderStatus.PendingQuotationAccept  => "Chờ chấp nhận báo giá",
+            OrderStatus.PendingQuotationPayment => "Chờ thanh toán báo giá",
+            _                                  => "Không xác định"
+        };
     }
 }

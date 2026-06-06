@@ -66,7 +66,7 @@
                                 }
                             </div>
                             <span class="badge rounded-pill @MakeForYou.Presentation.Pages.Orders.IndexModel.BadgeClass(order.Status) px-3 py-2">
-                                <i class="bi @MakeForYou.Presentation.Pages.Orders.IndexModel.StatusIcon(order.Status) me-1"></i>@((OrderStatus)order.Status)
+                                <i class="bi @MakeForYou.Presentation.Pages.Orders.IndexModel.StatusIcon(order.Status) me-1"></i>@MakeForYou.Presentation.Pages.Orders.IndexModel.StatusLabel(order.Status)
                             </span>
                         </div>
 
