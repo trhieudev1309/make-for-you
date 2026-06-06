@@ -12,4 +12,7 @@ services:
       - PayOS__ClientId=${PAYOS_CLIENT_ID}
       - PayOS__ApiKey=${PAYOS_API_KEY}
       - PayOS__ChecksumKey=${PAYOS_CHECKSUM_KEY}
+      - PayOS__Pay_ClientId=${PAYOS_PAY_CLIENT_ID}
+      - PayOS__Pay_ApiKey=${PAYOS_PAY_API_KEY}
+      - PayOS__Pay_ChecksumKey=${PAYOS_PAY_CHECKSUM_KEY}
     restart: always
