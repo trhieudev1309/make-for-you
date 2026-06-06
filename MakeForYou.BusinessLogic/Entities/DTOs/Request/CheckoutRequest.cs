@@ -6,7 +6,7 @@
         public string PhoneNumber { get; set; } = null!;
         public string ShippingAddress { get; set; } = null!;
         public string? Note { get; set; }
-        public string PaymentMethod { get; set; } = "Online"; // Mặc định online
+        public string PaymentMethod { get; set; } = "Online";
 
         public int ShippingProvinceId { get; set; }
         public string ShippingProvinceName { get; set; } = null!;
@@ -18,7 +18,6 @@
         public string ShippingWardName { get; set; } = null!;
 
         public string ShippingAddressDetail { get; set; } = null!;
-        public string PaymentMethod { get; set; } = "Online";
         public List<CartItemCustomization> Customizations { get; set; } = new();
     }
 }
