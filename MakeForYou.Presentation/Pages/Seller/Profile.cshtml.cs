@@ -163,5 +163,21 @@ namespace MakeForYou.Presentation.Pages.Seller
             TempData["ActiveTab"] = "posts";
             return RedirectToPage();
         }
+
+        // ── Bank Info ────────────────────────────────────────────────────────────
+        public async Task<IActionResult> OnPostUpdateBankInfoAsync(
+            string? BankBin, string? BankAccountNumber, string? BankAccountName)
+        {
+            if (string.IsNullOrWhiteSpace(BankBin) || string.IsNullOrWhiteSpace(BankAccountNumber))
+            {
+                TempData["Error"] = "Mã ngân hàng và số tài khoản là bắt buộc.";
+                TempData["ActiveTab"] = "bank";
+                return RedirectToPage();
+            }
+            await _sellerService.UpdateBankInfoAsync(GetSellerId(), BankBin, BankAccountNumber, BankAccountName);
+            TempData["Success"] = "Thông tin tài khoản ngân hàng đã được cập nhật.";
+            TempData["ActiveTab"] = "bank";
+            return RedirectToPage();
+        }
     }
 }
