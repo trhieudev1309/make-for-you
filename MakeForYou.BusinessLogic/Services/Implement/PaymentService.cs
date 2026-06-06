@@ -1,6 +1,7 @@
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using PayOS;
 using PayOS.Models.V2.PaymentRequests;
 using PayOS.Models.Webhooks;
@@ -10,9 +11,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
     public class PaymentService : IPaymentService
     {
         private readonly PayOSClient _client;
+        private readonly ILogger<PaymentService> _logger;
 
-        public PaymentService(IConfiguration config)
+        public PaymentService(IConfiguration config, ILogger<PaymentService> logger)
         {
+            _logger = logger;
             _client = new PayOSClient(new PayOSOptions
             {
                 ClientId = config["PayOS:ClientId"]
@@ -50,6 +53,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             };
 
             var response = await _client.PaymentRequests.CreateAsync(request);
+            _logger.LogInformation("Payment link created: paymentCode={PaymentCode}, amount={Amount}", paymentCode, amount);
             return response.CheckoutUrl;
         }
 

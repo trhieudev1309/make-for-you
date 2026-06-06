@@ -14,11 +14,13 @@ namespace MakeForYou.Presentation.Controllers.Api
     {
         private readonly IQuotationService _service;
         private readonly IOrderService _orderService;
+        private readonly ILogger<QuotationController> _logger;
 
-        public QuotationController(IQuotationService service, IOrderService orderService)
+        public QuotationController(IQuotationService service, IOrderService orderService, ILogger<QuotationController> logger)
         {
             _service = service;
             _orderService = orderService;
+            _logger = logger;
         }
 
         private long CurrentUserId =>
@@ -49,18 +51,30 @@ namespace MakeForYou.Presentation.Controllers.Api
             try
             {
                 if (req.ProposedPrice < 5000)
+                {
+                    _logger.LogWarning("Quotation create rejected: proposed price {Price} below minimum for order {OrderId}", req.ProposedPrice, req.OrderId);
                     return BadRequest(new { error = "Giá tối thiểu là 5,000 VNĐ." });
+                }
 
                 var order = await _orderService.GetOrderForSellerAsync(req.OrderId, CurrentUserId);
                 if (order == null)
+                {
+                    _logger.LogWarning("Quotation create forbidden: seller {SellerId} does not own order {OrderId}", CurrentUserId, req.OrderId);
                     return Forbid();
+                }
 
                 if (order.Status != (int)OrderStatus.Confirmed)
+                {
+                    _logger.LogWarning("Quotation create rejected: order {OrderId} is not in Confirmed status (current={Status})", req.OrderId, order.Status);
                     return BadRequest(new { error = "Chỉ có thể tạo báo giá cho đơn hàng đã xác nhận." });
+                }
 
                 var existing = await _service.GetByOrderAsync(req.OrderId);
                 if (existing.Any(q => q.Status == 0))
+                {
+                    _logger.LogWarning("Quotation create rejected: pending quotation already exists for order {OrderId}", req.OrderId);
                     return BadRequest(new { error = "Đã có một báo giá đang chờ xử lý cho đơn hàng này." });
+                }
 
                 var quotation = new Quotation
                 {
@@ -74,11 +88,16 @@ namespace MakeForYou.Presentation.Controllers.Api
                 };
 
                 await _service.CreateAsync(quotation);
+                _logger.LogInformation("Quotation {QuotationId} created by seller {SellerId} for order {OrderId} with price {Price}", quotation.QuotationId, CurrentUserId, req.OrderId, req.ProposedPrice);
                 return Ok(MapQuotation(quotation));
             }
             catch (UnauthorizedAccessException) { return Forbid(); }
             catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error creating quotation for order {OrderId}", req.OrderId);
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // GET api/quotation/order/{orderId}
@@ -90,7 +109,11 @@ namespace MakeForYou.Presentation.Controllers.Api
                 var list = await _service.GetByOrderAsync(orderId);
                 return Ok(list.Select(MapQuotation));
             }
-            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error fetching quotations for order {OrderId}", orderId);
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // POST api/quotation/{id}/approve  — Buyer
@@ -101,10 +124,19 @@ namespace MakeForYou.Presentation.Controllers.Api
             {
                 await _service.ApproveAsync(id, CurrentUserId);
                 var q = await _service.GetByIdAsync(id);
+                _logger.LogInformation("Quotation {QuotationId} approved by buyer {BuyerId}", id, CurrentUserId);
                 return Ok(MapQuotation(q!));
             }
-            catch (KeyNotFoundException) { return NotFound(); }
-            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning("Quotation {QuotationId} not found for approval", id);
+                return NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _logger.LogWarning("Quotation {QuotationId} approval forbidden for user {UserId}", id, CurrentUserId);
+                return Forbid();
+            }
             catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         }
 
@@ -116,10 +148,19 @@ namespace MakeForYou.Presentation.Controllers.Api
             {
                 await _service.CancelAsync(id, CurrentUserId);
                 var q = await _service.GetByIdAsync(id);
+                _logger.LogInformation("Quotation {QuotationId} cancelled by user {UserId}", id, CurrentUserId);
                 return Ok(MapQuotation(q!));
             }
-            catch (KeyNotFoundException) { return NotFound(); }
-            catch (UnauthorizedAccessException) { return Forbid(); }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning("Quotation {QuotationId} not found for cancellation", id);
+                return NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _logger.LogWarning("Quotation {QuotationId} cancellation forbidden for user {UserId}", id, CurrentUserId);
+                return Forbid();
+            }
             catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         }
     }
