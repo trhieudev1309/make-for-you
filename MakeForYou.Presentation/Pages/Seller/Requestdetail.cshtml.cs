@@ -158,5 +158,22 @@ namespace MakeForYou.Presentation.Pages.Seller
             TempData["Success"] = "Đã cập nhật trạng thái đơn hàng.";
             return RedirectToPage(new { id });
         }
+
+        public static string StatusLabel(int status) => (OrderStatus)status switch
+        {
+            OrderStatus.Pending                => "Chờ xác nhận",
+            OrderStatus.Confirmed              => "Đã xác nhận",
+            OrderStatus.Quoted                 => "Đã báo giá",
+            OrderStatus.InProgress             => "Đang thực hiện",
+            OrderStatus.Completed              => "Hoàn thành",
+            OrderStatus.Delivering             => "Đang giao hàng",
+            OrderStatus.Delivered              => "Đã giao hàng",
+            OrderStatus.Done                   => "Đã xong",
+            OrderStatus.Cancelled              => "Đã hủy",
+            OrderStatus.PendingQuotationSubmit  => "Chờ nghệ nhân báo giá",
+            OrderStatus.PendingQuotationAccept  => "Chờ chấp nhận báo giá",
+            OrderStatus.PendingQuotationPayment => "Chờ thanh toán báo giá",
+            _                                  => "Không xác định"
+        };
     }
 }

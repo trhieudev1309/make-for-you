@@ -8,8 +8,8 @@
     var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
     var latestQuote = Model.Order?.Quotations?.OrderByDescending(q => q.CreatedAt).FirstOrDefault();
     var displayPrice = Model.Order?.AgreedPrice ?? acceptedQuote?.ProposedPrice ?? latestQuote?.ProposedPrice;
-    var totalQuotedPrice = Model.Order?.Quotations?.Sum(x => x.ProposedPrice);
     var isCartOrder = Model.Order?.OrderItems != null && Model.Order.OrderItems.Any();
+    var itemsSubtotal = isCartOrder ? Model.Order!.OrderItems.Sum(i => i.Price * i.Quantity) : (decimal?)null;
 }
 
 <style>
@@ -495,7 +495,7 @@
             </div>
             <span class="od-status @DetailModel.BadgeClass(Model.Order.Status)">
                 <i class="bi @DetailModel.StatusIcon(Model.Order.Status)"></i>
-                @((OrderStatus)Model.Order.Status)
+                @DetailModel.StatusLabel(Model.Order.Status)
             </span>
         </div>
 
@@ -644,7 +644,7 @@
                                 <tr>
                                     <td colspan="3">Tổng tiền sản phẩm</td>
                                     <td class="text-end">
-                                        @(displayPrice.HasValue? displayPrice.Value.ToString("N0") + " đ" : "—")
+                                        @(itemsSubtotal.HasValue ? itemsSubtotal.Value.ToString("N0") + " đ" : "—")
                                     </td>
                                 </tr>
                             </tfoot>
@@ -703,16 +703,28 @@
                                         </tr>
                                     }
                                 </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3">Tổng cộng</td>
-                                        <td class="text-end">
-                                            @(totalQuotedPrice.HasValue? totalQuotedPrice.Value.ToString("N0") + " đ" : "—")
-                                        </td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
                             </table>
+                        </div>
+                    }
+
+                    @* ── Grand total breakdown (cart order with accepted customisation quote) ── *@
+                    @if (isCartOrder && acceptedQuote?.ProposedPrice != null)
+                    {
+                        <div class="mt-3 pt-3" style="border-top:2px solid var(--border);">
+                            <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.4rem;">
+                                <span style="color:#aaa;">Tổng tiền sản phẩm</span>
+                                <span>@(itemsSubtotal.HasValue ? itemsSubtotal.Value.ToString("N0") + " đ" : "—")</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.4rem;">
+                                <span style="color:#aaa;">Phí tùy chỉnh đã duyệt</span>
+                                <span>+ @acceptedQuote.ProposedPrice.Value.ToString("N0") đ</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;padding-top:.6rem;border-top:1px solid var(--border);">
+                                <span>Tổng thanh toán</span>
+                                <span style="color:var(--clay);">
+                                    @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " đ" : "—")
+                                </span>
+                            </div>
                         </div>
                     }
                 </div>
@@ -850,7 +862,7 @@
                     <div class="od-summary-row">
                         <span class="lbl">Trạng thái</span>
                         <span class="od-status @DetailModel.BadgeClass(Model.Order.Status)" style="padding:.2rem .7rem;font-size:.75rem;">
-                            @((OrderStatus)Model.Order.Status)
+                            @DetailModel.StatusLabel(Model.Order.Status)
                         </span>
                     </div>
                     <div class="od-summary-row">
@@ -867,10 +879,24 @@
 
                     <hr class="od-divider" />
 
-                    <div class="od-summary-row">
-                        <span class="lbl">Tạm tính</span>
-                        <span class="val">@(displayPrice.HasValue? displayPrice.Value.ToString("N0") + " đ" : "—")</span>
-                    </div>
+                    @if (isCartOrder && acceptedQuote?.ProposedPrice != null)
+                    {
+                        <div class="od-summary-row">
+                            <span class="lbl">Sản phẩm</span>
+                            <span class="val">@(itemsSubtotal.HasValue ? itemsSubtotal.Value.ToString("N0") + " đ" : "—")</span>
+                        </div>
+                        <div class="od-summary-row">
+                            <span class="lbl">Phí tùy chỉnh</span>
+                            <span class="val">+ @acceptedQuote.ProposedPrice.Value.ToString("N0") đ</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="od-summary-row">
+                            <span class="lbl">Tạm tính</span>
+                            <span class="val">@(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " đ" : "—")</span>
+                        </div>
+                    }
                     <div class="od-total-row">
                         <span>Tổng tiền</span>
                         <span>@(displayPrice.HasValue? displayPrice.Value.ToString("N0") + " đ" : "Chờ xử lý")</span>

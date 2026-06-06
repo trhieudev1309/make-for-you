@@ -1,6 +1,7 @@
 @page "{id:long}"
 @model MakeForYou.Presentation.Pages.Seller.RequestDetailModel
 @using MakeForYou.BusinessLogic.Entities.Enums
+@using MakeForYou.Presentation.Pages.Seller
 @{
     ViewData["Title"] = $"Yêu cầu #{Model.Order?.OrderId}";
     var acceptedQuote = Model.Order?.Quotations?.FirstOrDefault(q => q.Status == 1);
@@ -244,7 +245,7 @@
             <h1 class="rd-title">Yêu cầu #@Model.Order.OrderId</h1>
             <div class="rd-date">Đã nhận @Model.Order.CreatedAt.ToLocalTime().ToString("MMMM d, yyyy 'lúc' HH:mm")</div>
         </div>
-        <span class="rd-status badge-@statusKey">@((OrderStatus)Model.Order.Status)</span>
+        <span class="rd-status badge-@statusKey">@RequestDetailModel.StatusLabel(Model.Order.Status)</span>
     </div>
 
     <div class="row g-4">
@@ -460,7 +461,7 @@
                 <div class="rd-row">
                     <span class="lbl">Trạng Thái</span>
                     <span class="rd-status badge-@statusKey" style="font-size:.62rem;padding:.15rem .65rem;">
-                        @((OrderStatus)Model.Order.Status)
+                        @RequestDetailModel.StatusLabel(Model.Order.Status)
                     </span>
                 </div>
                 <div class="rd-row"><span class="lbl">Đã nhận</span><span class="val">@Model.Order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</span></div>
