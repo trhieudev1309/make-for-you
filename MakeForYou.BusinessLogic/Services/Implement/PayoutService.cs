@@ -74,9 +74,9 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
                 return (true, $"Đã chuyển {order.AgreedPrice.Value:N0} VNĐ cho nghệ nhân thành công.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return (false, $"Chuyển tiền thất bại: {ex.Message}");
+                throw;
             }
         }
     }
