@@ -1,3 +1,4 @@
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -59,7 +60,29 @@ namespace MakeForYou.Presentation.Controllers
                     var orders = await _orderRepo.FindByPaymentCodeAsync(data.OrderCode);
                     if (orders.Any())
                     {
-                        var expectedAmount = orders.Sum(o => o.AgreedPrice ?? 0);
+                        int expectedAmount;
+
+                        var quotationOrder = orders.FirstOrDefault(
+                            o => o.Status == (int)OrderStatus.PendingQuotationPayment);
+
+                        if (quotationOrder != null)
+                        {
+                            // Quotation payment: validate against the accepted quotation's
+                            // ProposedPrice. AgreedPrice must NOT be used — it already
+                            // includes amounts paid in earlier rounds (e.g. initial cart
+                            // checkout), so it would always look like an underpayment.
+                            var acceptedQ = quotationOrder.Quotations?
+                                .Where(q => q.Status == 1)
+                                .OrderByDescending(q => q.CreatedAt)
+                                .FirstOrDefault();
+                            expectedAmount = acceptedQ?.ProposedPrice ?? 0;
+                        }
+                        else
+                        {
+                            // Initial checkout: validate against the cart / commission total.
+                            expectedAmount = orders.Sum(o => o.AgreedPrice ?? 0);
+                        }
+
                         if (data.Amount < expectedAmount)
                         {
                             _logger.LogWarning(

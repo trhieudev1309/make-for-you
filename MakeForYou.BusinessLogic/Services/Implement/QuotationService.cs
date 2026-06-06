@@ -1,4 +1,5 @@
-﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 
@@ -15,50 +16,52 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _orderRepo = orderRepo;
         }
 
-        // ── có sẵn ────────────────────────────────────────────────────────────
         public Task CreateAsync(Quotation quotation) => _quotationRepo.CreateAsync(quotation);
         public Task<List<Quotation>> GetByOrderAsync(long orderId) => _quotationRepo.GetByOrderAsync(orderId);
+        public Task<Quotation?> GetByIdAsync(long quotationId) => _quotationRepo.GetByIdAsync(quotationId);
 
-        // ── Buyer accept ──────────────────────────────────────────────────────
-        public async Task AcceptAsync(long quotationId, long buyerId)
+        // ── Buyer approves ────────────────────────────────────────────────────
+        public async Task ApproveAsync(long quotationId, long buyerId)
         {
             var (q, order) = await Load(quotationId);
 
             if (order.BuyerId != buyerId)
-                throw new UnauthorizedAccessException("Only the buyer can accept this quotation.");
+                throw new UnauthorizedAccessException("Only the buyer can approve this quotation.");
             if (q.Status != 0)
-                throw new InvalidOperationException("Only a pending quotation can be accepted.");
+                throw new InvalidOperationException("Only a pending quotation can be approved.");
 
+            // 1. Mark quotation as approved
             await _quotationRepo.UpdateStatusAsync(quotationId, 1);
+
+            // 2. Update agreed price on the order
+            //    - Commission order (AgreedPrice is null): ProposedPrice becomes the total
+            //    - Add-on / cart-customisation order: add ProposedPrice on top of existing total
+            if (q.ProposedPrice.HasValue)
+            {
+                var newPrice = (order.AgreedPrice ?? 0) + q.ProposedPrice.Value;
+                await _orderRepo.UpdateAgreedPriceAsync(order.OrderId, newPrice);
+            }
+
+            // 3. Gate on payment — buyer must pay before the order can proceed
+            await _orderRepo.UpdateStatusAsync(order.OrderId, (int)OrderStatus.PendingQuotationPayment);
         }
 
-        // ── Buyer reject ──────────────────────────────────────────────────────
-        public async Task RejectAsync(long quotationId, long buyerId)
+        // ── Either party cancels ──────────────────────────────────────────────
+        public async Task CancelAsync(long quotationId, long userId)
         {
             var (q, order) = await Load(quotationId);
 
-            if (order.BuyerId != buyerId)
-                throw new UnauthorizedAccessException("Only the buyer can reject this quotation.");
+            var isCreator = q.CreatedBy == userId;
+            var isBuyer   = order.BuyerId == userId;
+
+            if (!isCreator && !isBuyer)
+                throw new UnauthorizedAccessException("Only the seller or buyer can cancel this quotation.");
             if (q.Status != 0)
-                throw new InvalidOperationException("Only a pending quotation can be rejected.");
+                throw new InvalidOperationException("Only a pending quotation can be cancelled.");
 
             await _quotationRepo.UpdateStatusAsync(quotationId, 2);
         }
 
-        // ── Seller confirm (sau khi Buyer accept) ─────────────────────────────
-        public async Task ConfirmAsync(long quotationId, long sellerId)
-        {
-            var (q, order) = await Load(quotationId);
-
-            if (order.SellerId != sellerId)
-                throw new UnauthorizedAccessException("Only the seller can confirm this quotation.");
-            if (q.Status != 1)
-                throw new InvalidOperationException("Can only confirm an accepted quotation.");
-
-            await _quotationRepo.UpdateStatusAsync(quotationId, 3);
-        }
-
-        // ── helper ────────────────────────────────────────────────────────────
         private async Task<(Quotation q, Order order)> Load(long quotationId)
         {
             var q = await _quotationRepo.GetByIdAsync(quotationId)
@@ -69,8 +72,5 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             return (q, order);
         }
-
-        public Task<Quotation?> GetByIdAsync(long quotationId)
-    => _quotationRepo.GetByIdAsync(quotationId);
     }
 }

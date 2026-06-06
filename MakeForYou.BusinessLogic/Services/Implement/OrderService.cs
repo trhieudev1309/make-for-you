@@ -1,6 +1,7 @@
 ﻿using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.DTOs;
-using MakeForYou.BusinessLogic.Enums;
+using MakeForYou.BusinessLogic.Entities.DTOs.Request;
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +50,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 BuyerId = buyerId,
                 SellerId = sellerId,
                 OrderDescription = description,
-                Status = (int)MakeForYou.BusinessLogic.Enums.OrderStatus.Pending,
+                Status = (int)OrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
             var saved = await _orderRepo.AddAsync(order);
@@ -60,7 +61,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             return saved;
         }
 
-        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address, long paymentCode)
+        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address, long paymentCode, List<CartItemCustomization>? customizations = null)
         {
             // 1. Lấy toàn bộ giỏ hàng
             var cartItems = await _cartService.GetCartAsync(userId);
@@ -106,12 +107,25 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 };
 
                 // Tạo danh sách OrderItem cho đơn hàng này
-                var orderItems = itemsInGroup.Select(x => new OrderItem
+                var custMap = customizations?
+                    .ToDictionary(c => c.CartItemId)
+                    ?? new Dictionary<long, CartItemCustomization>();
+
+                var orderItems = itemsInGroup.Select(x =>
                 {
-                    ProductId = x.CartItem.ProductId,
-                    Quantity = x.CartItem.Quantity,
-                    Price = x.CartItem.Price,
-                    CustomizationsJson = x.CartItem.CustomizationsJson
+                    var cust = custMap.ContainsKey(x.CartItem.CartItemId)
+                        ? custMap[x.CartItem.CartItemId]
+                        : null;
+                    return new OrderItem
+                    {
+                        ProductId = x.CartItem.ProductId,
+                        Quantity = x.CartItem.Quantity,
+                        Price = x.CartItem.Price,
+                        CustomizationsJson = x.CartItem.CustomizationsJson,
+                        HasCustomization = cust?.HasCustomization ?? false,
+                        CustomizationNote = cust?.HasCustomization == true ? cust.Note : null,
+                        IsCustomizationResolved = false
+                    };
                 }).ToList();
 
                 // 5. Lưu vào Database (Mỗi đơn 1 lần gọi Repo)
@@ -200,6 +214,9 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
         }
+
+        public Task DropCustomizationAsync(long orderItemId) =>
+            _orderRepo.ResolveCustomizationAsync(orderItemId);
 
         public async Task<long?> GetOrderIdByUsersAsync(long userA, long userB)
         {
