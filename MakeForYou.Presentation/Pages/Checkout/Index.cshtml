@@ -1,10 +1,10 @@
 @page
 @model MakeForYou.Presentation.Pages.Checkout.IndexModel
 <div class="container py-5">
-    <div class="row g-5">
-        <div class="col-md-7">
-            <h4 class="serif-title mb-4">Shipping Information</h4>
-            <form method="post">
+    <form method="post">
+        <div class="row g-5">
+            <div class="col-md-7">
+                <h4 class="serif-title mb-4">Shipping Information</h4>
                 <div class="mb-3">
                     <label class="small-caps">Full Name</label>
                     <input asp-for="OrderRequest.FullName" class="form-control rounded-pill" required />
@@ -52,9 +52,54 @@
                 <button type="submit" class="btn btn-dark w-100 rounded-pill py-3 fw-bold mt-4">
                     PROCEED TO ONLINE PAYMENT
                 </button>
-            </form>
-        </div>
+            </div>
 
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm p-4 bg-light">
+                    <h5 class="serif-title mb-3">Order Summary</h5>
+                    @for (int i = 0; i < Model.CartItems.Count; i++)
+                    {
+                        var item = Model.CartItems[i];
+                        <input type="hidden" name="OrderRequest.Customizations[@i].CartItemId" value="@item.CartItemId" />
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>@item.ProductName x @item.Quantity</span>
+                                <span>@item.TotalPrice.ToString("N0") VNĐ</span>
+                            </div>
+                            <div class="form-check mt-1">
+                                <input class="form-check-input" type="checkbox"
+                                       name="OrderRequest.Customizations[@i].HasCustomization"
+                                       id="cust-@item.CartItemId" value="true"
+                                       onchange="toggleNote('@item.CartItemId', this)" />
+                                <label class="form-check-label small text-muted" for="cust-@item.CartItemId">
+                                    Tôi muốn tùy chỉnh sản phẩm này
+                                </label>
+                            </div>
+                            <div id="note-@item.CartItemId" class="mt-2" style="display:none;">
+                                <input type="text"
+                                       name="OrderRequest.Customizations[@i].Note"
+                                       maxlength="100"
+                                       class="form-control form-control-sm rounded-3"
+                                       placeholder="Ghi chú ngắn, vd: màu đỏ, khắc tên..." />
+                            </div>
+                        </div>
+                    }
+                    <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+                        <span>Total</span>
+                        <span class="text-clay">@Model.TotalAmount.ToString("N0") VNĐ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleNote(cartItemId, checkbox) {
+    const noteEl = document.getElementById('note-' + cartItemId);
+    if (noteEl) noteEl.style.display = checkbox.checked ? '' : 'none';
+}
+</script>
         <div class="col-md-5">
             <div class="card border-0 shadow-sm p-4 bg-light">
                 <h5 class="serif-title mb-3">Order Summary</h5>

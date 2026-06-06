@@ -9,9 +9,7 @@ namespace MakeForYou.BusinessLogic.Entities.Enums
     public static class QuotationStatus
     {
         public const int Pending = 0;
-        public const int Accepted = 1;
-        public const int Rejected = 2;
-        public const int Confirmed = 3;
-        public const int Cancelled = 4;
+        public const int Approved = 1;
+        public const int Cancelled = 2;
     }
 }

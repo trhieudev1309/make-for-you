@@ -18,5 +18,7 @@
         public string ShippingWardName { get; set; } = null!;
 
         public string ShippingAddressDetail { get; set; } = null!;
+        public string PaymentMethod { get; set; } = "Online";
+        public List<CartItemCustomization> Customizations { get; set; } = new();
     }
 }

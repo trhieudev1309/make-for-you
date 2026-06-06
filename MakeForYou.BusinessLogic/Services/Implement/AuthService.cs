@@ -12,6 +12,7 @@ using MakeForYou.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -21,27 +22,35 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _http;
         private readonly IEmailService _email;
+        private readonly ILogger<AuthService> _logger;
 
         // Sử dụng \W để chấp nhận mọi ký tự không phải chữ và số (bao gồm cả #, ., _, ...)
         private static readonly Regex PasswordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$");
 
-        public AuthService(IUserRepository userRepository, ApplicationDbContext context, IHttpContextAccessor http, IEmailService email)
+        public AuthService(IUserRepository userRepository, ApplicationDbContext context, IHttpContextAccessor http, IEmailService email, ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _context = context;
             _http = http;
             _email = email;
+            _logger = logger;
         }
 
         public async Task<RegisterRespond> RegisterAsync(RegisterRequest req)
         {
             // 1. Password strength
             if (!PasswordRegex.IsMatch(req.Password))
+            {
+                _logger.LogWarning("Registration failed for email {Email}: password does not meet requirements", req.Email);
                 return Fail("Password must be 8–15 characters and include uppercase, lowercase, digit, and special character.");
+            }
 
             // 2. Unique email
             if (await _userRepository.EmailExistsAsync(req.Email))
+            {
+                _logger.LogWarning("Registration failed: email {Email} already exists", req.Email);
                 return Fail("An account with this email already exists.");
+            }
 
             // 3. Build User entity
             var user = new User
@@ -61,6 +70,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // 5. Create role-specific profile in same transaction
             await CreateRoleProfileAsync(created);
 
+            _logger.LogInformation("User registered: userId={UserId}, role={Role}", created.UserId, (UserRole)req.Role);
             return new RegisterRespond
             {
                 Success = true,
@@ -99,18 +109,30 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // 1. Find user by email
             var user = await _userRepository.FindByEmailAsync(req.Email);
             if (user == null)
+            {
+                _logger.LogWarning("Login failed: email {Email} not found", req.Email);
                 return LoginFail("Null email or password.");
+            }
 
             // 2. Check account status
             if (user.Status == (int)UserStatus.Banned)
+            {
+                _logger.LogWarning("Login denied: user {UserId} is banned", user.UserId);
                 return LoginFail("Your account has been suspended.");
+            }
 
             if (user.Status == (int)UserStatus.Inactive)
+            {
+                _logger.LogWarning("Login denied: user {UserId} is inactive", user.UserId);
                 return LoginFail("Your account is inactive. Please contact support.");
+            }
 
             // 3. Verify password (BCrypt comparison — timing-safe)
             if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
+            {
+                _logger.LogWarning("Login failed: invalid password for user {UserId}", user.UserId);
                 return LoginFail("Invalid email or password.");
+            }
 
             // 4. Build claims and sign in with cookie auth
             var claims = new List<Claim>
@@ -130,6 +152,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             new AuthenticationProperties { IsPersistent = false }
             );
 
+            _logger.LogInformation("User {UserId} logged in, role={Role}", user.UserId, (UserRole)user.Role);
             return new LoginResponse
             {
                 Success = true,
@@ -151,7 +174,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             // Always return the same message — never reveal if the email exists
             const string msg = "If that email is registered, a reset link has been sent.";
-            if (user == null) return AuthResult.Ok(msg);
+            if (user == null)
+            {
+                _logger.LogDebug("Password reset requested for unknown email");
+                return AuthResult.Ok(msg);
+            }
 
             // Generate a cryptographically random token
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
@@ -174,25 +201,33 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 $"<p>Click the link below to reset your password. It expires in 30 minutes.</p>" +
                 $"<p><a href='{resetLink}'>Reset Password</a></p>");
 
+            _logger.LogInformation("Password reset email sent for user {UserId}", user.UserId);
             return AuthResult.Ok(msg);
         }
 
         public async Task<AuthResult> ResetPasswordAsync(ResetPasswordRequest req)
         {
             if (!PasswordRegex.IsMatch(req.NewPassword))
+            {
+                _logger.LogWarning("Password reset failed for email {Email}: new password does not meet requirements", req.Email);
                 return AuthResult.Fail("Password must be 8–15 characters and include uppercase, lowercase, digit, and special character.");
+            }
 
             var tokenHash = HashToken(req.Token);
             var record = await _userRepository.FindValidResetTokenAsync(req.Email, tokenHash);
 
             if (record == null)
+            {
+                _logger.LogWarning("Password reset failed for email {Email}: invalid or expired token", req.Email);
                 return AuthResult.Fail("This reset link is invalid or has expired.");
+            }
 
             // Update password
             record.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword, workFactor: 12);
             record.IsUsed = true;
             await _userRepository.SavePasswordResetTokenAsync(record);
 
+            _logger.LogInformation("Password reset successfully for user {UserId}", record.UserId);
             return AuthResult.Ok("Your password has been reset. You can now sign in.");
         }
 

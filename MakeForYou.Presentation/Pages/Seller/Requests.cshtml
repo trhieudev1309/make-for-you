@@ -1,6 +1,7 @@
 @page
 @model MakeForYou.Presentation.Pages.Seller.RequestsModel
-@using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.BusinessLogic.Entities.Enums
+@using MakeForYou.Presentation.Pages.Seller
 @{
     ViewData["Title"] = "Yêu Cầu Đến";
 }
@@ -99,8 +100,14 @@
     .badge-inprogress .rq-badge-dot { background: #9a6800; }
     .badge-completed { background: #f0faf4; color: #1e7a45; }
     .badge-completed .rq-badge-dot { background: #1e7a45; }
-    .badge-cancelled { background: #fff5f5; color: #b02020; }
-    .badge-cancelled .rq-badge-dot { background: #b02020; }
+    .badge-cancelled  { background: #fff5f5; color: #b02020; }
+    .badge-cancelled  .rq-badge-dot { background: #b02020; }
+    .badge-pq-submit  { background: #fff3e0; color: #e65100; }
+    .badge-pq-submit  .rq-badge-dot { background: #e65100; }
+    .badge-pq-accept  { background: #e8eaf6; color: #3949ab; }
+    .badge-pq-accept  .rq-badge-dot { background: #3949ab; }
+    .badge-pq-payment { background: #f3e5f5; color: #7b1fa2; }
+    .badge-pq-payment .rq-badge-dot { background: #7b1fa2; }
 
     /* ── empty state ── */
     .rq-empty {
@@ -179,13 +186,19 @@
             @foreach (var order in Model.Orders)
             {
                 var statusKey = ((OrderStatus)order.Status) switch {
-                    OrderStatus.Pending    => "pending",
-                    OrderStatus.Quoted     => "quoted",
-                    OrderStatus.Confirmed  => "confirmed",
-                    OrderStatus.InProgress => "inprogress",
-                    OrderStatus.Completed  => "completed",
-                    OrderStatus.Cancelled  => "cancelled",
-                    _                     => "pending"
+                    OrderStatus.Pending                 => "pending",
+                    OrderStatus.Quoted                  => "quoted",
+                    OrderStatus.Confirmed               => "confirmed",
+                    OrderStatus.InProgress              => "inprogress",
+                    OrderStatus.Completed               => "completed",
+                    OrderStatus.Delivering              => "inprogress",
+                    OrderStatus.Delivered               => "completed",
+                    OrderStatus.Done                    => "completed",
+                    OrderStatus.Cancelled               => "cancelled",
+                    OrderStatus.PendingQuotationSubmit  => "pq-submit",
+                    OrderStatus.PendingQuotationAccept  => "pq-accept",
+                    OrderStatus.PendingQuotationPayment => "pq-payment",
+                    _                                   => "pending"
                 };
                 var badgeClass = "badge-" + statusKey;
                 var acceptedQuote = order.Quotations?.FirstOrDefault(q => q.Status == 1);
@@ -220,7 +233,7 @@
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.75rem;">
                         <span class="rq-badge @badgeClass">
                             <span class="rq-badge-dot"></span>
-                            @((OrderStatus)order.Status)
+                            @RequestsModel.StatusLabel(order.Status)
                         </span>
                         <div class="rq-card-price">
                             @(displayPrice.HasValue ? displayPrice.Value.ToString("N0") + " VNĐ" : "—")

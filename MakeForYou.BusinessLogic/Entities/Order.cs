@@ -58,6 +58,9 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public long? PaymentCode { get; set; }
         public bool IsPaid { get; set; } = false;
+
+        public bool IsSellerPaid { get; set; } = false;
+        [MaxLength(100)] public string? PayoutReferenceId { get; set; }
     }
 
 
