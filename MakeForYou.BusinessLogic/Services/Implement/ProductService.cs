@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,7 +66,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 CategoryId = req.CategoryId,
                 SellerId = req.SellerId, // Phải có SellerId vì Entity yêu cầu [Required]
                 Status = 1,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Weight = req.Weight,
+                Length = req.Length,
+                Width = req.Width,
+                Height = req.Height
             };
             _context.Products.Add(product);
             return await _context.SaveChangesAsync() > 0;
@@ -84,6 +88,10 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             product.ImageUrl = req.ImageUrl;
             product.CategoryId = req.CategoryId;
             product.Status = req.Status;
+            product.Weight = req.Weight;
+            product.Length = req.Length;
+            product.Width = req.Width;
+            product.Height = req.Height;
 
             _context.Products.Update(product);
             return await _context.SaveChangesAsync() > 0;

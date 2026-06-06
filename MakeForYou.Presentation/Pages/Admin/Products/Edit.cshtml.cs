@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
@@ -58,7 +58,11 @@ namespace MakeForYou.Presentation.Pages.Admin.Products
                 ImageUrl = p.ImageUrl ?? string.Empty,
                 CategoryId = p.CategoryId ?? 0,
                 SellerId = p.SellerId,
-                Status = p.Status
+                Status = p.Status,
+                Weight = p.Weight,
+                Length = p.Length,
+                Width = p.Width,
+                Height = p.Height
             };
 
             Categories = await _categoryService.GetAllCategoriesAsync();

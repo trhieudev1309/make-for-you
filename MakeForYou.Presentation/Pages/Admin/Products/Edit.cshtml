@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Admin.Products.EditModel
 @{
     Layout = "_AdminLayout";
@@ -158,6 +158,46 @@
             <div class="col-md-12 mb-4">
                 <label class="form-label fw-bold">Mô tả chi tiết</label>
                 <textarea asp-for="Product.Description" class="form-control" rows="5" placeholder="Nhập mô tả sản phẩm..."></textarea>
+            </div>
+        </div>
+
+        <!-- PHYSICAL DIMENSIONS (GHN SHIPPING) -->
+        <div class="mb-4 border-top pt-4">
+            <h5 class="serif-heading fw-bold" style="color: var(--mfy-bark)">Kích thước vật lý (Tính phí vận chuyển GHN)</h5>
+            <p class="text-muted small mb-3">Các thông số này được sử dụng để tính toán phí vận chuyển chính xác qua API Giao Hàng Nhanh.</p>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Khối lượng (gram)</label>
+                    <div class="input-group">
+                        <input asp-for="Product.Weight" type="number" class="form-control shadow-sm" required min="1" />
+                        <span class="input-group-text bg-light">g</span>
+                    </div>
+                    <span asp-validation-for="Product.Weight" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Chiều dài (cm)</label>
+                    <div class="input-group">
+                        <input asp-for="Product.Length" type="number" class="form-control shadow-sm" required min="1" />
+                        <span class="input-group-text bg-light">cm</span>
+                    </div>
+                    <span asp-validation-for="Product.Length" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Chiều rộng (cm)</label>
+                    <div class="input-group">
+                        <input asp-for="Product.Width" type="number" class="form-control shadow-sm" required min="1" />
+                        <span class="input-group-text bg-light">cm</span>
+                    </div>
+                    <span asp-validation-for="Product.Width" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Chiều cao (cm)</label>
+                    <div class="input-group">
+                        <input asp-for="Product.Height" type="number" class="form-control shadow-sm" required min="1" />
+                        <span class="input-group-text bg-light">cm</span>
+                    </div>
+                    <span asp-validation-for="Product.Height" class="text-danger small"></span>
+                </div>
             </div>
         </div>
 
