@@ -1,4 +1,4 @@
-﻿namespace MakeForYou.BusinessLogic.Entities.DTOs.Request
+namespace MakeForYou.BusinessLogic.Entities.DTOs.Request
 {
     public class ProductRequest
     {
@@ -10,5 +10,10 @@
 
         public long SellerId { get; set; }
         public int Status { get; set; } // 1: Active, 0: Hidden
+
+        public int Weight { get; set; } = 200;
+        public int Length { get; set; } = 10;
+        public int Width { get; set; } = 10;
+        public int Height { get; set; } = 5;
     }
 }

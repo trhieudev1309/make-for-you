@@ -39,7 +39,7 @@
 
                 <div class="mb-3">
                     <label class="small-caps">Detail Address (House Number, Street Name)</label>
-                    <input type="text" id="txtAddressDetail" class="form-control rounded-pill" placeholder="e.g. 123 Nguyen Van Cu Street" required />
+                    <input asp-for="OrderRequest.ShippingAddressDetail" id="txtAddressDetail" class="form-control rounded-pill" placeholder="e.g. 123 Nguyen Van Cu Street" required />
                 </div>
 
                 <input type="hidden" asp-for="OrderRequest.ShippingProvinceId" id="hdnProvinceId" />
@@ -111,9 +111,14 @@ function toggleNote(cartItemId, checkbox) {
                     </div>
                 }
                 <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping Fee</span>
+                    <span id="shippingFeeDisplay" class="text-muted">0 VNĐ</span>
+                </div>
+                <hr>
                 <div class="d-flex justify-content-between fw-bold fs-5">
                     <span>Total</span>
-                    <span class="text-clay">@Model.TotalAmount.ToString("N0") VNĐ</span>
+                    <span class="text-clay" id="totalDisplay">@Model.TotalAmount.ToString("N0") VNĐ</span>
                 </div>
             </div>
         </div>
@@ -186,6 +191,10 @@ function toggleNote(cartItemId, checkbox) {
                 $('#hdnWardCode').val('');
                 $('#hdnWardName').val('');
 
+                // Clear fee display
+                $('#shippingFeeDisplay').text("0 VNĐ");
+                $('#totalDisplay').text('@Model.TotalAmount.ToString("N0") VNĐ');
+
                 if (districtId) {
                     $.ajax({
                         url: `/api/ghn/wards?districtId=${districtId}`,
@@ -211,7 +220,46 @@ function toggleNote(cartItemId, checkbox) {
                 let wardName = $("#ddlWard option:selected").text();
                 $('#hdnWardCode').val(wardCode);
                 $('#hdnWardName').val(wardCode ? wardName : '');
+
+                calculateShippingFee();
             });
+
+            function calculateShippingFee() {
+                let districtId = $('#ddlDistrict').val();
+                let wardCode = $('#ddlWard').val();
+
+                if (districtId && wardCode) {
+                    $('#shippingFeeDisplay').text("Đang tính phí...");
+                    $('#totalDisplay').text("Đang tính phí...");
+
+                    $.ajax({
+                        url: `?handler=CalculateShippingFee&districtId=${districtId}&wardCode=${wardCode}`,
+                        type: 'GET',
+                        success: function (res) {
+                            if (res.success) {
+                                let fee = res.fee;
+                                let baseAmount = parseInt('@Model.TotalAmount');
+                                let total = baseAmount + fee;
+
+                                $('#shippingFeeDisplay').text(fee.toLocaleString('vi-VN') + " VNĐ");
+                                $('#totalDisplay').text(total.toLocaleString('vi-VN') + " VNĐ");
+                            } else {
+                                $('#shippingFeeDisplay').text("Lỗi");
+                                $('#totalDisplay').text('@Model.TotalAmount.ToString("N0") VNĐ');
+                                console.error("GHN Shipping Fee Error:", res.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            $('#shippingFeeDisplay').text("Lỗi");
+                            $('#totalDisplay').text('@Model.TotalAmount.ToString("N0") VNĐ');
+                            console.error("Failed to calculate shipping fee:", xhr.responseText || error);
+                        }
+                    });
+                } else {
+                    $('#shippingFeeDisplay').text("0 VNĐ");
+                    $('#totalDisplay').text('@Model.TotalAmount.ToString("N0") VNĐ');
+                }
+            }
 
             $('#txtAddressDetail').on('input', function () {
                 $('#hdnAddressDetail').val($(this).val());

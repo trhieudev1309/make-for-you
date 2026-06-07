@@ -54,6 +54,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 
+
+
 // Notification DI
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -102,6 +104,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpClient<IGhnService, GhnService>();
 
 var app = builder.Build();
 

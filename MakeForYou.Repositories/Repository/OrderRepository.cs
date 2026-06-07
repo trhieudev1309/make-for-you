@@ -1,4 +1,4 @@
-﻿using MakeForYou.BusinessLogic;
+using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
@@ -239,6 +239,16 @@ namespace MakeForYou.Repositories.Repository
             if (order != null)
             {
                 order.AgreedPrice = newPrice;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateGhnShipmentCodeAsync(long orderId, string ghnShipmentCode)
+        {
+            var order = await _context.Set<Order>().FindAsync(orderId);
+            if (order != null)
+            {
+                order.GhnShipmentCode = ghnShipmentCode;
                 await _context.SaveChangesAsync();
             }
         }

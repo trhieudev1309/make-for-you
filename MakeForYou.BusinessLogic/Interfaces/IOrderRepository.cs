@@ -1,4 +1,4 @@
-﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,5 +25,6 @@ namespace MakeForYou.BusinessLogic.Interfaces
         Task ResolveCustomizationAsync(long orderItemId);
         Task ResolveAllCustomizationsAsync(long orderId);
         Task UpdateAgreedPriceAsync(long orderId, int newPrice);
+        Task UpdateGhnShipmentCodeAsync(long orderId, string ghnShipmentCode);
     }
 }

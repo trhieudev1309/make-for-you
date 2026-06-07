@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Services;
+using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Services.Interfaces;
@@ -12,12 +15,21 @@ namespace MakeForYou.Presentation.Pages.Checkout
         private readonly ICartService _cartService;
         private readonly IOrderService _orderService;
         private readonly IPaymentService _paymentService;
+        private readonly IGhnService _ghnService;
+        private readonly IProductRepository _productRepo;
 
-        public IndexModel(ICartService cartService, IOrderService orderService, IPaymentService paymentService)
+        public IndexModel(
+            ICartService cartService, 
+            IOrderService orderService, 
+            IPaymentService paymentService,
+            IGhnService ghnService,
+            IProductRepository productRepo)
         {
             _cartService = cartService;
             _orderService = orderService;
             _paymentService = paymentService;
+            _ghnService = ghnService;
+            _productRepo = productRepo;
         }
 
         public List<CartItemViewModel> CartItems { get; set; } = new();
@@ -48,25 +60,54 @@ namespace MakeForYou.Presentation.Pages.Checkout
             var cartItems = await _cartService.GetCartAsync(userId);
             if (!cartItems.Any()) return RedirectToPage("/Cart/Index");
 
-            // Generate a unique payment code (10-digit, fits PayOS orderCode constraints)
             var paymentCode = Random.Shared.NextInt64(1_000_000_000L, 9_999_999_999L);
 
-            var orders = await _orderService.CreateOrderFromCartAsync(
-                userId,
-                OrderRequest.FullName,
-                OrderRequest.PhoneNumber,
-                OrderRequest.ShippingAddress,
-                paymentCode,
-                OrderRequest.Customizations);
+            // THAY ĐỔI TẠI ĐÂY: Truyền trọn gói đối tượng OrderRequest đã chứa đủ cấu trúc địa chỉ
+            var orders = await _orderService.CreateOrderFromCartAsync(userId, OrderRequest, paymentCode);
 
             if (orders == null || !orders.Any()) return Page();
 
-            var totalAmount = orders.Sum(o => o.AgreedPrice ?? 0);
+            var totalAmount = orders.Sum(o => (o.AgreedPrice ?? 0) + (o.ShippingFee ?? 0));
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
             var checkoutUrl = await _paymentService.CreatePaymentLinkAsync(paymentCode, totalAmount, baseUrl, cartItems);
 
             return Redirect(checkoutUrl);
+        }
+
+        public async Task<IActionResult> OnGetCalculateShippingFeeAsync(int districtId, string wardCode)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr)) return new JsonResult(new { success = false, message = "Unauthorized" });
+
+            long userId = long.Parse(userIdStr);
+            var cartItems = await _cartService.GetCartAsync(userId);
+            if (!cartItems.Any()) return new JsonResult(new { success = false, message = "Cart is empty" });
+
+            var products = new List<Product>();
+            foreach (var item in cartItems)
+            {
+                var product = await _productRepo.FindByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    for (int i = 0; i < item.Quantity; i++)
+                    {
+                        products.Add(product);
+                    }
+                }
+            }
+
+            try
+            {
+                int fee = await _ghnService.CalculateShippingFeeAsync(products, districtId, wardCode);
+                return new JsonResult(new { success = true, fee = fee });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GHN API Error: {ex.Message}");
+                // Fallback to default fee of 30,000 VNĐ to allow checkout even if sandbox ShopId is misconfigured
+                return new JsonResult(new { success = true, fee = 30000, isFallback = true, message = ex.Message });
+            }
         }
     }
 }

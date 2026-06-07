@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MakeForYou.BusinessLogic.Entities
@@ -35,5 +35,10 @@ namespace MakeForYou.BusinessLogic.Entities
 
         // Navigation - Add this line
         public ICollection<CustomizationGroup> CustomizationGroups { get; set; } = new List<CustomizationGroup>();
+
+        public int Weight { get; set; } = 200; // Mặc định 200g nếu chưa nhập
+        public int Length { get; set; } = 10;  // 10cm
+        public int Width { get; set; } = 10;
+        public int Height { get; set; } = 5;
     }
 }

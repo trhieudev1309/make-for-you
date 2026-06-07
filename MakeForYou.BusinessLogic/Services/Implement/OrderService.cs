@@ -1,4 +1,4 @@
-﻿using MakeForYou.BusinessLogic.Entities;
+using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.DTOs;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
 using MakeForYou.BusinessLogic.Entities.Enums;
@@ -19,6 +19,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly INotificationService _notificationService;
         private readonly IProgressRepository _progressRepo;
         private readonly IWebHostEnvironment _env;
+        private readonly IGhnService _ghnService;
         private readonly ILogger<OrderService> _logger;
 
         public OrderService(
@@ -29,6 +30,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             INotificationService notificationService,
             IProgressRepository progressRepo,
             IWebHostEnvironment env,
+            IGhnService ghnService,
             ILogger<OrderService> logger)
         {
             _orderRepo = orderRepo;
@@ -36,9 +38,9 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _cartRepo = cartRepo;
             _productRepo = productRepo;
             _notificationService = notificationService;
-            _productRepo = productRepo;
             _progressRepo = progressRepo;
             _env = env;
+            _ghnService = ghnService;
             _logger = logger;
         }
         public Task<List<Order>> GetOrdersByUserAsync(long buyerId) =>
@@ -66,20 +68,17 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             return saved;
         }
 
-        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, string fullName, string phone, string address, long paymentCode, List<CartItemCustomization>? customizations = null)
+        public async Task<List<Order>> CreateOrderFromCartAsync(long userId, CheckoutRequest request, long paymentCode)
         {
             // 1. Lấy toàn bộ giỏ hàng
             var cartItems = await _cartService.GetCartAsync(userId);
             if (!cartItems.Any()) throw new Exception("Giỏ hàng trống.");
 
-            // 2. Vì CartItemViewModel có thể chưa có SellerId, ta cần lấy thông tin Seller cho từng món
-            // Để tối ưu, ta lấy thông tin Product từ Repo
+            // 2. Thu thập dữ liệu Product để lấy thông tin phân tách theo từng Seller
             var itemsWithProduct = new List<dynamic>();
-
             foreach (var item in cartItems)
             {
                 var product = await _productRepo.FindByIdAsync(item.ProductId);
-
                 itemsWithProduct.Add(new
                 {
                     CartItem = item,
@@ -87,61 +86,89 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 });
             }
 
-            // 3. NHÓM THEO SELLERID
+            // 3. Nhóm giỏ hàng theo SellerId độc lập
             var groupedBySeller = itemsWithProduct.GroupBy(x => x.Product.SellerId);
-
             var createdOrders = new List<Order>();
 
-            // 4. CHẠY VÒNG LẶP: Mỗi Seller = 1 Đơn hàng
+            // 4. Chạy vòng lặp lập đơn: Mỗi nhóm Seller phát sinh 1 Order độc lập
             foreach (var group in groupedBySeller)
             {
                 long sellerId = group.Key;
                 var itemsInGroup = group.ToList();
 
-                // Tạo đối tượng Order cho từng Seller
+                // Tính toán phí ship cho nhóm sản phẩm của Seller này từ GHN
+                int sellerShippingFee = 0;
+                if (request.ShippingDistrictId > 0 && !string.IsNullOrEmpty(request.ShippingWardCode))
+                {
+                    try
+                    {
+                        var productsForSeller = new List<Product>();
+                        foreach (var x in itemsInGroup)
+                        {
+                            for (int i = 0; i < x.CartItem.Quantity; i++)
+                            {
+                                productsForSeller.Add(x.Product);
+                            }
+                        }
+
+                        sellerShippingFee = await _ghnService.CalculateShippingFeeAsync(
+                            productsForSeller,
+                            request.ShippingDistrictId,
+                            request.ShippingWardCode
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error calculating ship fee for seller {sellerId}: {ex.Message}");
+                        sellerShippingFee = 30000; // Phí ship mặc định nếu lỗi kết nối GHN / Sandbox ShopId chưa cấu hình địa chỉ
+                    }
+                }
+
+                // Khởi tạo thực thể Order và map chính xác cấu trúc địa chỉ sạch
                 var order = new Order
                 {
                     BuyerId = userId,
                     SellerId = sellerId,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     Status = (int)OrderStatus.Pending,
                     AgreedPrice = itemsInGroup.Sum(x => x.CartItem.TotalPrice),
-                    OrderDescription = $"Đơn hàng từ giỏ - Khách: {fullName} - ĐC: {address}",
                     PaymentCode = paymentCode,
-                    IsPaid = false
+                    IsPaid = false,
+
+                    // ÁNH XẠ KHỚP HOÀN TOÀN VỚI ENTITY ORDER GỐC:
+                    ShippingFullName = request.FullName,
+                    ShippingPhone = request.PhoneNumber,
+                    ShippingAddressDetail = request.ShippingAddressDetail,
+
+                    ShippingProvinceId = request.ShippingProvinceId,
+                    ShippingProvinceName = request.ShippingProvinceName,
+                    ShippingDistrictId = request.ShippingDistrictId,
+                    ShippingDistrictName = request.ShippingDistrictName,
+                    ShippingWardCode = request.ShippingWardCode,
+                    ShippingWardName = request.ShippingWardName,
+                    ShippingFee = sellerShippingFee,
+
+                    OrderDescription = $"Đơn hàng từ giỏ - Khách: {request.FullName} - ĐC: {request.ShippingAddressDetail}, {request.ShippingWardName}, {request.ShippingDistrictName}, {request.ShippingProvinceName}"
                 };
 
-                // Tạo danh sách OrderItem cho đơn hàng này
-                var custMap = customizations?
-                    .ToDictionary(c => c.CartItemId)
-                    ?? new Dictionary<long, CartItemCustomization>();
-
-                var orderItems = itemsInGroup.Select(x =>
+                // Tạo danh sách OrderItem đính kèm cho đơn hàng này
+                var orderItems = itemsInGroup.Select(x => new OrderItem
                 {
-                    var cust = custMap.ContainsKey(x.CartItem.CartItemId)
-                        ? custMap[x.CartItem.CartItemId]
-                        : null;
-                    return new OrderItem
-                    {
-                        ProductId = x.CartItem.ProductId,
-                        Quantity = x.CartItem.Quantity,
-                        Price = x.CartItem.Price,
-                        CustomizationsJson = x.CartItem.CustomizationsJson,
-                        HasCustomization = cust?.HasCustomization ?? false,
-                        CustomizationNote = cust?.HasCustomization == true ? cust.Note : null,
-                        IsCustomizationResolved = false
-                    };
+                    ProductId = x.CartItem.ProductId,
+                    Quantity = x.CartItem.Quantity,
+                    Price = x.CartItem.Price,
+                    CustomizationsJson = x.CartItem.CustomizationsJson
                 }).ToList();
 
-                // 5. Lưu vào Database (Mỗi đơn 1 lần gọi Repo)
+                // 5. Lưu vào Database
                 var savedOrder = await _orderRepo.CreateOrderAsync(order, orderItems);
                 createdOrders.Add(savedOrder);
 
-                // Send notification to seller for each created order
+                // Bắn thông báo thời gian thực tới Seller tương ứng
                 await _notificationService.SendOrderNotificationAsync(savedOrder);
             }
 
-            // 6. Xóa sạch giỏ hàng sau khi đã tách và lưu hết các đơn
+            // 6. Dọn sạch giỏ hàng của Buyer
             await _cartRepo.ClearCartAsync(userId);
 
             _logger.LogInformation("{OrderCount} order(s) created from cart for buyer {BuyerId}", createdOrders.Count, userId);
@@ -150,6 +177,56 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
         public async Task UpdateStatusAsync(long orderId, int status)
         {
+            if (status == (int)OrderStatus.Cancelled)
+            {
+                try
+                {
+                    var order = await _orderRepo.GetOrderByIdAsync(orderId);
+                    if (order != null && !string.IsNullOrEmpty(order.GhnShipmentCode))
+                    {
+                        var cancelResult = await _ghnService.CancelShipmentAsync(order.GhnShipmentCode);
+                        if (!cancelResult)
+                        {
+                            _logger.LogError("Failed to cancel GHN shipment {GhnShipmentCode} for order {OrderId}.", order.GhnShipmentCode, orderId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Successfully cancelled GHN shipment {GhnShipmentCode} for order {OrderId}.", order.GhnShipmentCode, orderId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while cancelling GHN shipment for order {OrderId}.", orderId);
+                }
+            }
+
+            if (status == (int)OrderStatus.Delivering)
+            {
+                try
+                {
+                    var order = await _orderRepo.GetOrderByIdAsync(orderId);
+                    if (order != null && string.IsNullOrEmpty(order.GhnShipmentCode))
+                    {
+                        var shipmentCode = await _ghnService.CreateShippingOrderAsync(order);
+                        if (!string.IsNullOrEmpty(shipmentCode))
+                        {
+                            await _orderRepo.UpdateGhnShipmentCodeAsync(orderId, shipmentCode);
+                            _logger.LogInformation("Successfully created GHN shipment {GhnShipmentCode} for order {OrderId}.", shipmentCode, orderId);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to create GHN shipment for order {OrderId}.", orderId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while creating GHN shipment for order {OrderId}.", orderId);
+                }
+            }
+
+            // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
             _logger.LogInformation("Order {OrderId} status updated to {Status}", orderId, (OrderStatus)status);
         }
@@ -228,7 +305,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             });
 
             // 3. Update order status
-            await _orderRepo.UpdateStatusAsync(orderId, req.NewStatus);
+            await UpdateStatusAsync(orderId, req.NewStatus);
 
             _logger.LogInformation("Order {OrderId} progress updated by seller {SellerId}: status={NewStatus}", orderId, sellerId, (OrderStatus)req.NewStatus);
             return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
