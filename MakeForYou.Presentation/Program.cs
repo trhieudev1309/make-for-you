@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MakeForYou.BusinessLogic;                           // ApplicationDbContext
 using MakeForYou.BusinessLogic.Hubs;
+using MakeForYou.BusinessLogic.Implement;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Implement;
@@ -73,6 +74,8 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IQuotationService, QuotationService>();
 
 builder.Services.AddScoped<ISellerService, SellerService>();
+
+builder.Services.AddHttpClient<IGhnLocationService, GhnLocationService>();
 // SignalR
 builder.Services.AddSignalR();
 
