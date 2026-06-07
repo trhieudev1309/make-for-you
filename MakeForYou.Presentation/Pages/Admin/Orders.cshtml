@@ -1,5 +1,5 @@
 ﻿@page
-@using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.BusinessLogic.Entities.Enums
 @model AdminOrdersModel
 @{
     Layout = "_AdminLayout";
@@ -26,7 +26,7 @@
                 <option value="">Tất cả trạng thái</option>
                 @foreach (var status in Enum.GetValues(typeof(OrderStatus)))
                 {
-                    <option value="@((int)status)">@status</option>
+                    <option value="@((int)status)">@AdminOrdersModel.StatusLabel((int)status)</option>
                 }
             </select>
         </div>
@@ -56,15 +56,24 @@
                     <td class="fw-bold">@order.AgreedPrice?.ToString("N0") đ</td>
                     <td>
                         @{
-                            var statusClass = order.Status switch {
-                                0 => "bg-warning-subtle text-warning border-warning-subtle",
-                                4 => "bg-success-subtle text-success border-success-subtle",
-                                5 => "bg-danger-subtle text-danger border-danger-subtle",
-                                _ => "bg-info-subtle text-info border-info-subtle"
+                            var (statusClass, statusIcon) = order.Status switch {
+                                0  => ("bg-secondary-subtle text-secondary border-secondary-subtle",   "bi-clock"),
+                                1  => ("bg-primary-subtle text-primary border-primary-subtle",         "bi-check2"),
+                                2  => ("bg-info-subtle text-info border-info-subtle",                  "bi-tag"),
+                                3  => ("bg-warning-subtle text-warning border-warning-subtle",         "bi-tools"),
+                                4  => ("bg-success-subtle text-success border-success-subtle",         "bi-bag-check"),
+                                5  => ("bg-purple-subtle text-purple border-purple-subtle",            "bi-truck"),
+                                6  => ("bg-teal-subtle text-teal border-teal-subtle",                  "bi-house-check"),
+                                7  => ("bg-success-subtle text-success border-success-subtle",         "bi-star"),
+                                8  => ("bg-danger-subtle text-danger border-danger-subtle",            "bi-x-circle"),
+                                9  => ("bg-orange-subtle text-orange border-orange-subtle",            "bi-pencil-square"),
+                                10 => ("bg-purple-subtle text-purple border-purple-subtle",            "bi-tag"),
+                                11 => ("bg-purple-subtle text-purple border-purple-subtle",            "bi-credit-card"),
+                                _  => ("bg-secondary-subtle text-secondary border-secondary-subtle",   "bi-question")
                             };
                         }
                         <span class="badge @statusClass border px-3 rounded-pill fw-normal">
-                            @((OrderStatus)order.Status)
+                            <i class="bi @statusIcon me-1"></i>@AdminOrdersModel.StatusLabel(order.Status)
                         </span>
                     </td>
                     <td class="text-end pe-4">
@@ -121,17 +130,36 @@
                         </div>
                         <div class="col-md-6 ps-md-4">
                             <p class="small text-muted mb-2 fw-bold text-uppercase">Thông tin giao hàng</p>
-                            <p class="mb-1 text-clay"><strong>Trạng thái hiện tại:</strong> @((OrderStatus)order.Status)</p>
-                            
-                            @* BỔ SUNG: Hiển thị thời gian hoàn thành nếu có *@
+                            @{
+                                var (mClass, mIcon) = order.Status switch {
+                                    0  => ("text-secondary",   "bi-clock"),
+                                    1  => ("text-primary",     "bi-check2"),
+                                    2  => ("text-info",        "bi-tag"),
+                                    3  => ("text-warning",     "bi-tools"),
+                                    4  => ("text-success",     "bi-bag-check"),
+                                    5  => ("text-purple",      "bi-truck"),
+                                    6  => ("text-teal",        "bi-house-check"),
+                                    7  => ("text-success",     "bi-star"),
+                                    8  => ("text-danger",      "bi-x-circle"),
+                                    9  => ("text-orange",      "bi-pencil-square"),
+                                    10 => ("text-purple",      "bi-tag"),
+                                    11 => ("text-purple",      "bi-credit-card"),
+                                    _  => ("text-secondary",   "bi-question")
+                                };
+                            }
+                            <p class="mb-1 @mClass fw-bold">
+                                <i class="bi @mIcon me-1"></i>@AdminOrdersModel.StatusLabel(order.Status)
+                            </p>
+
                             @if (order.CompletedAt.HasValue)
                             {
                                 <p class="mb-1 text-success small fw-bold">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Hoàn thành lúc: @order.CompletedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    Hoàn thành lúc: @order.CompletedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
                                 </p>
                             }
 
-                            <p class="mb-0 mt-2"><strong>Ghi chú/Địa chỉ:</strong> <br />
+                            <p class="mb-0 mt-2"><strong>Ghi chú/Địa chỉ:</strong><br />
                                 <span class="small text-secondary">@(order.OrderDescription ?? "Không có ghi chú")</span>
                             </p>
                         </div>
@@ -179,9 +207,9 @@
                                 <select name="status" class="form-select form-select-sm border-0 shadow-sm" style="width: 160px;">
                                     @foreach (var status in Enum.GetValues(typeof(OrderStatus))) {
                                         if ((int)status == order.Status) {
-                                            <option value="@((int)status)" selected>@status</option>
+                                            <option value="@((int)status)" selected>@AdminOrdersModel.StatusLabel((int)status)</option>
                                         } else {
-                                            <option value="@((int)status)">@status</option>
+                                            <option value="@((int)status)">@AdminOrdersModel.StatusLabel((int)status)</option>
                                         }
                                     }
                                 </select>
@@ -199,14 +227,37 @@
 }
 
 <style>
-    .text-clay { color: #C8855A; }
-    .bg-clay { background-color: #C8855A !important; }
-    .btn-clay { background-color: #C8855A; border: none; transition: 0.2s; }
+    .text-clay  { color: #C8855A; }
+    .bg-clay    { background-color: #C8855A !important; }
+    .btn-clay   { background-color: #C8855A; border: none; transition: 0.2s; }
     .btn-clay:hover { background-color: #b0724a; color: white; }
     .small-caps { font-weight: 700; color: #6c757d; }
-    .bg-warning-subtle { background-color: #fff3cd; }
-    .bg-success-subtle { background-color: #d1e7dd; }
-    .bg-danger-subtle { background-color: #f8d7da; }
-    .bg-info-subtle { background-color: #cff4fc; }
     .serif-heading { font-family: 'Playfair Display', serif; }
+
+    /* ── status palette ── */
+    .bg-secondary-subtle  { background-color: #e9ecef; }
+    .bg-primary-subtle    { background-color: #dce6f9; }
+    .bg-info-subtle       { background-color: #cff4fc; }
+    .bg-warning-subtle    { background-color: #fff3cd; }
+    .bg-success-subtle    { background-color: #d1e7dd; }
+    .bg-danger-subtle     { background-color: #f8d7da; }
+
+    /* delivery statuses */
+    .bg-purple-subtle     { background-color: #ede9f8; }
+    .border-purple-subtle { border-color: #c9b8f0 !important; }
+    .text-purple          { color: #6f42c1; }
+
+    .bg-teal-subtle       { background-color: #d2f4ea; }
+    .border-teal-subtle   { border-color: #86e0c8 !important; }
+    .text-teal            { color: #0f7a5a; }
+
+    /* pending quotation statuses */
+    .bg-orange-subtle     { background-color: #fff3e0; }
+    .border-orange-subtle { border-color: #ffcc80 !important; }
+    .text-orange          { color: #e65100; }
+
+    /* table row hover hint for delivery/quotation statuses */
+    tr:has(.text-purple) { background-color: #f8f5fe !important; }
+    tr:has(.text-teal)   { background-color: #f0fdf8 !important; }
+    tr:has(.text-orange) { background-color: #fff8f0 !important; }
 </style>

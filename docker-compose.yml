@@ -10,3 +10,5 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     restart: always
+    env_file:
+      - .env

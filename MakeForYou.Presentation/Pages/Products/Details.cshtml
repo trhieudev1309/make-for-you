@@ -9,6 +9,180 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 <link rel="stylesheet" href="~/css/serif-theme.css" asp-append-version="true" />
 
+<style>
+    /* Related products — improved card styles + reveal animation */
+    .related-products .related-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    @@media (min-width: 768px) {
+        .related-products .related-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .related-card {
+        background: var(--mfy-white);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(45,41,38,0.06);
+        transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s;
+        transform-origin: center;
+        opacity: 0;
+        transform: translateY(14px) scale(.99);
+        will-change: transform, opacity;
+        position: relative;
+    }
+
+    .related-card.in-view {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        transition-delay: var(--delay, 0ms);
+    }
+
+    .related-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 14px 34px rgba(45,41,38,0.12);
+    }
+
+    .related-thumb {
+        height: 160px;
+        overflow: hidden;
+        background: #f7f5f2;
+    }
+
+    .related-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .5s cubic-bezier(.2,.9,.3,1);
+        display:block;
+    }
+
+    .related-card:hover .related-thumb img {
+        transform: scale(1.06);
+    }
+
+    .related-body {
+        padding: .65rem .65rem .9rem .65rem;
+    }
+
+    .related-title {
+        font-size: .95rem;
+        font-weight: 600;
+        color: var(--mfy-bark);
+        line-height: 1.15;
+        margin-bottom: .35rem;
+        min-height: 2.25em; /* keep cards uniform */
+        overflow: hidden;
+    }
+
+    .related-meta {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:.5rem;
+    }
+
+    .price-badge {
+        background: var(--mfy-clay);
+        color: #fff;
+        padding: .25rem .5rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .85rem;
+    }
+
+    .seller-name {
+        font-size:.82rem;
+        color:var(--mfy-bark);
+        opacity:.8;
+    }
+
+    .rating {
+        color: #FFB84D;
+        font-size:.85rem;
+        display:inline-flex;
+        align-items:center;
+        gap:.25rem;
+    }
+
+    /* subtle label on top-left */
+    .card-top-left {
+        position:absolute;
+        top:10px;
+        left:10px;
+        z-index:5;
+    }
+
+    .card-fade {
+        transition: opacity .28s, transform .28s;
+    }
+
+    /* Customization Styles */
+    .customization-group-card {
+        background: #fafaf8;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--serif-border, #e8e3dd);
+    }
+
+    .customization-options-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .customization-option-btn {
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .customization-input {
+        display: none;
+    }
+
+    .option-label {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border: 1.5px solid var(--mfy-clay, #C8855A);
+        border-radius: 6px;
+        background: white;
+        color: var(--mfy-clay, #C8855A);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .customization-input:checked + .option-label {
+        background: var(--mfy-clay, #C8855A);
+        color: white;
+        box-shadow: 0 2px 8px rgba(200, 133, 90, 0.3);
+    }
+
+    .customization-input:hover + .option-label {
+        border-color: var(--mfy-bark, #2D2926);
+        transform: translateY(-1px);
+    }
+
+    .customizations-section {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+
 <div class="serif-scope">
     <div class="serif-container">
         @if (Model.Product == null)
@@ -17,6 +191,7 @@
         }
         else
         {
+            <!-- existing product details (unchanged) -->
             <nav aria-label="Breadcrumb" class="mb-3">
                 <ol class="breadcrumb small-caps" style="background:transparent;padding:0;margin:0;display:flex;gap:.5rem;">
                     <li class="breadcrumb-item"><a asp-page="/Products/Index" class="text-decoration-none text-reset small-caps">Tác phẩm</a></li>
@@ -36,6 +211,7 @@
             </header>
 
             <div class="details-grid">
+                <!-- left & right columns unchanged -->
                 <div class="left-column">
                     <div class="product-hero-card">
                         <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Xem ảnh phóng to">
@@ -85,7 +261,43 @@
 
                         <hr style="border-color:var(--serif-border);" />
 
-                        @* KHU VỰC TƯƠNG TÁC GIỎ HÀNG *@
+                        @* CUSTOMIZATION OPTIONS SECTION *@
+                        @if (Model.Customizations != null && Model.Customizations.Count > 0)
+                        {
+                            <div class="customizations-section mb-4">
+                                <div class="small-caps mb-3" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chỉnh sản phẩm</div>
+                                
+                                @foreach (var group in Model.Customizations.OrderBy(cg => cg.DisplayOrder))
+                                {
+                                    <div class="customization-group-card mb-3">
+                                        <label class="form-label fw-bold" style="color: var(--mfy-bark); margin-bottom: 0.75rem;">
+                                            @group.Title
+                                        </label>
+                                        
+                                        <div class="customization-options-wrapper d-flex flex-wrap gap-2" data-group-id="@group.CustomizationGroupId">
+                                            @foreach (var option in group.Options.OrderBy(o => o.DisplayOrder))
+                                            {
+                                                <label class="customization-option-btn">
+                                                    <input type="radio" 
+                                                           name="customization_@group.CustomizationGroupId" 
+                                                           value="@option.CustomizationOptionId" 
+                                                           data-option-name="@option.OptionValue"
+                                                           class="customization-input" />
+                                                    <span class="option-label">@option.OptionValue</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Hidden input to store selected customizations as JSON -->
+                                <input type="hidden" id="selectedCustomizationsJson" value="" />
+                            </div>
+                        }
+
+                        <hr style="border-color:var(--serif-border);" />
+
+                        @* KHU VỰC TƯƠI VÉT GIỎ HÀNG *@
                         <div class="cart-interaction-group mb-4">
                             <div class="small-caps mb-2" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chọn mua hàng</div>
                             <div class="d-flex flex-column gap-2">
@@ -145,10 +357,11 @@
                             {
                                 @if (!string.IsNullOrEmpty(Model.Product.Seller?.User?.FullName) && Model.Product.SellerId != 0)
                                 {
-                                    <a class="btn btn-primary serif" 
-                                       href="javascript:void(0);" 
-                                       onclick="if(window.startChatWithArtisan('@Model.Product.SellerId', '@Html.Raw(Model.Product.Seller.User.FullName.Replace("'", "\\'"))')) { window.location.href='/Chat'; } return false;">
-                                         Liên hệ Nghệ nhân
+                                    <a class="btn btn-primary serif"
+                                       asp-page="/Chat/Index"
+                                       asp-route-artisanId="@Model.Product.SellerId"
+                                       asp-route-artisanName="@Model.Product.Seller.User.FullName">
+                                        Liên hệ Nghệ nhân
                                     </a>
                                 }
                                 else
@@ -221,13 +434,75 @@
                     }
                 </div>
             </section>
+
+            @* ENHANCED RELATED PRODUCTS (click card to go to product details; no quick-add or view button) *@
+            <section class="related-products my-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div class="small-caps">Gợi ý cho bạn</div>
+                        <h2 class="serif-title" style="font-size:1.25rem;margin:0;">Sản phẩm liên quan</h2>
+                    </div>
+                    <div class="small-muted">Khám phá các tác phẩm tương tự</div>
+                </div>
+
+                <div class="related-grid">
+                    @if (Model.RelatedProducts != null && Model.RelatedProducts.Any())
+                    {
+                        for (var i = 0; i < Model.RelatedProducts.Count; i++)
+                        {
+                            var p = Model.RelatedProducts[i];
+                            var delay = i * 80; // stagger
+                            <div class="related-card card-fade" style="--delay:@($"{delay}ms")" data-product-id="@p.ProductId">
+                                <div class="card-top-left">
+                                    <span class="price-badge">@((p.Price.HasValue) ? p.Price.Value.ToString("N0") + " đ" : "Liên hệ")</span>
+                                </div>
+
+                                @* Entire card links to product details *@
+                                <a href="/Products/Details/@p.ProductId" class="text-decoration-none text-reset" aria-label="@p.Title">
+                                    <div class="related-thumb" aria-hidden="true">
+                                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.png" : p.ImageUrl)" alt="@p.Title" loading="lazy" />
+                                    </div>
+
+                                    <div class="related-body">
+                                        <div class="related-title">@p.Title</div>
+                                        <div class="related-meta">
+                                            <div class="seller-name">@p.Seller?.User?.FullName</div>
+                                            <div class="rating">
+                                                @{
+                                                    var rating = (p.Seller?.AverageRating ?? 0);
+                                                    var stars = rating;
+                                                }
+                                                @for (int s = 0; s < 5; s++)
+                                                {
+                                                    if (s < stars)
+                                                    {
+                                                        <i class="bi bi-star-fill"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-star"></i>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-muted">Không có sản phẩm liên quan.</div>
+                    }
+                </div>
+            </section>
         }
     </div>
 </div>
 
 @Html.AntiForgeryToken()
 
-@* MODAL PHÓNG TO HÌNH ẢNH SẢN PHẨM *@
+@* MODAL PHÓNG TO HÌNH ẢNH SẢN PHẨM (unchanged) *@
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="background:transparent;border:none;">
@@ -244,6 +519,7 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // existing functions
         function changeQty(amt) {
             let input = document.getElementById('purchaseQty');
             let val = parseInt(input.value) + amt;
@@ -256,19 +532,58 @@
             const quantity = document.getElementById('purchaseQty').value;
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+            // Collect selected customizations
+            const selectedCustomizations = [];
+
+            document.querySelectorAll('.customization-options-wrapper').forEach(group => {
+                const groupId = group.dataset.groupId;
+
+                const selected = group.querySelector('input[type="radio"]:checked');
+
+                if (selected) {
+                    const groupTitle = group.closest('.customization-group-card')
+                        ?.querySelector('.form-label')
+                        ?.innerText
+                        ?.trim();
+
+                    selectedCustomizations.push({
+                        customizationGroupId: parseInt(groupId),
+                        customizationOptionId: parseInt(selected.value),
+                        groupTitle: groupTitle,
+                        optionName: selected.dataset.optionName
+                    });
+                }
+            });
+
+            const customizationJson = JSON.stringify(selectedCustomizations);
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
 
             try {
-                const response = await fetch(`?handler=AddToCart&productId=${productId}&quantity=${quantity}`, {
+
+                const response = await fetch(`?handler=AddToCart`, {
                     method: 'POST',
-                    headers: { "RequestVerificationToken": token }
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": token
+                    },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: quantity,
+                        customizationJson: customizationJson
+                    })
                 });
+
                 const result = await response.json();
-                
+
                 if (result.success) {
+
                     const badge = document.getElementById('cartBadgeCount');
-                    if (badge) badge.innerText = result.newCount;
+
+                    if (badge) {
+                        badge.innerText = result.newCount;
+                    }
 
                     Swal.fire({
                         title: 'Đã thêm vào giỏ hàng!',
@@ -285,12 +600,41 @@
                         }
                     });
                 }
+
             } catch (err) {
+
                 console.error("Cart Error:", err);
+
             } finally {
+
                 btn.disabled = false;
                 btn.innerText = 'Thêm vào giỏ hàng';
             }
         }
+
+        // Reveal animation using IntersectionObserver with stagger
+        (function () {
+            const cards = document.querySelectorAll('.related-card');
+            if (!('IntersectionObserver' in window) || cards.length === 0) {
+                // fallback: reveal immediately
+                cards.forEach(c => c.classList.add('in-view'));
+                return;
+            }
+
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        // read delay from style var
+                        const delay = getComputedStyle(el).getPropertyValue('--delay') || '0ms';
+                        el.style.transitionDelay = delay.trim();
+                        el.classList.add('in-view');
+                        io.unobserve(el);
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            cards.forEach(c => io.observe(c));
+        })();
     </script>
 }

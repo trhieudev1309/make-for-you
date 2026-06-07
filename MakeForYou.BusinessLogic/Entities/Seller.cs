@@ -42,10 +42,15 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? TotalReviews { get; set; }
 
         // Products authored by this seller
+        [MaxLength(20)]  public string? BankBin { get; set; }
+        [MaxLength(50)]  public string? BankAccountNumber { get; set; }
+        [MaxLength(200)] public string? BankAccountName { get; set; }
+
         public ICollection<Product>? Products { get; set; }
 
         public ICollection<PortfolioItem>? PortfolioItems { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Review>? Reviews { get; set; }
+        public ICollection<SellerPost>? Posts { get; set; }
     }
 }

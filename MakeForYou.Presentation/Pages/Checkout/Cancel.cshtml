@@ -1,0 +1,39 @@
+@page
+@model MakeForYou.Presentation.Pages.Checkout.CancelModel
+@{
+    ViewData["Title"] = "Thanh toán bị huỷ – MakeForYou";
+    Layout = "_Layout";
+}
+
+<div class="container py-5 text-center" style="margin-top: 100px; margin-bottom: 100px;">
+    <div class="mb-4">
+        <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+    </div>
+
+    <h1 class="display-4 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">
+        Thanh toán đã bị huỷ
+    </h1>
+
+    <p class="lead mb-4 text-muted">
+        Bạn đã huỷ giao dịch thanh toán.<br />
+        Đơn hàng của bạn vẫn được lưu và đang chờ thanh toán.
+    </p>
+
+    @if (Model.OrderCode > 0)
+    {
+        <p class="text-muted small">Mã giao dịch: <strong>#@Model.OrderCode</strong></p>
+    }
+
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="/Products" class="btn btn-outline-dark rounded-pill px-5 py-2 fw-bold">
+            Tiếp tục mua sắm
+        </a>
+        <a href="/Orders/Index" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
+            Xem đơn hàng
+        </a>
+    </div>
+</div>
+
+<style>
+    body { background-color: #F9F7F2; }
+</style>

@@ -11,5 +11,6 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<bool> ChangePasswordAsync(long sellerId, string currentPassword, string newPassword);
         Task<bool> IsSellerSetupAsync(string userId);
         Task<ServiceResult> RegisterSellerAsync(string userId, SellerRegisterViewModel model);
+        Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName);
     }
 }

@@ -30,6 +30,7 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public DateTime? CompletedAt { get; set; }
 
+
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<ChatMessage>? ChatMessages { get; set; }
         public ICollection<Quotation>? Quotations { get; set; }
@@ -38,5 +39,11 @@ namespace MakeForYou.BusinessLogic.Entities
         public ICollection<Notification>? Notifications { get; set; }
 
         public ICollection<OrderProgress>? ProgressLogs { get; set; }
+
+        public long? PaymentCode { get; set; }
+        public bool IsPaid { get; set; } = false;
+
+        public bool IsSellerPaid { get; set; } = false;
+        [MaxLength(100)] public string? PayoutReferenceId { get; set; }
     }
 }

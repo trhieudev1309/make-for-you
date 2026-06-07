@@ -60,6 +60,18 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             return true;
         }
 
+        public async Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName)
+        {
+            var seller = await _sellerRepo.GetWithDetailsAsync(sellerId);
+            if (seller == null) return;
+
+            seller.BankBin = bankBin?.Trim();
+            seller.BankAccountNumber = bankAccountNumber?.Trim();
+            seller.BankAccountName = bankAccountName?.Trim();
+
+            await _sellerRepo.UpdateAsync(seller);
+        }
+
         public async Task<bool> IsSellerSetupAsync(string userId)
         {
             if (!long.TryParse(userId, out var id)) return false;

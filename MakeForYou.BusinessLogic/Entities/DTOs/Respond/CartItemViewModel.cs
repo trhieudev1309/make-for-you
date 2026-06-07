@@ -2,6 +2,7 @@
 {
     public class CartItemViewModel
     {
+        public long CartItemId { get; set; }
         public long ProductId { get; set; }
         public string? ProductName { get; set; }
         public string? ImageUrl { get; set; }
@@ -10,5 +11,6 @@
 
         // Thành tiền cho từng món
         public int TotalPrice => Price * Quantity;
+        public string? CustomizationsJson { get; set; }
     }
 }

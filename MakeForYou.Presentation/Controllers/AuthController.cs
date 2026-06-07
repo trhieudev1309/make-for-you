@@ -8,10 +8,12 @@ namespace MakeForYou.Presentation.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
         /// <summary>Register as a Buyer (Role=0) or Seller (Role=1).</summary>
@@ -25,8 +27,10 @@ namespace MakeForYou.Presentation.Controllers
             var result = await _authService.RegisterAsync(request);
             if (result.Success)
             {
+                _logger.LogInformation("User registered successfully: userId={UserId}", result.UserId);
                 return CreatedAtAction(nameof(Register), new { id = result.UserId }, result);
             }
+            _logger.LogWarning("Registration failed: {Reason}", result.Message);
             return BadRequest(result);
         }
     }
