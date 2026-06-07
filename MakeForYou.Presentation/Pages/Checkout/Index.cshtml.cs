@@ -104,7 +104,9 @@ namespace MakeForYou.Presentation.Pages.Checkout
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { success = false, message = ex.Message });
+                System.Diagnostics.Debug.WriteLine($"GHN API Error: {ex.Message}");
+                // Fallback to default fee of 30,000 VNĐ to allow checkout even if sandbox ShopId is misconfigured
+                return new JsonResult(new { success = true, fee = 30000, isFallback = true, message = ex.Message });
             }
         }
     }

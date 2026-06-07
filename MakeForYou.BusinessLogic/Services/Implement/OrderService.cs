@@ -1,7 +1,7 @@
 using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.DTOs;
 using MakeForYou.BusinessLogic.Entities.DTOs.Request;
-using MakeForYou.BusinessLogic.Enums;
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
@@ -120,6 +120,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error calculating ship fee for seller {sellerId}: {ex.Message}");
+                        sellerShippingFee = 30000; // Phí ship mặc định nếu lỗi kết nối GHN / Sandbox ShopId chưa cấu hình địa chỉ
                     }
                 }
 

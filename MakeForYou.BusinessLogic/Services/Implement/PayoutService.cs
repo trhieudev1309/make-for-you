@@ -20,12 +20,12 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _logger = logger;
             _client = new PayOSClient(new PayOSOptions
             {
-                ClientId = config["PayOS:Pay_ClientId"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ClientId is not configured."),
-                ApiKey = config["PayOS:Pay_ApiKey"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ApiKey is not configured."),
-                ChecksumKey = config["PayOS:Pay_ChecksumKey"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ChecksumKey is not configured.")
+                ClientId = config["PayOS:ClientId"]
+                   ?? throw new InvalidOperationException("PayOS:Pay_ClientId is not configured."),
+                ApiKey = config["PayOS:ApiKey"]
+                   ?? throw new InvalidOperationException("PayOS:Pay_ApiKey is not configured."),
+                ChecksumKey = config["PayOS:ChecksumKey"]
+                   ?? throw new InvalidOperationException("PayOS:Pay_ChecksumKey is not configured.")
             });
         }
 
