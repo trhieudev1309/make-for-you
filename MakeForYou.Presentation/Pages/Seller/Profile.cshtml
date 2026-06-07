@@ -80,7 +80,7 @@
 
     /* ── field row ── */
     .sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-   @@media (max-width: 600px) { .sp-row { grid-template-columns: 1fr; } }
+    @@media (max-width: 600px) { .sp-row { grid-template-columns: 1fr; } }
 
     /* ── primary button ── */
     .sp-btn {
@@ -370,14 +370,12 @@
 
 <div class="sp-wrap">
 
-    <!-- Page Label -->
     <div class="sp-label">
         <span class="sp-label-rule"></span>
         <span class="sp-label-text">Bảng Điều Khiển Người Bán</span>
         <span class="sp-label-rule"></span>
     </div>
 
-    <!-- Page Title + Requests shortcut -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2.5rem;">
         <div>
             <h1 style="font-family:var(--serif);font-size:2.25rem;font-weight:400;margin-bottom:.375rem;">
@@ -387,9 +385,18 @@
                 Quản lý cách người mua khám phá và trải nghiệm tác phẩm của bạn.
             </p>
         </div>
-        <a href="/Seller/Requests" class="sp-requests-link">
-            <i class="bi bi-inbox-fill"></i> Yêu Cầu Của Tôi
-        </a>
+        
+        <div style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:center;">
+            <a href="/Seller/Requests" class="sp-requests-link">
+                <i class="bi bi-inbox-fill"></i> Yêu Cầu Của Tôi
+            </a>
+            <a asp-page="/Seller/Create" class="sp-btn" style="height:40px; display:inline-flex; align-items:center;">
+                <i class="bi bi-plus-lg"></i> Tạo tác phẩm mới
+            </a>
+            <a asp-page="/Seller/Register" class="sp-btn-ghost" style="height:40px; display:inline-flex; align-items:center;">
+                <i class="bi bi-gear"></i> Cập nhật thông tin
+            </a>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)
@@ -407,7 +414,6 @@
         </div>
     }
 
-    <!-- Stats Row -->
     @if (Model.Seller != null)
     {
         <div class="sp-stats">
@@ -444,7 +450,6 @@
         </div>
     }
 
-    <!-- Tab Nav -->
     <div class="sp-tabs">
         <button class="sp-tab active" data-tab="profile"   onclick="switchTab('profile',   this)">Hồ Sơ</button>
         <button class="sp-tab"        data-tab="portfolio" onclick="switchTab('portfolio', this)">Danh Mục</button>
@@ -463,7 +468,6 @@
         <button class="sp-tab"        data-tab="account"   onclick="switchTab('account',   this)">Tài Khoản</button>
     </div>
 
-    <!-- ══ TAB: PROFILE ══ -->
     <div id="tab-profile" class="sp-tab-panel active">
         <form method="post" asp-page-handler="UpdateProfile">
             @Html.AntiForgeryToken()
@@ -485,7 +489,7 @@
                 </div>
 
                 <div class="sp-field">
-                    <label class="sp-label-field">Mô Tả Kỹ Năng / Nghề Thủ Công</label>
+                    <label class="sp-label-field">Mô Tả Kỹ Năng / Nghề Thủ Craft</label>
                     <input class="sp-input" type="text" name="SkillDescription"
                            value="@Model.Seller?.SkillDescription"
                            placeholder="vd: Nến đậu nành tự đổ & tranh in thực vật" />
@@ -506,9 +510,9 @@
                     <div class="sp-field">
                         <label class="sp-label-field">Khả năng phục vụ</label>
                         <select class="sp-input" name="AvailabilityStatus">
-                           <option value="1" selected="@(Model.Seller?.AvailabilityStatus == 1)">Có sẵn</option>
-                           <option value="2" selected="@(Model.Seller?.AvailabilityStatus == 2)">Bận — số lượng giới hạn</option>
-                           <option value="0" selected="@(Model.Seller?.AvailabilityStatus == 0)">Không có sẵn</option> 
+                            <option value="1" selected="@(Model.Seller?.AvailabilityStatus == 1)">Có sẵn</option>
+                            <option value="2" selected="@(Model.Seller?.AvailabilityStatus == 2)">Bận — số lượng giới hạn</option>
+                            <option value="0" selected="@(Model.Seller?.AvailabilityStatus == 0)">Không có sẵn</option> 
                         </select>
                     </div>
                 </div>
@@ -522,10 +526,8 @@
         </form>
     </div>
 
-    <!-- ══ TAB: PORTFOLIO ══ -->
     <div id="tab-portfolio" class="sp-tab-panel">
 
-        <!-- Existing items -->
         @if (Model.Seller?.PortfolioItems != null && Model.Seller.PortfolioItems.Any())
         {
             <div class="sp-portfolio-grid">
@@ -549,7 +551,6 @@
                                 <div class="sp-portfolio-overlay-desc">@item.Description</div>
                             }
                         </div>
-                        <!-- Delete -->
                         <form method="post" asp-page-handler="DeletePortfolio" style="display:contents;">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="portfolioId" value="@item.PortfolioId" />
@@ -572,7 +573,6 @@
             </div>
         }
 
-        <!-- Add new item -->
         <div class="sp-card">
             <h2 class="sp-section-title">Thêm Mục Danh Mục</h2>
             <form method="post" asp-page-handler="AddPortfolio" enctype="multipart/form-data">

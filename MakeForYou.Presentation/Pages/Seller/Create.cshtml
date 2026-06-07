@@ -1,0 +1,49 @@
+﻿@page "/Seller/Create"
+@model MakeForYou.Presentation.Pages.Seller.CreateProductModel
+@{
+    ViewData["Title"] = "Đăng sản phẩm mới";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4" style="max-width: 700px;">
+    <h2>Đăng sản phẩm mới</h2>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        <div class="mb-3">
+            <label asp-for="FormInput.Title" class="form-label">Tên sản phẩm</label>
+            <input asp-for="FormInput.Title" class="form-control" placeholder="Nhập tên sản phẩm" />
+            <span asp-validation-for="FormInput.Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FormInput.Price" class="form-label">Giá bán (VND)</label>
+            <input asp-for="FormInput.Price" type="number" class="form-control" />
+            <span asp-validation-for="FormInput.Price" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FormInput.Description" class="form-label">Mô tả sản phẩm</label>
+            <textarea asp-for="FormInput.Description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FormInput.CategoryId" class="form-label">Mã danh mục (CategoryId)</label>
+            <input asp-for="FormInput.CategoryId" type="number" class="form-control" />
+            <span asp-validation-for="FormInput.CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="UploadedImage" class="form-label">Hình ảnh sản phẩm</label>
+            <input asp-for="UploadedImage" type="file" class="form-control" accept="image/*" />
+            <span asp-validation-for="UploadedImage" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Đăng bán sản phẩm</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
