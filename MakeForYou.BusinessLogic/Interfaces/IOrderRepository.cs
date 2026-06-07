@@ -22,5 +22,8 @@ namespace MakeForYou.BusinessLogic.Interfaces
         Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId);
         Task UpdatePaymentStatusByCodeAsync(long paymentCode, bool isPaid);
         Task<List<Order>> FindByPaymentCodeAsync(long paymentCode);
+        Task ResolveCustomizationAsync(long orderItemId);
+        Task ResolveAllCustomizationsAsync(long orderId);
+        Task UpdateAgreedPriceAsync(long orderId, int newPrice);
     }
 }

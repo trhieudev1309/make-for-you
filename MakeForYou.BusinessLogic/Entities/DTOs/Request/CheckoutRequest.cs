@@ -34,5 +34,6 @@ namespace MakeForYou.BusinessLogic.Entities.DTOs.Request
 
         [Required(ErrorMessage = "Vui lòng nhập số nhà, tên đường cụ thể")]
         public string ShippingAddressDetail { get; set; } = null!;
+        public List<CartItemCustomization> Customizations { get; set; } = new();
     }
 }

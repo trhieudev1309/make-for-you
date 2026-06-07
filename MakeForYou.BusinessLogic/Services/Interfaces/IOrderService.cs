@@ -22,6 +22,7 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<AuthResult> UpdateProgressAsync(long orderId, long sellerId, UpdateProgressRequest req);
         Task<Order?> GetOrderForSellerAsync(long orderId, long sellerId);
         Task<long?> GetOrderIdByUsersAsync(long userA, long userB);
+        Task DropCustomizationAsync(long orderItemId);
 
         Task<List<Order>> CreateOrderFromCartAsync(long userId, CheckoutRequest request, long paymentCode);
     }

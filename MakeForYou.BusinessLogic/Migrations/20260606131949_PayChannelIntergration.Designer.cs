@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MakeForYou.BusinessLogic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260606131949_PayChannelIntergration")]
+    partial class PayChannelIntergration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,9 +242,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GhnShipmentCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsPaid")
                         .HasColumnType("bit");
 
@@ -260,36 +260,6 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("ShippingAddressDetail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingDistrictId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingDistrictName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingFee")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingFullName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingProvinceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingProvinceName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -453,14 +423,8 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Height")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Length")
-                        .HasColumnType("int");
 
                     b.Property<int?>("Price")
                         .HasColumnType("int");
@@ -474,12 +438,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<string>("Title")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
-
-                    b.Property<int>("Weight")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("int");
 
                     b.HasKey("ProductId");
 

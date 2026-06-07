@@ -84,6 +84,7 @@ builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 builder.Services.AddScoped<ICustomizationRepository, CustomizationRepository>();
 builder.Services.AddScoped<ICustomizationService, CustomizationService>();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPayoutService, PayoutService>();
 
 builder.Services.AddScoped<ISellerPostRepository, SellerPostRepository>();
 builder.Services.AddScoped<ISellerPostService, SellerPostService>();

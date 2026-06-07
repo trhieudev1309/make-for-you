@@ -56,7 +56,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 BuyerId = buyerId,
                 SellerId = sellerId,
                 OrderDescription = description,
-                Status = (int)MakeForYou.BusinessLogic.Enums.OrderStatus.Pending,
+                Status = (int)OrderStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
             var saved = await _orderRepo.AddAsync(order);
@@ -64,6 +64,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // Send notification to seller
             await _notificationService.SendOrderNotificationAsync(saved);
 
+            _logger.LogInformation("Order {OrderId} created: buyerId={BuyerId}, sellerId={SellerId}", saved.OrderId, buyerId, sellerId);
             return saved;
         }
 
@@ -169,6 +170,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // 6. Dọn sạch giỏ hàng của Buyer
             await _cartRepo.ClearCartAsync(userId);
 
+            _logger.LogInformation("{OrderCount} order(s) created from cart for buyer {BuyerId}", createdOrders.Count, userId);
             return createdOrders;
         }
 
@@ -200,6 +202,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
             // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
+            _logger.LogInformation("Order {OrderId} status updated to {Status}", orderId, (OrderStatus)status);
         }
 
         public Task<(List<Order> Orders, int TotalCount)> GetAllOrdersForAdminAsync(
@@ -222,17 +225,29 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         {
             var order = await _orderRepo.GetOrderForSellerAsync(orderId, sellerId);
             if (order == null)
+            {
+                _logger.LogWarning("Progress update denied: order {OrderId} not found or seller {SellerId} does not own it", orderId, sellerId);
                 return AuthResult.Fail("Order not found or access denied.");
+            }
 
             // Guard: can't update a completed or cancelled order
             if (order.Status == (int)OrderStatus.Completed)
+            {
+                _logger.LogWarning("Progress update rejected: order {OrderId} is already completed", orderId);
                 return AuthResult.Fail("This order is already completed.");
+            }
             if (order.Status == (int)OrderStatus.Cancelled)
+            {
+                _logger.LogWarning("Progress update rejected: order {OrderId} is cancelled", orderId);
                 return AuthResult.Fail("This order has been cancelled.");
+            }
 
             // Guard: status must move forward only
             if (req.NewStatus <= order.Status)
+            {
+                _logger.LogWarning("Progress update rejected: order {OrderId} new status {NewStatus} is not ahead of current {CurrentStatus}", orderId, req.NewStatus, order.Status);
                 return AuthResult.Fail("New status must be ahead of the current status.");
+            }
 
             // 1. Save image if uploaded
             string? imageUrl = null;
@@ -266,8 +281,12 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             // 3. Update order status
             await UpdateStatusAsync(orderId, req.NewStatus);
 
+            _logger.LogInformation("Order {OrderId} progress updated by seller {SellerId}: status={NewStatus}", orderId, sellerId, (OrderStatus)req.NewStatus);
             return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
         }
+
+        public Task DropCustomizationAsync(long orderItemId) =>
+            _orderRepo.ResolveCustomizationAsync(orderItemId);
 
         public async Task<long?> GetOrderIdByUsersAsync(long userA, long userB)
         {

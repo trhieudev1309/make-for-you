@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Entities;
-using MakeForYou.BusinessLogic.Enums;
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
+using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,17 @@ namespace MakeForYou.Presentation.Pages.Orders
     {
         private readonly IOrderService _orderService;
         private readonly ApplicationDbContext _db;
+        private readonly IQuotationService _quotationService;
+        private readonly IPaymentService _paymentService;
+        private readonly IPayoutService _payoutService;
 
-        public DetailModel(IOrderService orderService, ApplicationDbContext db)
+        public DetailModel(IOrderService orderService, ApplicationDbContext db, IQuotationService quotationService, IPaymentService paymentService, IPayoutService payoutService)
         {
             _orderService = orderService;
             _db = db;
+            _quotationService = quotationService;
+            _paymentService = paymentService;
+            _payoutService = payoutService;
         }
 
         public Order? Order { get; set; }
@@ -125,24 +132,53 @@ namespace MakeForYou.Presentation.Pages.Orders
         // Matches the custom CSS badge classes in Detail.cshtml
         public static string BadgeClass(int status) => (OrderStatus)status switch
         {
-            OrderStatus.Pending => "badge-secondary",
-            OrderStatus.Quoted => "badge-info",
-            OrderStatus.Confirmed => "badge-primary",
-            OrderStatus.InProgress => "badge-warning",
-            OrderStatus.Completed => "badge-success",
-            OrderStatus.Cancelled => "badge-danger",
-            _ => "badge-secondary"
+            OrderStatus.Pending                => "badge-secondary",
+            OrderStatus.Quoted                 => "badge-info",
+            OrderStatus.Confirmed              => "badge-primary",
+            OrderStatus.InProgress             => "badge-warning",
+            OrderStatus.Completed              => "badge-success",
+            OrderStatus.Delivering             => "badge-info",
+            OrderStatus.Delivered              => "badge-primary",
+            OrderStatus.Done                   => "badge-success",
+            OrderStatus.Cancelled              => "badge-danger",
+            OrderStatus.PendingQuotationSubmit  => "badge-warning",
+            OrderStatus.PendingQuotationAccept  => "badge-info",
+            OrderStatus.PendingQuotationPayment => "badge-info",
+            _                                  => "badge-secondary"
         };
 
         public static string StatusIcon(int status) => (OrderStatus)status switch
         {
-            OrderStatus.Pending => "bi-hourglass",
-            OrderStatus.Quoted => "bi-tag",
-            OrderStatus.Confirmed => "bi-check-circle",
-            OrderStatus.InProgress => "bi-tools",
-            OrderStatus.Completed => "bi-bag-check",
-            OrderStatus.Cancelled => "bi-x-circle",
-            _ => "bi-circle"
+            OrderStatus.Pending                => "bi-hourglass",
+            OrderStatus.Quoted                 => "bi-tag",
+            OrderStatus.Confirmed              => "bi-check-circle",
+            OrderStatus.InProgress             => "bi-tools",
+            OrderStatus.Completed              => "bi-bag-check",
+            OrderStatus.Delivering             => "bi-truck",
+            OrderStatus.Delivered              => "bi-house-check",
+            OrderStatus.Done                   => "bi-star-fill",
+            OrderStatus.Cancelled              => "bi-x-circle",
+            OrderStatus.PendingQuotationSubmit  => "bi-pencil-square",
+            OrderStatus.PendingQuotationAccept  => "bi-tag",
+            OrderStatus.PendingQuotationPayment => "bi-credit-card",
+            _                                  => "bi-circle"
+        };
+
+        public static string StatusLabel(int status) => (OrderStatus)status switch
+        {
+            OrderStatus.Pending                => "Chờ xác nhận",
+            OrderStatus.Confirmed              => "Đã xác nhận",
+            OrderStatus.Quoted                 => "Đã báo giá",
+            OrderStatus.InProgress             => "Đang thực hiện",
+            OrderStatus.Completed              => "Hoàn thành",
+            OrderStatus.Delivering             => "Đang giao hàng",
+            OrderStatus.Delivered              => "Đã giao hàng",
+            OrderStatus.Done                   => "Đã xong",
+            OrderStatus.Cancelled              => "Đã hủy",
+            OrderStatus.PendingQuotationSubmit  => "Chờ nghệ nhân báo giá",
+            OrderStatus.PendingQuotationAccept  => "Chờ chấp nhận báo giá",
+            OrderStatus.PendingQuotationPayment => "Chờ thanh toán báo giá",
+            _                                  => "Không xác định"
         };
     }
 }

@@ -7,5 +7,6 @@ namespace MakeForYou.BusinessLogic.Services.Interfaces
         Task<MakeForYou.BusinessLogic.Entities.Seller?> GetProfileAsync(long sellerId);
         Task UpdateProfileAsync(long sellerId, UpdateProfileRequest request);
         Task<bool> ChangePasswordAsync(long sellerId, string currentPassword, string newPassword);
+        Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName);
     }
 }
