@@ -62,42 +62,47 @@ namespace MakeForYou.Presentation.Pages.Orders
             }
             else
             {
-                // Giả lập lịch trình động theo trạng thái thực tế của đơn hàng trong database
-                TrackingLogs = new List<GhnLogDto>();
-
-                var status = (OrderStatus)Order.Status;
-
-                if (status == OrderStatus.Cancelled)
+                // Chỉ hiển thị lịch trình giả lập để demo ở môi trường Local / Development
+                var isDevelopment = string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Development", StringComparison.OrdinalIgnoreCase);
+                if (isDevelopment)
                 {
-                    TrackingLogs.Add(new GhnLogDto { Status = "cancel", UpdatedDate = Order.CreatedAt.AddMinutes(30) });
-                }
-                else
-                {
-                    // Bước 1: Đang chờ lấy hàng (Trạng thái Pending hoặc lớn hơn)
-                    TrackingLogs.Add(new GhnLogDto { Status = "ready_to_pick", UpdatedDate = Order.CreatedAt.AddMinutes(15) });
+                    // Giả lập lịch trình động theo trạng thái thực tế của đơn hàng trong database
+                    TrackingLogs = new List<GhnLogDto>();
 
-                    if (status == OrderStatus.Confirmed || status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    var status = (OrderStatus)Order.Status;
+
+                    if (status == OrderStatus.Cancelled)
                     {
-                        // Bước 2: Nhân viên đang đến lấy hàng
-                        TrackingLogs.Add(new GhnLogDto { Status = "picking", UpdatedDate = Order.CreatedAt.AddHours(2) });
+                        TrackingLogs.Add(new GhnLogDto { Status = "cancel", UpdatedDate = Order.CreatedAt.AddMinutes(30) });
                     }
-
-                    if (status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    else
                     {
-                        // Bước 3: Đã lấy hàng thành công
-                        TrackingLogs.Add(new GhnLogDto { Status = "picked", UpdatedDate = Order.CreatedAt.AddHours(4) });
-                    }
+                        // Bước 1: Đang chờ lấy hàng (Trạng thái Pending hoặc lớn hơn)
+                        TrackingLogs.Add(new GhnLogDto { Status = "ready_to_pick", UpdatedDate = Order.CreatedAt.AddMinutes(15) });
 
-                    if (status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
-                    {
-                        // Bước 4: Đang giao hàng
-                        TrackingLogs.Add(new GhnLogDto { Status = "delivering", UpdatedDate = Order.CreatedAt.AddHours(6) });
-                    }
+                        if (status == OrderStatus.Confirmed || status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                        {
+                            // Bước 2: Nhân viên đang đến lấy hàng
+                            TrackingLogs.Add(new GhnLogDto { Status = "picking", UpdatedDate = Order.CreatedAt.AddHours(2) });
+                        }
 
-                    if (status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
-                    {
-                        // Bước 5: Giao hàng thành công
-                        TrackingLogs.Add(new GhnLogDto { Status = "delivered", UpdatedDate = Order.CreatedAt.AddHours(24) });
+                        if (status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                        {
+                            // Bước 3: Đã lấy hàng thành công
+                            TrackingLogs.Add(new GhnLogDto { Status = "picked", UpdatedDate = Order.CreatedAt.AddHours(4) });
+                        }
+
+                        if (status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                        {
+                            // Bước 4: Đang giao hàng
+                            TrackingLogs.Add(new GhnLogDto { Status = "delivering", UpdatedDate = Order.CreatedAt.AddHours(6) });
+                        }
+
+                        if (status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                        {
+                            // Bước 5: Giao hàng thành công
+                            TrackingLogs.Add(new GhnLogDto { Status = "delivered", UpdatedDate = Order.CreatedAt.AddHours(24) });
+                        }
                     }
                 }
             }
