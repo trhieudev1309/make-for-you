@@ -21,5 +21,10 @@ namespace MakeForYou.BusinessLogic.Services
         /// Lấy chi tiết phí dịch vụ của đơn hàng đã tạo bằng mã đơn hàng (soc)
         /// </summary>
         Task<string> GetOrderDetailAsync(string orderCode);
+
+        /// <summary>
+        /// Hủy đơn hàng phía GHN
+        /// </summary>
+        Task<bool> CancelShipmentAsync(string ghnOrderCode);
     }
 }

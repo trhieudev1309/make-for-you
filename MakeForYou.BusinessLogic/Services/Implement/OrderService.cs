@@ -6,6 +6,7 @@ using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -19,6 +20,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly IProgressRepository _progressRepo;
         private readonly IWebHostEnvironment _env;
         private readonly IGhnService _ghnService;
+        private readonly ILogger<OrderService> _logger;
 
         public OrderService(
             IOrderRepository orderRepo,
@@ -28,7 +30,8 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             INotificationService notificationService,
             IProgressRepository progressRepo,
             IWebHostEnvironment env,
-            IGhnService ghnService)
+            IGhnService ghnService,
+            ILogger<OrderService> logger)
         {
             _orderRepo = orderRepo;
             _cartService = cartService;
@@ -38,6 +41,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _progressRepo = progressRepo;
             _env = env;
             _ghnService = ghnService;
+            _logger = logger;
         }
         public Task<List<Order>> GetOrdersByUserAsync(long buyerId) =>
             _orderRepo.FindByBuyerIdAsync(buyerId);
@@ -170,6 +174,30 @@ namespace MakeForYou.BusinessLogic.Services.Implement
 
         public async Task UpdateStatusAsync(long orderId, int status)
         {
+            if (status == (int)OrderStatus.Cancelled)
+            {
+                try
+                {
+                    var order = await _orderRepo.GetOrderByIdAsync(orderId);
+                    if (order != null && !string.IsNullOrEmpty(order.GhnShipmentCode))
+                    {
+                        var cancelResult = await _ghnService.CancelShipmentAsync(order.GhnShipmentCode);
+                        if (!cancelResult)
+                        {
+                            _logger.LogError("Failed to cancel GHN shipment {GhnShipmentCode} for order {OrderId}.", order.GhnShipmentCode, orderId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Successfully cancelled GHN shipment {GhnShipmentCode} for order {OrderId}.", order.GhnShipmentCode, orderId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while cancelling GHN shipment for order {OrderId}.", orderId);
+                }
+            }
+
             // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
         }
@@ -236,7 +264,7 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             });
 
             // 3. Update order status
-            await _orderRepo.UpdateStatusAsync(orderId, req.NewStatus);
+            await UpdateStatusAsync(orderId, req.NewStatus);
 
             return AuthResult.Ok($"Order updated to {(OrderStatus)req.NewStatus}.");
         }

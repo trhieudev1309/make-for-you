@@ -261,5 +261,30 @@ namespace MakeForYou.BusinessLogic.Services
             var errorStr = await responseMessage.Content.ReadAsStringAsync();
             throw new Exception($"GHN Fee API failed: {responseMessage.StatusCode} - {errorStr}");
         }
+
+        public async Task<bool> CancelShipmentAsync(string ghnOrderCode)
+        {
+            if (string.IsNullOrWhiteSpace(ghnOrderCode))
+            {
+                return false;
+            }
+
+            var payload = new
+            {
+                order_codes = new[] { ghnOrderCode }
+            };
+
+            var responseMessage = await _httpClient.PostAsJsonAsync("v2/switch-status/cancel", payload);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var response = await responseMessage.Content.ReadFromJsonAsync<GhnApiResponse<object>>();
+                if (response != null && response.Code == 200)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
