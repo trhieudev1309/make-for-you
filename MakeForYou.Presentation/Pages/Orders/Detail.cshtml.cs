@@ -103,6 +103,25 @@ namespace MakeForYou.Presentation.Pages.Orders
             return RedirectToPage(new { id = id });
         }
 
+        public async Task<IActionResult> OnPostCancelAsync(long id)
+        {
+            var buyerId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var order = await _orderService.GetOrderDetailAsync(id, buyerId);
+            if (order == null) return NotFound();
+
+            if (order.Status == (int)OrderStatus.Pending || order.Status == (int)OrderStatus.Quoted)
+            {
+                await _orderService.UpdateStatusAsync(id, (int)OrderStatus.Cancelled);
+                TempData["SuccessMessage"] = "Hủy đơn hàng thành công.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể hủy đơn hàng ở trạng thái hiện tại.";
+            }
+
+            return RedirectToPage(new { id = id });
+        }
+
         // Matches the custom CSS badge classes in Detail.cshtml
         public static string BadgeClass(int status) => (OrderStatus)status switch
         {
