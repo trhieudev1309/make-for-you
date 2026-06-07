@@ -4,6 +4,8 @@ using MakeForYou.BusinessLogic.Entities;
 using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Services.Interfaces;
+using MakeForYou.BusinessLogic.Services;
+using MakeForYou.BusinessLogic.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,17 +20,26 @@ namespace MakeForYou.Presentation.Pages.Orders
         private readonly IQuotationService _quotationService;
         private readonly IPaymentService _paymentService;
         private readonly IPayoutService _payoutService;
+        private readonly IGhnService _ghnService;
 
-        public DetailModel(IOrderService orderService, ApplicationDbContext db, IQuotationService quotationService, IPaymentService paymentService, IPayoutService payoutService)
+        public DetailModel(
+            IOrderService orderService, 
+            ApplicationDbContext db, 
+            IQuotationService quotationService, 
+            IPaymentService paymentService, 
+            IPayoutService payoutService,
+            IGhnService ghnService)
         {
             _orderService = orderService;
             _db = db;
             _quotationService = quotationService;
             _paymentService = paymentService;
             _payoutService = payoutService;
+            _ghnService = ghnService;
         }
 
         public Order? Order { get; set; }
+        public List<GhnLogDto> TrackingLogs { get; set; } = new();
 
         // Bindings for feedback form
         [BindProperty]
@@ -43,6 +54,54 @@ namespace MakeForYou.Presentation.Pages.Orders
             Order = await _orderService.GetOrderDetailAsync(id, buyerId);
 
             if (Order == null) return NotFound();
+
+            // 2. XỬ LÝ ĐOẠN HOÃN (MOCK DATA CHO GIAI ĐOẠN TEST)
+            if (!string.IsNullOrEmpty(Order.GhnShipmentCode))
+            {
+                TrackingLogs = await _ghnService.GetOrderTrackingLogsAsync(Order.GhnShipmentCode);
+            }
+            else
+            {
+                // Giả lập lịch trình động theo trạng thái thực tế của đơn hàng trong database
+                TrackingLogs = new List<GhnLogDto>();
+
+                var status = (OrderStatus)Order.Status;
+
+                if (status == OrderStatus.Cancelled)
+                {
+                    TrackingLogs.Add(new GhnLogDto { Status = "cancel", UpdatedDate = Order.CreatedAt.AddMinutes(30) });
+                }
+                else
+                {
+                    // Bước 1: Đang chờ lấy hàng (Trạng thái Pending hoặc lớn hơn)
+                    TrackingLogs.Add(new GhnLogDto { Status = "ready_to_pick", UpdatedDate = Order.CreatedAt.AddMinutes(15) });
+
+                    if (status == OrderStatus.Confirmed || status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    {
+                        // Bước 2: Nhân viên đang đến lấy hàng
+                        TrackingLogs.Add(new GhnLogDto { Status = "picking", UpdatedDate = Order.CreatedAt.AddHours(2) });
+                    }
+
+                    if (status == OrderStatus.InProgress || status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    {
+                        // Bước 3: Đã lấy hàng thành công
+                        TrackingLogs.Add(new GhnLogDto { Status = "picked", UpdatedDate = Order.CreatedAt.AddHours(4) });
+                    }
+
+                    if (status == OrderStatus.Delivering || status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    {
+                        // Bước 4: Đang giao hàng
+                        TrackingLogs.Add(new GhnLogDto { Status = "delivering", UpdatedDate = Order.CreatedAt.AddHours(6) });
+                    }
+
+                    if (status == OrderStatus.Delivered || status == OrderStatus.Completed || status == OrderStatus.Done)
+                    {
+                        // Bước 5: Giao hàng thành công
+                        TrackingLogs.Add(new GhnLogDto { Status = "delivered", UpdatedDate = Order.CreatedAt.AddHours(24) });
+                    }
+                }
+            }
+
             return Page();
         }
 

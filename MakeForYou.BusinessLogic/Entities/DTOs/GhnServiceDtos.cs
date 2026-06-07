@@ -22,4 +22,25 @@ namespace MakeForYou.BusinessLogic.DTOs
         [JsonPropertyName("service_fee")]
         public int ServiceFee { get; set; }
     }
+    
+    public class GhnOrderCreateResponseDto
+    {
+        [JsonPropertyName("order_code")]
+        public string OrderCode { get; set; } = null!;
+    }
+
+    public class GhnLogDto
+    {
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = null!;
+
+        [JsonPropertyName("updated_date")]
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    public class GhnOrderDetailResponseDto
+    {
+        [JsonPropertyName("log")]
+        public List<GhnLogDto>? Log { get; set; }
+    }
 }

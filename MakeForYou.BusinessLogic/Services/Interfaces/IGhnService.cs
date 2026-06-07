@@ -23,6 +23,16 @@ namespace MakeForYou.BusinessLogic.Services
         Task<string> GetOrderDetailAsync(string orderCode);
 
         /// <summary>
+        /// Tạo đơn hàng vận chuyển bên GHN
+        /// </summary>
+        Task<string?> CreateShippingOrderAsync(Order order);
+
+        /// <summary>
+        /// Lấy lịch sử hành trình giao hàng từ GHN
+        /// </summary>
+        Task<List<GhnLogDto>> GetOrderTrackingLogsAsync(string ghnShipmentCode);
+
+        /// <summary>
         /// Hủy đơn hàng phía GHN
         /// </summary>
         Task<bool> CancelShipmentAsync(string ghnOrderCode);

@@ -262,6 +262,201 @@ namespace MakeForYou.BusinessLogic.Services
             throw new Exception($"GHN Fee API failed: {responseMessage.StatusCode} - {errorStr}");
         }
 
+        public async Task<string?> CreateShippingOrderAsync(Order order)
+        {
+            if (order == null) return null;
+
+            // 1. Tính toán gộp kích thước giỏ hàng giống như lúc tính phí
+            int totalLength = 0;
+            int totalWidth = 0;
+            int totalHeight = 0;
+            int totalWeight = 0;
+
+            if (order.OrderItems != null && order.OrderItems.Any())
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    var product = item.Product;
+                    if (product != null)
+                    {
+                        var dims = new[] { product.Length, product.Width, product.Height };
+                        Array.Sort(dims); // Cạnh ngắn nhất -> Cạnh dài nhất
+
+                        int itemHeight = dims[0];
+                        int itemWidth = dims[1];
+                        int itemLength = dims[2];
+
+                        int qty = item.Quantity > 0 ? item.Quantity : 1;
+
+                        if (itemLength > totalLength) totalLength = itemLength;
+                        if (itemWidth > totalWidth) totalWidth = itemWidth;
+                        totalHeight += (itemHeight > 0 ? itemHeight : 5) * qty;
+                        totalWeight += (product.Weight > 0 ? product.Weight : 200) * qty;
+                    }
+                }
+            }
+
+            if (totalLength == 0) totalLength = 10;
+            if (totalWidth == 0) totalWidth = 10;
+            if (totalHeight == 0) totalHeight = 5;
+            if (totalWeight == 0) totalWeight = 200;
+
+            // 2. Lấy gói dịch vụ khả dụng từ GHN giống như lúc tính phí
+            int fromDistrictId = 1447; // Quận 9, HCM (Default shop district)
+            string fromWardCode = "90509"; // Phường Hiệp Phú (Default shop ward)
+            int toDistrictId = order.ShippingDistrictId ?? 1447;
+            string toWardCode = order.ShippingWardCode ?? "90509";
+
+            int chargeableWeight = Math.Max(totalWeight, (totalLength * totalWidth * totalHeight) / 5);
+            int serviceTypeId = chargeableWeight > 20000 ? 5 : 2;
+
+            int serviceId = 0;
+            try
+            {
+                var availableServices = await GetAvailableServicesAsync(fromDistrictId, toDistrictId);
+                if (availableServices != null && availableServices.Any())
+                {
+                    var selectedService = availableServices.FirstOrDefault(s => s.ServiceTypeId == serviceTypeId) 
+                                         ?? availableServices.First();
+                    serviceId = selectedService.ServiceId;
+                    serviceTypeId = selectedService.ServiceTypeId;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to get service list from GHN: {ex.Message}");
+            }
+
+            // 3. Chuẩn bị danh sách items cho GHN
+            var itemsList = new List<object>();
+            if (order.OrderItems != null && order.OrderItems.Any())
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    itemsList.Add(new
+                    {
+                        name = item.Product?.Title ?? "Sản phẩm MakeForYou",
+                        code = item.ProductId.ToString(),
+                        quantity = item.Quantity > 0 ? item.Quantity : 1,
+                        price = item.Price
+                    });
+                }
+            }
+            else
+            {
+                // Đối với đơn hàng Customization không có OrderItems trong DB trực tiếp (hoặc dạng khác)
+                itemsList.Add(new
+                {
+                    name = order.OrderDescription ?? "Sản phẩm thiết kế MakeForYou",
+                    code = $"CUSTOM-{order.OrderId}",
+                    quantity = 1,
+                    price = order.AgreedPrice ?? 0
+                });
+            }
+
+            // 4. Nếu đơn hàng đã được thanh toán online trước đó (IsPaid = true), COD = 0
+            // Ngược lại nếu chưa thanh toán, COD = Tổng số tiền = AgreedPrice + ShippingFee
+            int codAmount = order.IsPaid ? 0 : ((order.AgreedPrice ?? 0) + (order.ShippingFee ?? 0));
+
+            // Đảm bảo Token và ShopId trong request headers
+            _httpClient.DefaultRequestHeaders.Remove("Token");
+            _httpClient.DefaultRequestHeaders.Remove("ShopId");
+            _httpClient.DefaultRequestHeaders.Add("Token", _token);
+            _httpClient.DefaultRequestHeaders.Add("ShopId", _shopIdStr);
+
+            var payload = new
+            {
+                payment_type_id = 1, // 1: Cửa hàng/Người bán thanh toán cước phí cho GHN (Vì shop đã thu tiền ship từ khách lúc checkout)
+                note = "Đơn hàng từ MakeForYou. Vui lòng gọi trước khi giao.",
+                required_note = "KHONGCHOXEMHANG",
+                
+                // Người gửi (From Info) - điền thông tin mặc định để bypass lỗi địa chỉ ShopId trên Sandbox
+                from_name = "Shop MakeForYou",
+                from_phone = "0973660589",
+                from_address = "70 Phố Hiệp Phú",
+                from_district_id = fromDistrictId,
+                from_ward_code = fromWardCode,
+
+                // Người nhận (To Info)
+                to_name = order.ShippingFullName ?? order.Buyer?.FullName ?? "Khách hàng",
+                to_phone = order.ShippingPhone ?? order.Buyer?.Phone ?? "0909090909",
+                to_address = order.ShippingAddressDetail ?? "Địa chỉ nhận hàng",
+                to_ward_code = toWardCode,
+                to_district_id = toDistrictId,
+
+                cod_amount = codAmount,
+                content = order.OrderDescription ?? "Đơn hàng MakeForYou",
+                weight = totalWeight,
+                length = totalLength,
+                width = totalWidth,
+                height = totalHeight,
+                insurance_value = order.AgreedPrice ?? 0,
+                service_id = serviceId,
+                service_type_id = serviceTypeId,
+                items = itemsList
+            };
+
+            var responseMessage = await _httpClient.PostAsJsonAsync("v2/shipping-order/create", payload);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                var response = await responseMessage.Content.ReadFromJsonAsync<GhnApiResponse<GhnOrderCreateResponseDto>>();
+                if (response != null && response.Code == 200 && response.Data != null)
+                {
+                    return response.Data.OrderCode;
+                }
+                else
+                {
+                    var errorMsg = response?.Message ?? "Unknown error";
+                    System.Diagnostics.Debug.WriteLine($"GHN Shipping Order creation failed internally: {errorMsg}");
+                }
+            }
+            else
+            {
+                var errorStr = await responseMessage.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"GHN Shipping Order API error response: {responseMessage.StatusCode} - {errorStr}");
+            }
+
+            return null;
+        }
+
+        public async Task<List<GhnLogDto>> GetOrderTrackingLogsAsync(string ghnShipmentCode)
+        {
+            if (string.IsNullOrWhiteSpace(ghnShipmentCode))
+            {
+                return new List<GhnLogDto>();
+            }
+
+            // Đảm bảo Token và ShopId trong request headers
+            _httpClient.DefaultRequestHeaders.Remove("Token");
+            _httpClient.DefaultRequestHeaders.Remove("ShopId");
+            _httpClient.DefaultRequestHeaders.Add("Token", _token);
+            _httpClient.DefaultRequestHeaders.Add("ShopId", _shopIdStr);
+
+            var payload = new
+            {
+                order_code = ghnShipmentCode
+            };
+
+            try
+            {
+                var responseMessage = await _httpClient.PostAsJsonAsync("v2/shipping-order/detail", payload);
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var response = await responseMessage.Content.ReadFromJsonAsync<GhnApiResponse<GhnOrderDetailResponseDto>>();
+                    if (response != null && response.Code == 200 && response.Data != null && response.Data.Log != null)
+                    {
+                        return response.Data.Log;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting GHN tracking logs: {ex.Message}");
+            }
+
+            return new List<GhnLogDto>();
+        }
+
         public async Task<bool> CancelShipmentAsync(string ghnOrderCode)
         {
             if (string.IsNullOrWhiteSpace(ghnOrderCode))

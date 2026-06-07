@@ -878,11 +878,53 @@
                         </div>
                         @if (!string.IsNullOrEmpty(Model.Order.GhnShipmentCode))
                         {
-                            <div class="p-2 rounded bg-light border text-center">
+                            <div class="p-2 rounded bg-light border text-center mt-3">
                                 <div class="text-muted xs-text" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Mã vận đơn GHN</div>
                                 <div class="fw-bold text-success font-monospace" style="font-size: 0.95rem;">@Model.Order.GhnShipmentCode</div>
                             </div>
                         }
+                    </div>
+                }
+
+                @if (Model.TrackingLogs != null && Model.TrackingLogs.Any())
+                {
+                    <div class="od-card">
+                        <div class="od-card-title">
+                            <i class="bi bi-geo-alt"></i> Lịch trình vận chuyển (GHN)
+                        </div>
+                        <div class="tracking-timeline-container" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                            <ul class="tracking-timeline-list" style="list-style: none; padding-left: 1.25rem; border-left: 2px solid var(--border); margin-left: 0.5rem; position: relative;">
+                                @foreach (var log in Model.TrackingLogs.OrderByDescending(l => l.UpdatedDate))
+                                {
+                                    var timeStr = log.UpdatedDate?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—";
+                                    var (statusLabel, statusColor, statusIcon) = log.Status.ToLower() switch
+                                    {
+                                        "ready_to_pick" => ("Đang chờ lấy hàng", "var(--clay)", "bi-box-seam"),
+                                        "picking"       => ("Nhân viên GHN đang đến lấy hàng", "var(--clay)", "bi-person-badge"),
+                                        "picked"        => ("Đã lấy hàng thành công", "var(--bark)", "bi-check2-circle"),
+                                        "storing"       => ("Đang lưu kho trung chuyển", "#aaa", "bi-building-down"),
+                                        "delivering"    => ("Đang giao hàng", "var(--clay)", "bi-truck"),
+                                        "delivered"     => ("Đã giao hàng thành công", "#1e7a45", "bi-check-all"),
+                                        "delivery_fail" => ("Giao hàng không thành công", "#b02020", "bi-exclamation-triangle"),
+                                        "cancel"        => ("Hủy giao hàng", "#b02020", "bi-x-circle"),
+                                        "return"        => ("Đang chuyển hoàn", "var(--bark)", "bi-arrow-left-right"),
+                                        _               => (log.Status, "#333", "bi-info-circle")
+                                    };
+
+                                    <li class="mb-4" style="position: relative;">
+                                        <!-- Point marker -->
+                                        <div style="position: absolute; left: -1.65rem; top: 0.25rem; width: 10px; height: 10px; border-radius: 50%; background: @statusColor; border: 2px solid #fff; box-shadow: 0 0 0 2px @statusColor;"></div>
+                                        <div class="d-flex align-items-start gap-2">
+                                            <i class="bi @statusIcon" style="font-size: 1rem; color: @statusColor; margin-top: -1px;"></i>
+                                            <div>
+                                                <div class="fw-bold" style="font-size: 0.85rem; color: var(--bark);">@statusLabel</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">@timeStr</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
                     </div>
                 }
 

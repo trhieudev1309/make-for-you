@@ -201,6 +201,31 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 }
             }
 
+            if (status == (int)OrderStatus.Delivering)
+            {
+                try
+                {
+                    var order = await _orderRepo.GetOrderByIdAsync(orderId);
+                    if (order != null && string.IsNullOrEmpty(order.GhnShipmentCode))
+                    {
+                        var shipmentCode = await _ghnService.CreateShippingOrderAsync(order);
+                        if (!string.IsNullOrEmpty(shipmentCode))
+                        {
+                            await _orderRepo.UpdateGhnShipmentCodeAsync(orderId, shipmentCode);
+                            _logger.LogInformation("Successfully created GHN shipment {GhnShipmentCode} for order {OrderId}.", shipmentCode, orderId);
+                        }
+                        else
+                        {
+                            _logger.LogError("Failed to create GHN shipment for order {OrderId}.", orderId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while creating GHN shipment for order {OrderId}.", orderId);
+                }
+            }
+
             // Gọi Repo để thực hiện cập nhật
             await _orderRepo.UpdateStatusAsync(orderId, status);
             _logger.LogInformation("Order {OrderId} status updated to {Status}", orderId, (OrderStatus)status);
