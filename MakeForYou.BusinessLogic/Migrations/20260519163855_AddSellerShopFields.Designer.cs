@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MakeForYou.BusinessLogic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519163855_AddSellerShopFields")]
+    partial class AddSellerShopFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,10 +42,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CartItemId"));
-
-                    b.Property<string>("CustomizationsJson")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<int>("PriceAtAdd")
                         .HasColumnType("int");
@@ -121,67 +120,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.ToTable("ChatMessages");
                 });
 
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.CustomizationGroup", b =>
-                {
-                    b.Property<long>("CustomizationGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CustomizationGroupId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("CustomizationGroupId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("CustomizationGroups");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.CustomizationOption", b =>
-                {
-                    b.Property<long>("CustomizationOptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CustomizationOptionId"));
-
-                    b.Property<long>("CustomizationGroupId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OptionValue")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("CustomizationOptionId");
-
-                    b.HasIndex("CustomizationGroupId");
-
-                    b.ToTable("CustomizationOptions");
-                });
-
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
                 {
                     b.Property<long>("NotificationId")
@@ -239,57 +177,11 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GhnShipmentCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSellerPaid")
-                        .HasColumnType("bit");
-
                     b.Property<string>("OrderDescription")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("PaymentCode")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PayoutReferenceId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("ShippingAddressDetail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingDistrictId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingDistrictName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingFee")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingFullName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingProvinceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingProvinceName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -310,20 +202,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderItemId"));
-
-                    b.Property<string>("CustomizationNote")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CustomizationsJson")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<bool>("HasCustomization")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsCustomizationResolved")
-                        .HasColumnType("bit");
 
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
@@ -453,14 +331,8 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Height")
-                        .HasColumnType("int");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Length")
-                        .HasColumnType("int");
 
                     b.Property<int?>("Price")
                         .HasColumnType("int");
@@ -474,12 +346,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<string>("Title")
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
-
-                    b.Property<int>("Weight")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("int");
 
                     b.HasKey("ProductId");
 
@@ -583,18 +449,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<int?>("AverageRating")
                         .HasColumnType("int");
 
-                    b.Property<string>("BankAccountName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("BankAccountNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("BankBin")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
@@ -638,42 +492,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.HasKey("SellerId");
 
                     b.ToTable("Sellers");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.SellerPost", b =>
-                {
-                    b.Property<long>("PostId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PostId"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("SellerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("PostId");
-
-                    b.HasIndex("SellerId");
-
-                    b.ToTable("SellerPosts");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.User", b =>
@@ -759,28 +577,6 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("FromUser");
 
                     b.Navigation("ToUser");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.CustomizationGroup", b =>
-                {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Product", "Product")
-                        .WithMany("CustomizationGroups")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.CustomizationOption", b =>
-                {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.CustomizationGroup", "CustomizationGroup")
-                        .WithMany("Options")
-                        .HasForeignKey("CustomizationGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CustomizationGroup");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Notification", b =>
@@ -941,25 +737,9 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.SellerPost", b =>
-                {
-                    b.HasOne("MakeForYou.BusinessLogic.Entities.Seller", "Seller")
-                        .WithMany("Posts")
-                        .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Seller");
-                });
-
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Category", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.CustomizationGroup", b =>
-                {
-                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Order", b =>
@@ -977,18 +757,11 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("Reviews");
                 });
 
-            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Product", b =>
-                {
-                    b.Navigation("CustomizationGroups");
-                });
-
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Seller", b =>
                 {
                     b.Navigation("Orders");
 
                     b.Navigation("PortfolioItems");
-
-                    b.Navigation("Posts");
 
                     b.Navigation("Products");
 
