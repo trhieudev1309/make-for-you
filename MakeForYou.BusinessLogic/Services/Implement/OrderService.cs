@@ -152,12 +152,24 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 };
 
                 // Tạo danh sách OrderItem đính kèm cho đơn hàng này
-                var orderItems = itemsInGroup.Select(x => new OrderItem
+                var custMap = request.Customizations
+                    .ToDictionary(c => c.CartItemId);
+
+                var orderItems = itemsInGroup.Select(x =>
                 {
-                    ProductId = x.CartItem.ProductId,
-                    Quantity = x.CartItem.Quantity,
-                    Price = x.CartItem.Price,
-                    CustomizationsJson = x.CartItem.CustomizationsJson
+                    var cust = custMap.ContainsKey(x.CartItem.CartItemId)
+                        ? custMap[x.CartItem.CartItemId]
+                        : null;
+                    return new OrderItem
+                    {
+                        ProductId = x.CartItem.ProductId,
+                        Quantity = x.CartItem.Quantity,
+                        Price = x.CartItem.Price,
+                        CustomizationsJson = x.CartItem.CustomizationsJson,
+                        HasCustomization = cust?.HasCustomization ?? false,
+                        CustomizationNote = cust?.HasCustomization == true ? cust.Note : null,
+                        IsCustomizationResolved = false
+                    };
                 }).ToList();
 
                 // 5. Lưu vào Database

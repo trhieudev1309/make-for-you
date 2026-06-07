@@ -768,6 +768,99 @@
                     }
                 </div>
 
+                @* ── Any pending quotation that needs buyer action (accept/decline) ── *@
+                @{
+                    // Show when there is a pending quotation the buyer hasn't acted on yet
+                    // Covers: PendingQuotationAccept (cart customisation) and Confirmed (add-on)
+                    var actionableQ = (Model.Order.Status == (int)OrderStatus.PendingQuotationAccept ||
+                                       Model.Order.Status == (int)OrderStatus.Confirmed)
+                        ? Model.Order.Quotations?.FirstOrDefault(q => q.Status == 0)
+                        : null;
+                }
+                @if (actionableQ != null)
+                {
+                    bool isAddon = Model.Order.Status == (int)OrderStatus.Confirmed;
+                    <div class="od-card" style="border:2px solid @(isAddon ? "#f0d080" : "#6f42c1");">
+                        <div class="od-card-title" style="color:@(isAddon ? "#9a6800" : "#6f42c1");">
+                            <i class="bi @(isAddon ? "bi-plus-circle" : "bi-tag-fill")"></i>
+                            @(isAddon ? "Báo Giá Bổ Sung Từ Nghệ Nhân" : "Báo Giá Tùy Chỉnh Từ Nghệ Nhân")
+                        </div>
+                        <p style="font-size:.875rem;color:#555;margin-bottom:.5rem;">
+                            @(string.IsNullOrEmpty(actionableQ.Message) ? "Nghệ nhân đề xuất khoản phí cho các mục tùy chỉnh." : actionableQ.Message)
+                        </p>
+                        @if (actionableQ.Deadline.HasValue)
+                        {
+                            <div style="font-size:.82rem;color:#9a6800;margin-bottom:.5rem;">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Hạn hoàn thành: <strong>@actionableQ.Deadline.Value.ToLocalTime().ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        }
+                        <div style="font-size:1.15rem;font-weight:700;color:var(--bark);margin-bottom:1rem;">
+                            + @(actionableQ.ProposedPrice.HasValue ? actionableQ.ProposedPrice.Value.ToString("N0") + " đ" : "—")
+                        </div>
+                        <div class="d-flex gap-2">
+                            <form method="post" asp-page-handler="AcceptQuotation">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="quotationId" value="@actionableQ.QuotationId" />
+                                <button type="submit" class="btn btn-sm rounded-pill px-3 fw-bold"
+                                        style="background:#1e7a45;color:#fff;">
+                                    <i class="bi bi-check-circle me-1"></i> Chấp nhận
+                                </button>
+                            </form>
+                            <form method="post" asp-page-handler="DeclineQuotation"
+                                  onsubmit="return confirm('Từ chối báo giá này? Đơn hàng sẽ bị hủy nếu đây là báo giá bắt buộc.')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="quotationId" value="@actionableQ.QuotationId" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="bi bi-x-circle me-1"></i> Từ chối
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                @* ── PendingQuotationPayment: buyer accepted, must now pay ── *@
+                @if (Model.Order.Status == (int)OrderStatus.PendingQuotationPayment)
+                {
+                    var acceptedQ2 = Model.Order.Quotations?
+                        .Where(q => q.Status == 1)
+                        .OrderByDescending(q => q.CreatedAt)
+                        .FirstOrDefault();
+                    <div class="od-card" style="border:2px solid #6f42c1;background:#f9f5ff;">
+                        <div class="od-card-title" style="color:#6f42c1;">
+                            <i class="bi bi-credit-card"></i> Thanh Toán Báo Giá
+                        </div>
+                        <p style="font-size:.875rem;color:#555;margin-bottom:.5rem;">
+                            Bạn đã chấp nhận báo giá. Vui lòng thanh toán để đơn hàng được tiếp tục xử lý.
+                        </p>
+                        @if (acceptedQ2 != null)
+                        {
+                            <div style="font-size:.85rem;color:#555;margin-bottom:.35rem;">
+                                @(string.IsNullOrEmpty(acceptedQ2.Message) ? "Báo giá tùy chỉnh" : acceptedQ2.Message)
+                            </div>
+                            @if (acceptedQ2.Deadline.HasValue)
+                            {
+                                <div style="font-size:.82rem;color:#6f42c1;margin-bottom:.5rem;">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Hạn hoàn thành: <strong>@acceptedQ2.Deadline.Value.ToLocalTime().ToString("dd/MM/yyyy")</strong>
+                                </div>
+                            }
+                        }
+                        <div style="font-size:1.25rem;font-weight:700;color:#6f42c1;margin-bottom:1rem;">
+                            @(acceptedQ2?.ProposedPrice.HasValue == true
+                                ? acceptedQ2.ProposedPrice.Value.ToString("N0") + " đ"
+                                : (Model.Order.AgreedPrice.HasValue ? Model.Order.AgreedPrice.Value.ToString("N0") + " đ" : "—"))
+                        </div>
+                        <form method="post" asp-page-handler="PayQuotation">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn rounded-pill fw-bold px-4"
+                                    style="background:#6f42c1;color:#fff;">
+                                <i class="bi bi-credit-card me-1"></i> Thanh toán ngay
+                            </button>
+                        </form>
+                    </div>
+                }
+
                 <div class="od-card">
                     <div class="od-card-title">
                         <i class="bi bi-chat-dots"></i> Lịch sử tin nhắn trao đổi
@@ -847,6 +940,22 @@
                             }
                         </span>
                     </div>
+
+                    @if (!Model.Order.IsPaid && Model.Order.Status == (int)OrderStatus.Pending)
+                    {
+                        <div class="mt-3 p-3 rounded-3" style="background:#fff8e1;border:1px solid #ffe082;">
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-exclamation-circle me-1 text-warning"></i>
+                                Đơn hàng chưa được thanh toán.
+                            </div>
+                            <form method="post" asp-page-handler="PayNow">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">
+                                    <i class="bi bi-credit-card me-1"></i> Thanh toán ngay
+                                </button>
+                            </form>
+                        </div>
+                    }
 
                     @if (Model.Order.Status == (int)OrderStatus.Pending || Model.Order.Status == (int)OrderStatus.Quoted)
                     {
@@ -973,7 +1082,7 @@
 
                 </div>
 
-                @if (Model.Order != null && (OrderStatus)Model.Order.Status == OrderStatus.Completed)
+                @if (Model.Order != null && (OrderStatus)Model.Order.Status == OrderStatus.Done)
                 {
                     var existing = Model.Order.Reviews?.FirstOrDefault(r => r.BuyerId == Model.Order.BuyerId);
                     if (existing == null)
