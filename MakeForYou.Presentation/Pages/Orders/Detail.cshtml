@@ -633,6 +633,7 @@
                     @* ── Items table (cart orders) ── *@
                     @if (isCartOrder)
                     {
+                        <div class="table-responsive">
                         <table class="od-table">
                             <thead>
                                 <tr>
@@ -682,6 +683,7 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        </div>
                     }
                     else if (Model.Order.Quotations == null || !Model.Order.Quotations.Any())
                     {
@@ -693,6 +695,7 @@
                     @* ── Quotation history (shown for ALL order types when quotations exist) ── *@
                     @if (Model.Order.Quotations != null && Model.Order.Quotations.Any())
                     {
+                        <div class="table-responsive">
                         <table class="od-table">
                             <thead>
                                 <tr>
@@ -765,6 +768,7 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        </div>
                     }
                 </div>
 

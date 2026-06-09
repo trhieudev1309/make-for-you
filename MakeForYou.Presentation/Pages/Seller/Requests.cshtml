@@ -125,6 +125,15 @@
     .rq-summary-val { font-family: var(--serif); font-size: 1.6rem; display: block; line-height: 1; color: var(--fg); }
     .rq-summary-lbl { font-family: var(--mono); font-size: .62rem; letter-spacing: .12em;
         text-transform: uppercase; color: var(--fg-muted); margin-top: .2rem; }
+
+    @@media (max-width: 640px) {
+        .rq-wrap { padding-top: 2rem; }
+        .rq-filters { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+        .rq-filter-btn { padding: .5rem .9rem; white-space: nowrap; }
+        .rq-summary { flex-wrap: wrap; gap: 1.25rem 2rem; }
+        .rq-card { padding: 1.1rem 1.25rem; }
+        .rq-card-desc { max-width: 100%; }
+    }
 </style>
 
 <div class="rq-wrap">
