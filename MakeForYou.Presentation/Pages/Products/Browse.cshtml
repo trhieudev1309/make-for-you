@@ -68,10 +68,45 @@
     .btn-clay-search:hover { background-color: #b0724a; }
 </style>
 
+@* ── Offcanvas filter for mobile/tablet ── *@
+<div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title fw-bold" id="filterOffcanvasLabel">Bộ lọc sản phẩm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <span class="sidebar-title">Danh mục</span>
+        <a href="/Products" class="cat-item @(Model.CategoryId == null ? "active" : "")">Tất cả danh mục</a>
+        @if (Model.Categories != null) {
+            @foreach (var cat in Model.Categories) {
+                <a href="/Products?CategoryId=@cat.CategoryId&SearchTerm=@Model.SearchTerm"
+                   class="cat-item @(Model.CategoryId == cat.CategoryId ? "active" : "")">
+                    @cat.Name
+                </a>
+            }
+        }
+        <div class="mt-4">
+            <span class="sidebar-title">Khoảng giá</span>
+            <form method="get" action="/Products">
+                <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+                <input type="hidden" name="SearchTerm" value="@Model.SearchTerm" />
+                <div class="mb-3">
+                    <input type="number" name="MinPrice" class="price-input" placeholder="Từ (đ)">
+                </div>
+                <div class="mb-3">
+                    <input type="number" name="MaxPrice" class="price-input" placeholder="Đến (đ)">
+                </div>
+                <button type="submit" class="btn btn-outline-dark btn-sm w-100 rounded-pill mt-1"
+                        style="font-size: 0.75rem; font-weight: 600;">Lọc giá</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="container py-5">
     <div class="row">
-        @* SIDEBAR BỘ LỌC *@
-        <aside class="col-lg-2 mb-5 mb-lg-0">
+        @* SIDEBAR BỘ LỌC – desktop only *@
+        <aside class="col-lg-2 mb-5 mb-lg-0 d-none d-lg-block">
             <span class="sidebar-title">Danh mục</span>
             <a href="/Products" class="cat-item @(Model.CategoryId == null ? "active" : "")">Tất cả danh mục</a>
             @if (Model.Categories != null) {
@@ -99,8 +134,17 @@
         </aside>
 
         @* KHU VỰC HIỂN THỊ SẢN PHẨM CHÍNH *@
-        <main class="col-lg-10 ps-lg-5">
-            
+        <main class="col-12 col-lg-10 ps-lg-5">
+
+            @* Mobile: filter toggle button *@
+            <div class="d-lg-none mb-3">
+                <button class="btn btn-outline-secondary rounded-pill" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas"
+                        aria-controls="filterOffcanvas">
+                    <i class="bi bi-funnel me-2"></i>Bộ lọc &amp; Danh mục
+                </button>
+            </div>
+
             @* THANH TÌM KIẾM VÀ SẮP XẾP *@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-4">
                 @* TÍCH HỢP THANH TÌM KIẾM MỚI CHUẨN UX *@
@@ -180,10 +224,10 @@
             </div>
 
             @* GRID DANH SÁCH SẢN PHẨM *@
-            <div class="row g-4">
+            <div class="row g-3 g-md-4">
                 @if (Model.Products != null && Model.Products.Any()) {
                     foreach (var p in Model.Products) {
-                        <div class="col-sm-6 col-md-4 col-xl-3">
+                        <div class="col-6 col-md-4 col-xl-3">
                             <div class="product-card">
                                 <div class="img-container">
                                     <span class="badge-ready">SẴN SÀNG GIAO</span>

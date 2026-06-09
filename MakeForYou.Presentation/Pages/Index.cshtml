@@ -179,13 +179,39 @@
 		}
 
 		.hero-content h1 {
-			font-size: 2.5rem;
+			font-size: 2rem;
+		}
+
+		.hero-content .lead {
+			font-size: 1rem;
 		}
 
 		.quick-nav {
 			gap: 1.8rem;
 			justify-content: flex-start;
 			padding: 1rem 1rem;
+		}
+
+		.custom-section {
+			padding: 3rem 1.5rem;
+			margin: 2rem 0;
+			border-radius: 16px;
+		}
+
+		.custom-section .display-5 {
+			font-size: 1.6rem;
+		}
+
+		.custom-section .fs-5 {
+			font-size: 0.95rem !important;
+		}
+
+		.product-img {
+			height: 200px;
+		}
+
+		.d-flex.justify-content-between.align-items-end h2 {
+			font-size: 1.5rem !important;
 		}
 	}
 </style>
@@ -271,7 +297,7 @@
 			{
 				@foreach (var product in Model.BestSellers)
 				{
-					<div class="col-sm-6 col-md-4 col-lg-3">
+					<div class="col-6 col-md-4 col-lg-3">
 						@* BỌC CARD VÀO WRAPPER CHỐNG RUNG LẮC *@
 						<div class="card-wrapper">
 							<div class="product-card">
@@ -331,7 +357,7 @@
 			{
 				@foreach (var product in Model.HomeData.FeaturedProducts)
 				{
-					<div class="col-sm-6 col-md-4 col-lg-3">
+					<div class="col-6 col-md-4 col-lg-3">
 						@* BỌC CARD VÀO WRAPPER CHỐNG RUNG LẮC *@
 						<div class="card-wrapper">
 							<div class="product-card">
