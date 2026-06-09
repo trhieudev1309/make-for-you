@@ -59,6 +59,8 @@ builder.Services.AddScoped<IQuotationService, QuotationService>();
 
 
 builder.Services.AddHttpClient<IGhnLocationService, GhnLocationService>();
+
+builder.Services.AddScoped<ISellerService, SellerService>();
 // SignalR
 builder.Services.AddSignalR();
 

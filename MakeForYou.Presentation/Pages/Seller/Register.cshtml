@@ -1,0 +1,688 @@
+﻿@page "/Seller/Register"
+@using MakeForYou.BusinessLogic.ViewModels
+@model SellerRegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký bán hàng — Make For You";
+}
+
+<style>
+    /* ── Design Tokens ── */
+    :root {
+        --ds-bg: #FAFAF8;
+        --ds-fg: #1A1A1A;
+        --ds-muted: #F5F3F0;
+        --ds-muted-fg: #6B6B6B;
+        --ds-accent: #B8860B;
+        --ds-accent-hover: #9a7009;
+        --ds-border: #E8E4DF;
+        --ds-card: #FFFFFF;
+        --ds-radius: 6px;
+        --ds-font-serif: "Playfair Display", Georgia, serif;
+        --ds-font-sans: "Source Sans 3", system-ui, sans-serif;
+        --ds-font-mono: "IBM Plex Mono", monospace;
+    }
+
+    /* ── Google Fonts ── */
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@400;500&family=IBM+Plex+Mono:wght@500&display=swap');
+
+    /* ── Page wrapper ── */
+    .seller-reg-page {
+        background: var(--ds-bg);
+        min-height: 100vh;
+        padding: 3rem 1.5rem 5rem;
+        font-family: var(--ds-font-sans);
+        color: var(--ds-fg);
+    }
+
+    .seller-reg-container {
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    /* ── Page header ── */
+    .seller-reg-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .seller-reg-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .seller-reg-eyebrow-line {
+        width: 48px;
+        height: 1px;
+        background: var(--ds-border);
+    }
+
+    .seller-reg-eyebrow-text {
+        font-family: var(--ds-font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+        color: var(--ds-accent);
+    }
+
+    .seller-reg-title {
+        font-family: var(--ds-font-serif);
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        font-weight: 400;
+        letter-spacing: -.02em;
+        line-height: 1.2;
+        color: var(--ds-fg);
+        margin-bottom: .875rem;
+    }
+
+    .seller-reg-subtitle {
+        font-size: 1rem;
+        color: var(--ds-muted-fg);
+        line-height: 1.7;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+
+    /* ── Section rule ── */
+    .section-rule {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 2.5rem 0 2rem;
+    }
+
+    .section-rule-line {
+        flex: 1;
+        height: 1px;
+        background: var(--ds-border);
+    }
+
+    .section-rule-label {
+        font-family: var(--ds-font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+        color: var(--ds-accent);
+        white-space: nowrap;
+    }
+
+    /* ── Info banner ── */
+    .info-banner {
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: var(--ds-radius);
+        padding: .875rem 1rem;
+        display: flex;
+        gap: .625rem;
+        margin-bottom: 2rem;
+        font-size: .875rem;
+        color: #1E40AF;
+        line-height: 1.55;
+    }
+
+    /* ── Validation summary ── */
+    .validation-banner {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        border-radius: var(--ds-radius);
+        padding: .875rem 1rem;
+        margin-bottom: 2rem;
+        font-size: .875rem;
+        color: #DC2626;
+    }
+
+        .validation-banner ul {
+            margin: .5rem 0 0 1.25rem;
+            line-height: 1.7;
+        }
+
+    /* ── Form layout ── */
+    .form-row {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: .75rem 1.5rem;
+        align-items: start;
+        margin-bottom: 1.5rem;
+    }
+
+    @@media (max-width: 580px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-label-cell {
+        font-size: .875rem;
+        color: var(--ds-muted-fg);
+        text-align: right;
+        padding-top: .75rem;
+        line-height: 1.4;
+    }
+
+    @@media (max-width: 580px) {
+        .form-label-cell {
+            text-align: left;
+            padding-top: 0;
+        }
+    }
+
+    .required-star {
+        color: #DC2626;
+        margin-right: 2px;
+    }
+
+    /* ── Inputs ── */
+    .ds-input {
+        width: 100%;
+        height: 44px;
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius);
+        padding: 0 .875rem;
+        font-size: .9375rem;
+        font-family: var(--ds-font-sans);
+        background: transparent;
+        color: var(--ds-fg);
+        transition: border-color .15s, box-shadow .15s;
+        outline: none;
+    }
+
+        .ds-input:hover {
+            border-color: #c8c2ba;
+        }
+
+        .ds-input:focus {
+            border-color: var(--ds-accent);
+            box-shadow: 0 0 0 3px rgba(184, 134, 11, .12);
+        }
+
+        .ds-input::placeholder {
+            color: rgba(107, 107, 107, .55);
+        }
+
+        .ds-input.input-error {
+            border-color: #EF4444;
+        }
+
+    .ds-textarea {
+        height: 96px;
+        resize: vertical;
+        padding: .625rem .875rem;
+    }
+
+    .ds-select {
+        appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-color: var(--ds-card);
+    }
+
+    .field-hint {
+        font-size: .8125rem;
+        color: var(--ds-muted-fg);
+        margin-top: .375rem;
+        line-height: 1.5;
+    }
+
+    .char-count {
+        font-size: .75rem;
+        color: var(--ds-muted-fg);
+        margin-top: .375rem;
+    }
+
+    /* Field error */
+    .field-error {
+        font-size: .8125rem;
+        color: #DC2626;
+        margin-top: .3rem;
+    }
+
+    /* ── Address row: 3 selects ── */
+    .address-selects {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: .625rem;
+    }
+
+    @@media (max-width: 480px) {
+        .address-selects {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Checkbox ── */
+    .check-row {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        cursor: pointer;
+        margin-top: .25rem;
+    }
+
+        .check-row input[type="checkbox"] {
+            accent-color: var(--ds-accent);
+            width: 17px;
+            height: 17px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+    .check-text {
+        font-size: .875rem;
+        color: var(--ds-fg);
+        line-height: 1.6;
+    }
+
+        .check-text a {
+            color: var(--ds-accent);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+    /* ── Divider ── */
+    .ds-hr {
+        height: 1px;
+        background: var(--ds-border);
+        margin: 2.5rem 0;
+    }
+
+    /* ── Footer buttons ── */
+    .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.75rem;
+        border-top: 1px solid var(--ds-border);
+        margin-top: 2.5rem;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: .375rem;
+        background: transparent;
+        border: none;
+        font-family: var(--ds-font-sans);
+        font-size: .9375rem;
+        color: var(--ds-muted-fg);
+        cursor: pointer;
+        padding: .5rem 0;
+        text-decoration: none;
+        transition: color .15s;
+    }
+
+        .btn-back:hover {
+            color: var(--ds-fg);
+        }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: var(--ds-accent);
+        border: none;
+        border-radius: var(--ds-radius);
+        font-family: var(--ds-font-sans);
+        font-size: .9375rem;
+        font-weight: 500;
+        color: #fff;
+        cursor: pointer;
+        padding: .625rem 2rem;
+        min-height: 44px;
+        letter-spacing: .03em;
+        transition: background .2s, transform .15s;
+        box-shadow: 0 1px 3px rgba(26, 26, 26, .12);
+        text-decoration: none;
+    }
+
+        .btn-primary:hover {
+            background: var(--ds-accent-hover);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+    /* ── Payment badge ── */
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: var(--ds-muted);
+        border: 1px solid var(--ds-border);
+        border-radius: var(--ds-radius);
+        padding: .5rem .875rem;
+        font-size: .8125rem;
+        color: var(--ds-muted-fg);
+        margin-top: .75rem;
+    }
+
+    .payment-badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #16A34A;
+        flex-shrink: 0;
+    }
+</style>
+
+<div class="seller-reg-page">
+    <div class="seller-reg-container">
+
+        <!-- Page header -->
+        <header class="seller-reg-header">
+            <div class="seller-reg-eyebrow">
+                <span class="seller-reg-eyebrow-line"></span>
+                <span class="seller-reg-eyebrow-text">Make For You — Người bán</span>
+                <span class="seller-reg-eyebrow-line"></span>
+            </div>
+            <h1 class="seller-reg-title">Đăng ký bán hàng</h1>
+            <p class="seller-reg-subtitle">
+                Chia sẻ sản phẩm thủ công của bạn đến hàng nghìn người yêu thích handmade trên Make For You.
+            </p>
+        </header>
+
+        <!-- Validation summary -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-banner" role="alert">
+                <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="validation-banner" role="alert">@TempData["ErrorMessage"]</div>
+        }
+
+        <form asp-action="Register" asp-controller="Seller" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- ── SECTION 1: Thông tin gian hàng ── -->
+            <div class="section-rule">
+                <span class="section-rule-line"></span>
+                <span class="section-rule-label">01 — Thông tin gian hàng</span>
+                <span class="section-rule-line"></span>
+            </div>
+
+            <!-- Tên Shop -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="ShopName">
+                    <span class="required-star">*</span>Tên Shop
+                </label>
+                <div>
+                    <input asp-for="ShopName"
+                           class="ds-input @(ViewData.ModelState["ShopName"]?.Errors.Count > 0 ? "input-error" : "")"
+                           placeholder="Nhập tên gian hàng"
+                           maxlength="30"
+                           oninput="updateCount(this,'shopNameCount')" />
+                    <div class="char-count">
+                        <span id="shopNameCount">@(Model?.ShopName?.Length ?? 0)</span>/30
+                    </div>
+                    <span asp-validation-for="ShopName" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="ShopDescription">Mô tả Shop</label>
+                <div>
+                    <textarea asp-for="ShopDescription"
+                              class="ds-input ds-textarea"
+                              placeholder="Giới thiệu ngắn về gian hàng và sản phẩm thủ công của bạn…"
+                              maxlength="300"
+                              oninput="updateCount(this,'shopDescCount')"></textarea>
+                    <div class="char-count">
+                        <span id="shopDescCount">@(Model?.ShopDescription?.Length ?? 0)</span>/300
+                    </div>
+                </div>
+            </div>
+
+            <!-- Số điện thoại -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="PhoneNumber">
+                    <span class="required-star">*</span>Số điện thoại
+                </label>
+                <div>
+                    <div style="display:flex;gap:.5rem">
+                        <input class="ds-input" style="width:64px;flex-shrink:0;text-align:center;color:var(--ds-muted-fg)"
+                               value="+84" readonly aria-label="Mã quốc gia" />
+                        <input asp-for="PhoneNumber"
+                               class="ds-input @(ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "input-error" : "")"
+                               type="tel"
+                               placeholder="Số điện thoại" />
+                    </div>
+                    <span asp-validation-for="PhoneNumber" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- ── SECTION 2: Địa chỉ lấy hàng ── -->
+            <div class="section-rule">
+                <span class="section-rule-line"></span>
+                <span class="section-rule-label">02 — Địa chỉ lấy hàng</span>
+                <span class="section-rule-line"></span>
+            </div>
+
+            <div class="info-banner" role="note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Địa chỉ này dùng để đơn vị vận chuyển đến lấy hàng khi bạn có đơn. Hãy nhập chính xác để đơn hàng được xử lý nhanh nhất.
+            </div>
+
+            <!-- Họ & Tên -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="PickupFullName">
+                    <span class="required-star">*</span>Họ &amp; Tên
+                </label>
+                <div>
+                    <input asp-for="PickupFullName"
+                           class="ds-input @(ViewData.ModelState["PickupFullName"]?.Errors.Count > 0 ? "input-error" : "")"
+                           placeholder="Nhập họ và tên" />
+                    <span asp-validation-for="PickupFullName" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- SĐT lấy hàng -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="PickupPhone">
+                    <span class="required-star">*</span>Số điện thoại
+                </label>
+                <div>
+                    <input asp-for="PickupPhone"
+                           class="ds-input @(ViewData.ModelState["PickupPhone"]?.Errors.Count > 0 ? "input-error" : "")"
+                           type="tel"
+                           placeholder="Nhập số điện thoại" />
+                    <span asp-validation-for="PickupPhone" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- Địa chỉ: 3 selects gom lại -->
+            <div class="form-row">
+                <label class="form-label-cell">
+                    <span class="required-star">*</span>Khu vực
+                </label>
+                <div>
+                    <div class="address-selects">
+                        <select asp-for="Province"
+                                class="ds-input ds-select @(ViewData.ModelState["Province"]?.Errors.Count > 0 ? "input-error" : "")"
+                                id="provinceSelect"
+                                onchange="loadDistricts(this.value)">
+                            <option value="">Tỉnh / TP</option>
+                            <option>Hà Nội</option>
+                            <option>Hồ Chí Minh</option>
+                            <option>Đà Nẵng</option>
+                            <option>Cần Thơ</option>
+                            <option>Hải Phòng</option>
+                            <option>An Giang</option>
+                            <option>Bình Dương</option>
+                            <option>Đồng Nai</option>
+                        </select>
+                        <select asp-for="District"
+                                class="ds-input ds-select @(ViewData.ModelState["District"]?.Errors.Count > 0 ? "input-error" : "")"
+                                id="districtSelect">
+                            <option value="">Quận / Huyện</option>
+                        </select>
+                        <select asp-for="Ward"
+                                class="ds-input ds-select @(ViewData.ModelState["Ward"]?.Errors.Count > 0 ? "input-error" : "")"
+                                id="wardSelect">
+                            <option value="">Phường / Xã</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Province" class="field-error"></span>
+                    <span asp-validation-for="District" class="field-error"></span>
+                    <span asp-validation-for="Ward" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- Địa chỉ chi tiết -->
+            <div class="form-row">
+                <label class="form-label-cell" asp-for="AddressDetail">
+                    <span class="required-star">*</span>Chi tiết
+                </label>
+                <div>
+                    <textarea asp-for="AddressDetail"
+                              class="ds-input ds-textarea @(ViewData.ModelState["AddressDetail"]?.Errors.Count > 0 ? "input-error" : "")"
+                              placeholder="Số nhà, tên đường, tòa nhà…"></textarea>
+                    <span asp-validation-for="AddressDetail" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- ── SECTION 3: Thanh toán ── -->
+            <div class="section-rule">
+                <span class="section-rule-line"></span>
+                <span class="section-rule-label">03 — Phương thức thanh toán</span>
+                <span class="section-rule-line"></span>
+            </div>
+
+            <div class="info-banner" role="note">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px" aria-hidden="true">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                    <line x1="1" y1="10" x2="23" y2="10" />
+                </svg>
+                Make For You chỉ hỗ trợ <strong>thanh toán online</strong>. Tiền sẽ được giữ an toàn và giải ngân sau khi người mua xác nhận nhận hàng.
+            </div>
+
+            <div class="form-row">
+                <label class="form-label-cell">Hỗ trợ</label>
+                <div>
+                    <div class="payment-badge">
+                        <span class="payment-badge-dot"></span>
+                        VNPay · MoMo · Chuyển khoản ngân hàng
+                    </div>
+                    <p class="field-hint">Không hỗ trợ COD (thanh toán khi nhận hàng)</p>
+                </div>
+            </div>
+
+            <!-- ── Điều khoản ── -->
+            <div class="ds-hr"></div>
+
+            <div class="form-row">
+                <div class="form-label-cell" style="padding-top:.25rem"></div>
+                <div>
+                    <label class="check-row" asp-for="AgreedToTerms">
+                        <input asp-for="AgreedToTerms" type="checkbox" />
+                        <span class="check-text">
+                            Tôi xác nhận tất cả thông tin đã cung cấp là chính xác và trung thực.
+                            Tôi đã đọc và đồng ý với
+                            <a href="/terms" target="_blank">Điều khoản dịch vụ</a>
+                            và
+                            <a href="/privacy" target="_blank">Chính sách bảo mật</a>
+                            của Make For You.
+                        </span>
+                    </label>
+                    <span asp-validation-for="AgreedToTerms" class="field-error"></span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="form-footer">
+                <a asp-action="Index" asp-controller="Profile" class="btn-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    Quay lại hồ sơ
+                </a>
+                <button type="submit" class="btn-primary">
+                    Hoàn tất đăng ký
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Char counter
+        function updateCount(el, spanId) {
+            document.getElementById(spanId).textContent = el.value.length;
+        }
+
+        // Stub: thay bằng API gọi thật nếu có dữ liệu địa giới hành chính
+        function loadDistricts(province) {
+            const districtSelect = document.getElementById('districtSelect');
+            const wardSelect = document.getElementById('wardSelect');
+
+            districtSelect.innerHTML = '<option value="">Quận / Huyện</option>';
+            wardSelect.innerHTML = '<option value="">Phường / Xã</option>';
+
+            if (!province) return;
+
+            // TODO: thay bằng fetch('/api/districts?province=' + encodeURIComponent(province))
+            const mockData = {
+                'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Đống Đa', 'Cầu Giấy', 'Tây Hồ'],
+                'Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình'],
+                'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn'],
+                'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng'],
+            };
+
+            const districts = mockData[province] || [];
+            districts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = d;
+                districtSelect.appendChild(opt);
+            });
+        }
+
+        districtSelect.addEventListener('change', function () {
+            const wardSelect = document.getElementById('wardSelect');
+            wardSelect.innerHTML = '<option value="">Phường / Xã</option>';
+
+            if (!this.value) return;
+
+            // TODO: thay bằng fetch('/api/wards?district=' + encodeURIComponent(this.value))
+            const mockWards = ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4'];
+            mockWards.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w;
+                opt.textContent = w;
+                wardSelect.appendChild(opt);
+            });
+        });
+    </script>
+}
