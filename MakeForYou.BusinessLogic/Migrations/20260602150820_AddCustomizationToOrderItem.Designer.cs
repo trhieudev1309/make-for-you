@@ -4,6 +4,7 @@ using MakeForYou.BusinessLogic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MakeForYou.BusinessLogic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602150820_AddCustomizationToOrderItem")]
+    partial class AddCustomizationToOrderItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,13 +242,7 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GhnShipmentCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSellerPaid")
                         .HasColumnType("bit");
 
                     b.Property<string>("OrderDescription")
@@ -254,42 +251,8 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<long?>("PaymentCode")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("PayoutReferenceId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("ShippingAddressDetail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingDistrictId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingDistrictName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingFee")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingFullName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ShippingProvinceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingProvinceName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingWardName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -311,19 +274,9 @@ namespace MakeForYou.BusinessLogic.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderItemId"));
 
-                    b.Property<string>("CustomizationNote")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("CustomizationsJson")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
-
-                    b.Property<bool>("HasCustomization")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsCustomizationResolved")
-                        .HasColumnType("bit");
 
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
@@ -567,23 +520,8 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Property<int?>("AverageRating")
                         .HasColumnType("int");
 
-                    b.Property<string>("BankAccountName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("BankAccountNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("BankBin")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("GhnShopId")
-                        .HasColumnType("int");
 
                     b.Property<int?>("PriceRange")
                         .HasColumnType("int");

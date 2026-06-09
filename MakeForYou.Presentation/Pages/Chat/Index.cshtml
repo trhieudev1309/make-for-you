@@ -405,14 +405,10 @@
         let actions = '';
         if (status === 'pending' && !isMe) {
             actions = `
-                <button class="q-btn accept" onclick="respondQuotation(${q.quotationId},'accept')">✓ Accept</button>
-                <button class="q-btn reject" onclick="respondQuotation(${q.quotationId},'reject')">✗ Reject</button>`;
-        } else if (status === 'accepted' && isMe) {
-            actions = `
-                <button class="q-btn confirm" onclick="respondQuotation(${q.quotationId},'confirm')">🎉 Confirm Deal</button>
-                <button class="q-btn cancel"  onclick="respondQuotation(${q.quotationId},'cancel')">Cancel</button>`;
+                <button class="q-btn accept" onclick="respondQuotation(${q.quotationId},'approve')">✓ Duyệt</button>
+                <button class="q-btn cancel" onclick="respondQuotation(${q.quotationId},'cancel')">✗ Hủy</button>`;
         } else if (status === 'pending' && isMe) {
-            actions = `<button class="q-btn cancel" onclick="respondQuotation(${q.quotationId},'cancel')">Cancel</button>`;
+            actions = `<button class="q-btn cancel" onclick="respondQuotation(${q.quotationId},'cancel')">Hủy</button>`;
         }
 
         return `

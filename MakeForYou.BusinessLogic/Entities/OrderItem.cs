@@ -13,6 +13,13 @@ namespace MakeForYou.BusinessLogic.Entities
         [MaxLength(2000)]
         public string? CustomizationsJson { get; set; }
 
+        public bool HasCustomization { get; set; } = false;
+
+        [MaxLength(100)]
+        public string? CustomizationNote { get; set; }
+
+        public bool IsCustomizationResolved { get; set; } = false;
+
         public Order Order { get; set; } = null!;
         public Product Product { get; set; } = null!;
     }

@@ -1,15 +1,29 @@
 ﻿@page
 @model MakeForYou.Presentation.Pages.Orders.IndexModel
-@using MakeForYou.BusinessLogic.Enums
+@using MakeForYou.BusinessLogic.Entities.Enums
 @{
-    ViewData["Title"] = "Đơn hàng của tôi";
+    ViewData["Title"] = Model.IsSeller ? "Đơn hàng nhận được" : "Đơn hàng của tôi";
 }
+
+<style>
+    .badge-delivering { background-color: #6f42c1; color: #fff; }
+    .badge-delivered  { background-color: #0f7a5a; color: #fff; }
+    .badge-pqs        { background-color: #e65100; color: #fff; }   /* PendingQuotationSubmit  */
+    .badge-pqa        { background-color: #6f42c1; color: #fff; }   /* PendingQuotationAccept  */
+    .badge-pqp        { background-color: #6f42c1; color: #fff; }   /* PendingQuotationPayment */
+</style>
 
 <div class="container py-5" style="max-width: 860px;">
 
     <div class="mb-4">
-        <h2 style="font-family: var(--serif); font-weight: 700;">Đơn hàng của tôi</h2>
-        <p class="text-muted">Theo dõi và quản lý tất cả các đơn hàng của bạn.</p>
+        <h2 style="font-family: var(--serif); font-weight: 700;">
+            @(Model.IsSeller ? "Đơn hàng nhận được" : "Đơn hàng của tôi")
+        </h2>
+        <p class="text-muted">
+            @(Model.IsSeller
+                ? "Quản lý và xử lý các đơn hàng mà khách hàng đã đặt cho bạn."
+                : "Theo dõi và quản lý tất cả các đơn hàng của bạn.")
+        </p>
     </div>
 
     @if (!Model.Orders.Any())
@@ -18,8 +32,15 @@
             <div class="card-body">
                 <i class="bi bi-bag-x fs-1 text-muted mb-3 d-block"></i>
                 <h5 class="fw-bold">Chưa có đơn hàng nào</h5>
-                <p class="text-muted">Sau khi bạn đặt mua hoặc tạo yêu cầu thiết kế riêng, đơn hàng sẽ xuất hiện tại đây.</p>
-                <a asp-page="/Products/Index" class="btn btn-dark rounded-pill px-4">Khám phá tác phẩm</a>
+                @if (Model.IsSeller)
+                {
+                    <p class="text-muted">Khi khách hàng đặt hàng cho bạn, đơn hàng sẽ xuất hiện tại đây.</p>
+                }
+                else
+                {
+                    <p class="text-muted">Sau khi bạn đặt mua hoặc tạo yêu cầu thiết kế riêng, đơn hàng sẽ xuất hiện tại đây.</p>
+                    <a asp-page="/Products/Index" class="btn btn-dark rounded-pill px-4">Khám phá tác phẩm</a>
+                }
             </div>
         </div>
     }
@@ -33,11 +54,19 @@
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <div>
                                 <div class="text-muted small mb-1">Đơn hàng #@order.OrderId</div>
-                                <h6 class="fw-bold mb-1">@(order.Seller?.User?.FullName ?? "Nghệ nhân")</h6>
-                                <div class="text-muted small">@order.Seller?.SkillDescription</div>
+                                @if (Model.IsSeller)
+                                {
+                                    <h6 class="fw-bold mb-1">@(order.Buyer?.FullName ?? "Khách hàng")</h6>
+                                    <div class="text-muted small">@(order.OrderDescription ?? "Yêu cầu tùy chỉnh")</div>
+                                }
+                                else
+                                {
+                                    <h6 class="fw-bold mb-1">@(order.Seller?.User?.FullName ?? "Nghệ nhân")</h6>
+                                    <div class="text-muted small">@order.Seller?.SkillDescription</div>
+                                }
                             </div>
                             <span class="badge rounded-pill @MakeForYou.Presentation.Pages.Orders.IndexModel.BadgeClass(order.Status) px-3 py-2">
-                                @((OrderStatus)order.Status)
+                                <i class="bi @MakeForYou.Presentation.Pages.Orders.IndexModel.StatusIcon(order.Status) me-1"></i>@MakeForYou.Presentation.Pages.Orders.IndexModel.StatusLabel(order.Status)
                             </span>
                         </div>
 
@@ -56,10 +85,20 @@
                                 }
                                 <span><i class="bi bi-chat-dots me-1"></i>@(order.Quotations?.Count ?? 0) phản hồi báo giá</span>
                             </div>
-                            <a asp-page="/Orders/Detail" asp-route-id="@order.OrderId"
-                               class="btn btn-outline-dark btn-sm rounded-pill px-4">
-                                Xem chi tiết
-                            </a>
+                            @if (Model.IsSeller)
+                            {
+                                <a asp-page="/Seller/Requestdetail" asp-route-id="@order.OrderId"
+                                   class="btn btn-outline-dark btn-sm rounded-pill px-4">
+                                    Xem chi tiết
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-page="/Orders/Detail" asp-route-id="@order.OrderId"
+                                   class="btn btn-outline-dark btn-sm rounded-pill px-4">
+                                    Xem chi tiết
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

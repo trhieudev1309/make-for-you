@@ -1,12 +1,12 @@
 using MakeForYou.BusinessLogic.DTOs;          // ← UpdateProgressRequest lives here
 using MakeForYou.BusinessLogic.Entities;
-using MakeForYou.BusinessLogic.Enums;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
-using MakeForYou.BusinessLogic.Services.Interfaces; // Hoặc đường dẫn chính xác đến thư mục chứa IQuotationService của bạn
+using MakeForYou.BusinessLogic.Services.Interfaces;
+using MakeForYou.BusinessLogic.Entities.Enums; // Hoặc đường dẫn chính xác đến thư mục chứa IQuotationService của bạn
 
 namespace MakeForYou.Presentation.Pages.Seller
 {
@@ -60,7 +60,7 @@ namespace MakeForYou.Presentation.Pages.Seller
             if (Order == null) return new();
             return Enum.GetValues<OrderStatus>()
                        .Where(s => (int)s > Order.Status && s != OrderStatus.Cancelled)
-                       .Select(s => ((int)s, s.ToString()))
+                       .Select(s => ((int)s, StatusLabel((int)s)))
                        .ToList();
         }
 
@@ -85,6 +85,23 @@ namespace MakeForYou.Presentation.Pages.Seller
             OrderStatus.Completed => "bi-bag-check",
             OrderStatus.Cancelled => "bi-x-circle",
             _ => "bi-circle"
+        };
+
+        public string StatusLabel(int status) => (OrderStatus)status switch
+        {
+            OrderStatus.Pending                => "Chờ xác nhận",
+            OrderStatus.Confirmed              => "Đã xác nhận",
+            OrderStatus.Quoted                 => "Đã báo giá",
+            OrderStatus.InProgress             => "Đang thực hiện",
+            OrderStatus.Completed              => "Hoàn thành",
+            OrderStatus.Delivering             => "Đang giao hàng",
+            OrderStatus.Delivered              => "Đã giao hàng",
+            OrderStatus.Done                   => "Đã xong",
+            OrderStatus.Cancelled              => "Đã hủy",
+            OrderStatus.PendingQuotationSubmit  => "Chờ nghệ nhân báo giá",
+            OrderStatus.PendingQuotationAccept  => "Chờ chấp nhận báo giá",
+            OrderStatus.PendingQuotationPayment => "Chờ thanh toán báo giá",
+            _                                  => "Không xác định"
         };
     }
 }

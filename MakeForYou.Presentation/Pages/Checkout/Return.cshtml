@@ -18,7 +18,7 @@
     </div>
 
     <h1 class="display-4 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">
-        @(Model.IsSuccess ? "Cảm ơn bạn đã đặt hàng!" : "Thanh toán chưa xác nhận")
+        @(Model.IsSuccess ? "Thanh toán thành công!" : "Thanh toán chưa xác nhận")
     </h1>
 
     <p class="lead mb-4 text-muted">
@@ -26,7 +26,7 @@
         <br />
         @if (Model.IsSuccess)
         {
-            @:Nghệ nhân của chúng tôi đã được thông báo để bắt đầu chế tác tác phẩm độc bản của bạn.
+            @:Đơn hàng của bạn đã được cập nhật. Nhấn bên dưới để xem trạng thái mới nhất.
         }
         else
         {
@@ -40,9 +40,18 @@
         <a href="/Products" class="btn btn-outline-dark rounded-pill px-5 py-2 fw-bold">
             Tiếp tục mua sắm
         </a>
-        <a href="/Orders/Index" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
-            Theo dõi đơn hàng
-        </a>
+        @if (Model.RelatedOrderId.HasValue)
+        {
+            <a href="/Orders/Detail/@Model.RelatedOrderId" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
+                Xem đơn hàng
+            </a>
+        }
+        else
+        {
+            <a href="/Orders/Index" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
+                Theo dõi đơn hàng
+            </a>
+        }
     </div>
 
     <div class="mt-5 p-4 bg-light rounded-4 mx-auto" style="max-width: 500px; border: 1px dashed #ccc;">

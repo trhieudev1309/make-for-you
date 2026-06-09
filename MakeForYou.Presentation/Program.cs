@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Hubs;
+using MakeForYou.BusinessLogic.Implement;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Implement;
@@ -52,10 +53,21 @@ builder.Services.AddScoped<ISellerRepository, SellerRepository>();
 builder.Services.AddScoped<ISellerService, SellerService>();
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<PortfolioService, PortfolioService>();
+
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
+
+
+builder.Services.AddHttpClient<IGhnLocationService, GhnLocationService>();
+// SignalR
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<IProgressRepository, ProgressRepository>();
 builder.Services.AddScoped<ICustomizationRepository, CustomizationRepository>();
 builder.Services.AddScoped<ICustomizationService, CustomizationService>();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPayoutService, PayoutService>();
+
 builder.Services.AddScoped<ISellerPostRepository, SellerPostRepository>();
 builder.Services.AddScoped<ISellerPostService, SellerPostService>();
 

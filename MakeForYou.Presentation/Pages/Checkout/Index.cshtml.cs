@@ -56,7 +56,8 @@ namespace MakeForYou.Presentation.Pages.Checkout
                 OrderRequest.FullName,
                 OrderRequest.PhoneNumber,
                 OrderRequest.ShippingAddress,
-                paymentCode);
+                paymentCode,
+                OrderRequest.Customizations);
 
             if (orders == null || !orders.Any()) return Page();
 

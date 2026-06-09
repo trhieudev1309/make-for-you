@@ -459,6 +459,7 @@
                 </span>
             }
         </button>
+        <button class="sp-tab"        data-tab="bank"      onclick="switchTab('bank',      this)">Ngân Hàng</button>
         <button class="sp-tab"        data-tab="account"   onclick="switchTab('account',   this)">Tài Khoản</button>
     </div>
 
@@ -831,6 +832,232 @@
     </div>
 
     <!-- ══ TAB: ACCOUNT ══ -->
+    @* ── Bank Info Tab ── *@
+    <div id="tab-bank" class="sp-tab-panel">
+        <div class="sp-card" style="border-top:2px solid var(--accent);">
+            <h2 class="sp-section-title">Tài Khoản Ngân Hàng Nhận Tiền</h2>
+            <p style="font-size:.875rem;color:var(--fg-muted);margin-bottom:1.5rem;">
+                Khi người mua xác nhận đã nhận hàng, hệ thống sẽ tự động chuyển khoản toàn bộ giá trị đơn hàng vào tài khoản này.
+            </p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Seller?.BankAccountNumber))
+            {
+                <div id="bankCurrentInfo" style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;border-radius:6px;background:#f5f3f0;border:1px solid var(--border);margin-bottom:1.5rem;">
+                    <img id="bankCurrentLogo" src="" alt="" width="32" height="32"
+                         style="border-radius:4px;object-fit:contain;flex-shrink:0;display:none;" />
+                    <i id="bankCurrentIcon" class="bi bi-bank2" style="font-size:1.25rem;color:var(--accent);flex-shrink:0;"></i>
+                    <div>
+                        <div id="bankCurrentName" style="font-weight:700;font-size:.95rem;color:var(--fg);">@Model.Seller.BankBin</div>
+                        <div style="font-size:.8rem;color:var(--fg-muted);">
+                            @Model.Seller.BankAccountNumber
+                            @if (!string.IsNullOrWhiteSpace(Model.Seller.BankAccountName))
+                            {
+                                <span> · @Model.Seller.BankAccountName</span>
+                            }
+                        </div>
+                    </div>
+                    <span style="margin-left:auto;font-size:.7rem;font-family:var(--mono);background:#d6f5e3;color:#1e7a45;padding:.2rem .6rem;border-radius:20px;">Đã cài đặt</span>
+                </div>
+            }
+
+            <form method="post" asp-page-handler="UpdateBankInfo" id="bankForm">
+                @Html.AntiForgeryToken()
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Ngân hàng <span style="color:#b02020;">*</span></label>
+                        <div style="position:relative;" id="bankPickerWrap">
+                            <input type="hidden" name="BankBin" id="bankBinHidden" value="@Model.Seller?.BankBin" />
+                            <input type="text" id="bankSearch" class="sp-input"
+                                   placeholder="Tìm ngân hàng (VD: MB, Vietcombank...)"
+                                   autocomplete="off" />
+                            <div id="bankDropdown" style="
+                                display:none; position:absolute; top:calc(100% + 4px); left:0; right:0;
+                                background:#fff; border:1px solid var(--border); border-radius:4px;
+                                max-height:260px; overflow-y:auto; z-index:200;
+                                box-shadow:0 6px 20px rgba(26,26,26,.1);">
+                            </div>
+                        </div>
+                        <div id="bankPickerLoading" style="font-size:.72rem;color:var(--fg-muted);margin-top:.3rem;">
+                            <i class="bi bi-arrow-repeat"></i> Đang tải danh sách ngân hàng…
+                        </div>
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Số tài khoản <span style="color:#b02020;">*</span></label>
+                        <input class="sp-input" type="text" name="BankAccountNumber"
+                               value="@Model.Seller?.BankAccountNumber" placeholder="VD: 0123456789" />
+                    </div>
+                </div>
+                <div class="sp-field">
+                    <label class="sp-label-field">Tên chủ tài khoản</label>
+                    <input class="sp-input" type="text" name="BankAccountName"
+                           value="@Model.Seller?.BankAccountName" placeholder="VD: NGUYEN VAN A" />
+                </div>
+
+                <div class="sp-field" style="margin-top:1.25rem;">
+                    <label style="display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;
+                                  padding:.85rem 1rem;border-radius:6px;border:1px solid var(--border);
+                                  background:var(--muted);">
+                        <input type="checkbox" id="bankConfirm"
+                               style="margin-top:.15rem;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;" />
+                        <span style="font-size:.875rem;color:var(--fg-muted);line-height:1.5;">
+                            Tôi xác nhận rằng thông tin tài khoản ngân hàng trên là chính xác và thuộc về tôi.
+                            Tôi <strong style="color:var(--fg);">hoàn toàn chịu trách nhiệm</strong> nếu thông tin sai dẫn đến
+                            việc không nhận được thanh toán hoặc chuyển nhầm tài khoản.
+                        </span>
+                    </label>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;">
+                    <button type="submit" id="bankSaveBtn" class="sp-btn" disabled style="opacity:.5;cursor:not-allowed;">
+                        <i class="bi bi-save"></i> Lưu Thông Tin Ngân Hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        const savedBin    = '@(Model.Seller?.BankBin ?? "")';
+        const hiddenInput = document.getElementById('bankBinHidden');
+        const searchInput = document.getElementById('bankSearch');
+        const dropdown    = document.getElementById('bankDropdown');
+        const loadingHint = document.getElementById('bankPickerLoading');
+        const confirmBox  = document.getElementById('bankConfirm');
+        const saveBtn     = document.getElementById('bankSaveBtn');
+        const form        = document.getElementById('bankForm');
+
+        let allBanks = [];
+        let selected = null;
+
+        // Enable save only when bank selected + checkbox ticked
+        function updateSaveBtn() {
+            const ok = selected !== null && confirmBox.checked;
+            saveBtn.disabled = !ok;
+            saveBtn.style.opacity = ok ? '1' : '.5';
+            saveBtn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+        }
+        confirmBox.addEventListener('change', updateSaveBtn);
+
+        // Prevent submit if not ready
+        form.addEventListener('submit', function (e) {
+            if (!selected || !confirmBox.checked) { e.preventDefault(); return; }
+            if (!hiddenInput.value) { e.preventDefault(); return; }
+        });
+
+        async function loadBanks() {
+            try {
+                const res  = await fetch('https://api.vietqr.io/v2/banks');
+                const json = await res.json();
+                allBanks   = (json.data || []).filter(b => b.transferSupported === 1);
+                loadingHint.textContent = '';
+
+                if (savedBin) {
+                    const match = allBanks.find(b => b.bin === savedBin);
+                    if (match) {
+                        selectBank(match);
+                        updateCurrentInfoCard(match);
+                    }
+                }
+            } catch {
+                loadingHint.textContent = 'Không tải được danh sách ngân hàng.';
+            }
+        }
+
+        function updateCurrentInfoCard(bank) {
+            const nameEl = document.getElementById('bankCurrentName');
+            const logoEl = document.getElementById('bankCurrentLogo');
+            const iconEl = document.getElementById('bankCurrentIcon');
+            if (!nameEl) return;
+            nameEl.textContent = bank.shortName;
+            if (bank.logo && logoEl) {
+                logoEl.src = bank.logo;
+                logoEl.style.display = 'block';
+                if (iconEl) iconEl.style.display = 'none';
+            }
+        }
+
+        function renderDropdown(banks) {
+            if (!banks.length) {
+                dropdown.innerHTML = '<div style="padding:.75rem 1rem;font-size:.875rem;color:#aaa;">Không tìm thấy ngân hàng phù hợp.</div>';
+            } else {
+                dropdown.innerHTML = banks.map((b, i) => `
+                    <div class="bank-opt" data-idx="${i}" style="
+                            display:flex;align-items:center;gap:.75rem;
+                            padding:.55rem .875rem;cursor:pointer;transition:background .1s;">
+                        <img src="${b.logo || ''}" alt="" width="28" height="28"
+                             style="border-radius:4px;object-fit:contain;flex-shrink:0;background:#f5f3f0;"
+                             onerror="this.style.visibility='hidden'" />
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                ${b.shortName}
+                            </div>
+                            <div style="font-size:.7rem;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                ${b.name}
+                            </div>
+                        </div>
+                        <span style="font-size:.65rem;font-family:var(--mono);color:#bbb;flex-shrink:0;">${b.bin}</span>
+                    </div>`).join('');
+
+                dropdown.querySelectorAll('.bank-opt').forEach(el => {
+                    el.addEventListener('mouseenter', () => el.style.background = 'var(--muted)');
+                    el.addEventListener('mouseleave', () => el.style.background = '');
+                    el.addEventListener('mousedown', e => {
+                        e.preventDefault();
+                        selectBank(banks[+el.dataset.idx]);
+                    });
+                });
+            }
+            dropdown.style.display = 'block';
+        }
+
+        function selectBank(bank) {
+            selected = bank;
+            hiddenInput.value  = bank.bin;
+            searchInput.value  = bank.shortName;
+            dropdown.style.display = 'none';
+            updateSaveBtn();
+        }
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.trim().toLowerCase();
+            selected = null;
+            hiddenInput.value = '';
+            updateSaveBtn();
+
+            if (!allBanks.length) return;
+            const filtered = q
+                ? allBanks.filter(b =>
+                    b.shortName?.toLowerCase().includes(q) ||
+                    b.name?.toLowerCase().includes(q) ||
+                    b.code?.toLowerCase().includes(q) ||
+                    b.bin?.includes(q))
+                : allBanks;
+            renderDropdown(filtered.slice(0, 30));
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (!allBanks.length) return;
+            const q = searchInput.value.trim().toLowerCase();
+            const filtered = q
+                ? allBanks.filter(b =>
+                    b.shortName?.toLowerCase().includes(q) ||
+                    b.name?.toLowerCase().includes(q) ||
+                    b.code?.toLowerCase().includes(q) ||
+                    b.bin?.includes(q))
+                : allBanks;
+            renderDropdown(filtered.slice(0, 30));
+        });
+
+        document.addEventListener('click', e => {
+            if (!document.getElementById('bankPickerWrap').contains(e.target))
+                dropdown.style.display = 'none';
+        });
+
+        loadBanks();
+    })();
+    </script>
+
     <div id="tab-account" class="sp-tab-panel">
         <div class="sp-card">
             <h2 class="sp-section-title">Đổi Mật Khẩu</h2>

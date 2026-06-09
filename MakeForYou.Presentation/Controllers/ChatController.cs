@@ -13,11 +13,13 @@ namespace MakeForYou.Presentation.Controllers
     {
         private readonly IChatService _chatService;
         private readonly IOrderService _orderService;
+        private readonly ILogger<ChatController> _logger;
 
-        public ChatController(IChatService chatService, IOrderService orderService)
+        public ChatController(IChatService chatService, IOrderService orderService, ILogger<ChatController> logger)
         {
             _chatService = chatService;
             _orderService = orderService;
+            _logger = logger;
         }
 
         private long GetUserId()
@@ -59,10 +61,12 @@ namespace MakeForYou.Presentation.Controllers
                     });
                 }
 
+                _logger.LogInformation("User {UserId} fetched {Count} conversations", userId, list.Count);
                 return Ok(list);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching conversations for current user");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -84,10 +88,12 @@ namespace MakeForYou.Presentation.Controllers
                     isRead = m.IsRead
                 }).ToList();
 
+                _logger.LogInformation("User {UserId} fetched {Count} messages with user {OtherUserId}", userId, result.Count, otherUserId);
                 return Ok(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching messages for current user with user {OtherUserId}", otherUserId);
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -103,6 +109,7 @@ namespace MakeForYou.Presentation.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching unread message count for current user");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -114,10 +121,12 @@ namespace MakeForYou.Presentation.Controllers
             {
                 var userId = GetUserId();
                 await _chatService.MarkAsReadAsync(request.FromUserId, request.ToUserId, userId);
+                _logger.LogInformation("User {UserId} marked messages from {FromUserId} as read", userId, request.FromUserId);
                 return Ok(new { success = true });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error marking messages as read");
                 return BadRequest(new { error = ex.Message });
             }
         }
