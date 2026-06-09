@@ -121,20 +121,7 @@
         transition: opacity .28s, transform .28s;
     }
 
-    /* Customization Styles */
-    .customization-group-card {
-        background: #fafaf8;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid var(--serif-border, #e8e3dd);
-    }
-
-    .customization-options-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-
+    /* Customization option buttons — used inside add-to-cart modal */
     .customization-option-btn {
         display: inline-block;
         position: relative;
@@ -167,19 +154,6 @@
     .customization-input:hover + .option-label {
         border-color: var(--mfy-bark, #2D2926);
         transform: translateY(-1px);
-    }
-
-    .customizations-section {
-        animation: fadeIn 0.3s ease-in;
-    }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
     }
 </style>
 
@@ -261,61 +235,15 @@
 
                         <hr style="border-color:var(--serif-border);" />
 
-                        @* CUSTOMIZATION OPTIONS SECTION *@
-                        @if (Model.Customizations != null && Model.Customizations.Count > 0)
-                        {
-                            <div class="customizations-section mb-4">
-                                <div class="small-caps mb-3" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chỉnh sản phẩm</div>
-                                
-                                @foreach (var group in Model.Customizations.OrderBy(cg => cg.DisplayOrder))
-                                {
-                                    <div class="customization-group-card mb-3">
-                                        <label class="form-label fw-bold" style="color: var(--mfy-bark); margin-bottom: 0.75rem;">
-                                            @group.Title
-                                        </label>
-                                        
-                                        <div class="customization-options-wrapper d-flex flex-wrap gap-2" data-group-id="@group.CustomizationGroupId">
-                                            @foreach (var option in group.Options.OrderBy(o => o.DisplayOrder))
-                                            {
-                                                <label class="customization-option-btn">
-                                                    <input type="radio" 
-                                                           name="customization_@group.CustomizationGroupId" 
-                                                           value="@option.CustomizationOptionId" 
-                                                           data-option-name="@option.OptionValue"
-                                                           class="customization-input" />
-                                                    <span class="option-label">@option.OptionValue</span>
-                                                </label>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-
-                                <!-- Hidden input to store selected customizations as JSON -->
-                                <input type="hidden" id="selectedCustomizationsJson" value="" />
-                            </div>
-                        }
-
-                        <hr style="border-color:var(--serif-border);" />
-
-                        @* KHU VỰC TƯƠI VÉT GIỎ HÀNG *@
+                        @* KHU VỰC MUA HÀNG *@
                         <div class="cart-interaction-group mb-4">
-                            <div class="small-caps mb-2" style="font-size: 0.6rem; color: var(--mfy-clay, #C8855A);">Tùy chọn mua hàng</div>
                             <div class="d-flex flex-column gap-2">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="qty-selector d-flex align-items-center border rounded-pill px-3 py-1 bg-white">
-                                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(-1)"><i class="bi bi-dash"></i></button>
-                                        <input type="number" id="purchaseQty" value="1" min="1" class="text-center border-0" style="width: 40px; background:transparent; font-weight: 600;" readonly />
-                                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(1)"><i class="bi bi-plus"></i></button>
-                                    </div>
-                                    <button id="addToCartBtn" class="btn btn-mfy-solid flex-grow-1 rounded-pill fw-bold" 
-                                            style="background: var(--mfy-bark, #2D2926); color: white; padding: 10px;" 
-                                            onclick="handleAddToCart()">
-                                        Thêm vào giỏ hàng
-                                    </button>
-                                </div>
-                                
-                                @* NÚT XEM GIỎ HÀNG HIỆN TẠI *@
-                                <a href="/Cart/Index" class="btn btn-outline-dark rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2" style="padding: 8px;">
+                                <button class="btn w-100 rounded-pill fw-bold"
+                                        style="background: var(--mfy-bark, #2D2926); color: white; padding: 12px;"
+                                        data-bs-toggle="modal" data-bs-target="#addToCartModal">
+                                    <i class="bi bi-bag-heart me-2"></i>Thêm vào giỏ hàng
+                                </button>
+                                <a href="/Cart/Index" class="btn btn-outline-dark rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2" style="padding: 10px;">
                                     <i class="bi bi-bag-heart"></i> Xem giỏ hàng của tôi
                                 </a>
                             </div>
@@ -502,6 +430,96 @@
 
 @Html.AntiForgeryToken()
 
+@* MODAL THÊM VÀO GIỎ HÀNG *@
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+
+            <div class="modal-header border-0 pb-1 px-4 pt-4 align-items-start">
+                <div>
+                    <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--mfy-clay, #C8855A); margin-bottom: 0.3rem;">Thêm vào giỏ hàng</div>
+                    <h5 class="modal-title mb-0 fw-bold" id="addToCartModalLabel" style="font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #2D2926;">
+                        @Model.Product?.Title
+                    </h5>
+                </div>
+                <button type="button" class="btn-close ms-auto mt-1" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body px-4 pt-3 pb-2">
+                @* Product mini-preview *@
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background: #fafaf8; border: 1px solid #eee;">
+                    @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
+                    {
+                        <img src="@Model.Product.ImageUrl" alt="@Model.Product.Title"
+                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" />
+                    }
+                    <div>
+                        <div style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.2rem; color: #2D2926; line-height: 1.1;">
+                            @if (Model.Product?.Price.HasValue == true)
+                            {
+                                @Model.Product.Price.Value.ToString("N0")
+                                <span style="font-size: 0.9rem; font-weight: 600;">đ</span>
+                            }
+                        </div>
+                        <div style="font-size: 0.78rem; color: #888; margin-top: 2px;">@Model.Product?.Category?.Name</div>
+                    </div>
+                </div>
+
+                @* Customization options *@
+                @if (Model.Customizations != null && Model.Customizations.Count > 0)
+                {
+                    <div class="mb-1">
+                        <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mfy-clay, #C8855A); margin-bottom: 0.875rem;">Tùy chỉnh sản phẩm</div>
+                        @foreach (var group in Model.Customizations.OrderBy(cg => cg.DisplayOrder))
+                        {
+                            <div class="mb-3">
+                                <div class="fw-bold mb-2" style="font-size: 0.9rem; color: #2D2926;">@group.Title</div>
+                                <div class="customization-options-wrapper d-flex flex-wrap gap-2" data-group-id="@group.CustomizationGroupId">
+                                    @foreach (var option in group.Options.OrderBy(o => o.DisplayOrder))
+                                    {
+                                        <label class="customization-option-btn">
+                                            <input type="radio"
+                                                   name="customization_@group.CustomizationGroupId"
+                                                   value="@option.CustomizationOptionId"
+                                                   data-option-name="@option.OptionValue"
+                                                   class="customization-input" />
+                                            <span class="option-label">@option.OptionValue</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <hr style="border-color: #e8e3dd; margin: 0.75rem 0 1.25rem;" />
+                    </div>
+                }
+
+                @* Quantity *@
+                <div class="d-flex align-items-center justify-content-between">
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6B6B;">Số lượng</span>
+                    <div class="qty-selector d-flex align-items-center border rounded-pill px-3 py-1 bg-white">
+                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(-1)"><i class="bi bi-dash"></i></button>
+                        <input type="number" id="purchaseQty" value="1" min="1" class="text-center border-0"
+                               style="width: 40px; background: transparent; font-weight: 600;" readonly />
+                        <button type="button" class="btn btn-sm p-0" onclick="changeQty(1)"><i class="bi bi-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4 pt-3 d-flex flex-column gap-2">
+                <button id="addToCartBtn" type="button" class="btn w-100 rounded-pill fw-bold"
+                        style="background: #2D2926; color: white; padding: 12px; font-size: 0.95rem;"
+                        onclick="handleAddToCart()">
+                    <i class="bi bi-bag-heart me-2"></i>Thêm vào giỏ hàng
+                </button>
+                <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" style="padding: 10px;" data-bs-dismiss="modal">
+                    Tiếp tục xem
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @* MODAL PHÓNG TO HÌNH ẢNH SẢN PHẨM (unchanged) *@
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -580,10 +598,10 @@
                 if (result.success) {
 
                     const badge = document.getElementById('cartBadgeCount');
+                    if (badge) badge.innerText = result.newCount;
 
-                    if (badge) {
-                        badge.innerText = result.newCount;
-                    }
+                    const cartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+                    if (cartModal) cartModal.hide();
 
                     Swal.fire({
                         title: 'Đã thêm vào giỏ hàng!',
