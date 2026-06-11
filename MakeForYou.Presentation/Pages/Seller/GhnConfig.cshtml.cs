@@ -43,55 +43,7 @@ namespace MakeForYou.Presentation.Pages.Seller
         }
 
         // ── LOCATION PROXY HANDLERS ───────────────────────────────────────────
-        // These keep the GHN token server-side — JS never sees it.
-
-        /// <summary>GET ?handler=Provinces</summary>
-        public async Task<IActionResult> OnGetProvincesAsync()
-        {
-            try
-            {
-                var data = await _ghnStoreService.ProxyGetAsync(
-                    "/shiip/public-api/master-data/province");
-                return new JsonResult(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProxyGetProvinces failed");
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
-
-        /// <summary>GET ?handler=Districts&amp;provinceId={id}</summary>
-        public async Task<IActionResult> OnGetDistrictsAsync(int provinceId)
-        {
-            try
-            {
-                var data = await _ghnStoreService.ProxyGetAsync(
-                    $"/shiip/public-api/master-data/district?province_id={provinceId}");
-                return new JsonResult(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProxyGetDistricts failed for provinceId={ProvinceId}", provinceId);
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
-
-        /// <summary>GET ?handler=Wards&amp;districtId={id}</summary>
-        public async Task<IActionResult> OnGetWardsAsync(int districtId)
-        {
-            try
-            {
-                var data = await _ghnStoreService.ProxyGetAsync(
-                    $"/shiip/public-api/master-data/ward?district_id={districtId}");
-                return new JsonResult(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProxyGetWards failed for districtId={DistrictId}", districtId);
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
+        // Proxy endpoints have been moved to SellerController.
 
         // ── STORE HANDLERS ────────────────────────────────────────────────────
 

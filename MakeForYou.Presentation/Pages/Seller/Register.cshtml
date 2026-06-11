@@ -1,4 +1,4 @@
-﻿@page "/Seller/Register"
+@page "/Seller/Register"
 @using MakeForYou.BusinessLogic.ViewModels
 @model SellerRegisterViewModel
 @{
@@ -371,12 +371,25 @@
         background: #16A34A;
         flex-shrink: 0;
     }
+
+    /* ── Spin animation (loading btn) ── */
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* ── Success banner ── */
+    .info-banner.success {
+        background: #F0FDF4;
+        border-color: #BBF7D0;
+        color: #15803D;
+    }
 </style>
 
 <div class="seller-reg-page">
     <div class="seller-reg-container">
 
-        <!-- Page header -->
         <header class="seller-reg-header">
             <div class="seller-reg-eyebrow">
                 <span class="seller-reg-eyebrow-line"></span>
@@ -389,7 +402,6 @@
             </p>
         </header>
 
-        <!-- Validation summary -->
         @if (!ViewData.ModelState.IsValid)
         {
             <div class="validation-banner" role="alert">
@@ -408,17 +420,17 @@
             <div class="validation-banner" role="alert">@TempData["ErrorMessage"]</div>
         }
 
-        <form asp-action="Register" asp-controller="Seller" method="post" novalidate>
+        <div id="jsAlertArea"></div>
+
+        <form id="sellerRegForm" action="/api/seller/register" method="post" novalidate>
             @Html.AntiForgeryToken()
 
-            <!-- ── SECTION 1: Thông tin gian hàng ── -->
             <div class="section-rule">
                 <span class="section-rule-line"></span>
                 <span class="section-rule-label">01 — Thông tin gian hàng</span>
                 <span class="section-rule-line"></span>
             </div>
 
-            <!-- Tên Shop -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="ShopName">
                     <span class="required-star">*</span>Tên Shop
@@ -436,7 +448,6 @@
                 </div>
             </div>
 
-            <!-- Mô tả -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="ShopDescription">Mô tả Shop</label>
                 <div>
@@ -451,7 +462,6 @@
                 </div>
             </div>
 
-            <!-- Số điện thoại -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="PhoneNumber">
                     <span class="required-star">*</span>Số điện thoại
@@ -469,7 +479,6 @@
                 </div>
             </div>
 
-            <!-- ── SECTION 2: Địa chỉ lấy hàng ── -->
             <div class="section-rule">
                 <span class="section-rule-line"></span>
                 <span class="section-rule-label">02 — Địa chỉ lấy hàng</span>
@@ -485,7 +494,6 @@
                 Địa chỉ này dùng để đơn vị vận chuyển đến lấy hàng khi bạn có đơn. Hãy nhập chính xác để đơn hàng được xử lý nhanh nhất.
             </div>
 
-            <!-- Họ & Tên -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="PickupFullName">
                     <span class="required-star">*</span>Họ &amp; Tên
@@ -498,7 +506,6 @@
                 </div>
             </div>
 
-            <!-- SĐT lấy hàng -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="PickupPhone">
                     <span class="required-star">*</span>Số điện thoại
@@ -512,45 +519,42 @@
                 </div>
             </div>
 
-            <!-- Địa chỉ: 3 selects gom lại -->
             <div class="form-row">
                 <label class="form-label-cell">
                     <span class="required-star">*</span>Khu vực
                 </label>
                 <div>
                     <div class="address-selects">
-                        <select asp-for="Province"
-                                class="ds-input ds-select @(ViewData.ModelState["Province"]?.Errors.Count > 0 ? "input-error" : "")"
+                        <input type="hidden" asp-for="Province" id="provinceName" />
+                        <select asp-for="ProvinceId"
+                                class="ds-input ds-select @(ViewData.ModelState["ProvinceId"]?.Errors.Count > 0 ? "input-error" : "")"
                                 id="provinceSelect"
-                                onchange="loadDistricts(this.value)">
+                                onchange="loadDistricts()">
                             <option value="">Tỉnh / TP</option>
-                            <option>Hà Nội</option>
-                            <option>Hồ Chí Minh</option>
-                            <option>Đà Nẵng</option>
-                            <option>Cần Thơ</option>
-                            <option>Hải Phòng</option>
-                            <option>An Giang</option>
-                            <option>Bình Dương</option>
-                            <option>Đồng Nai</option>
                         </select>
-                        <select asp-for="District"
-                                class="ds-input ds-select @(ViewData.ModelState["District"]?.Errors.Count > 0 ? "input-error" : "")"
-                                id="districtSelect">
+
+                        <input type="hidden" asp-for="District" id="districtName" />
+                        <select asp-for="DistrictId"
+                                class="ds-input ds-select @(ViewData.ModelState["DistrictId"]?.Errors.Count > 0 ? "input-error" : "")"
+                                id="districtSelect"
+                                onchange="loadWards()" disabled>
                             <option value="">Quận / Huyện</option>
                         </select>
-                        <select asp-for="Ward"
-                                class="ds-input ds-select @(ViewData.ModelState["Ward"]?.Errors.Count > 0 ? "input-error" : "")"
-                                id="wardSelect">
+
+                        <input type="hidden" asp-for="Ward" id="wardName" />
+                        <select asp-for="WardCode"
+                                class="ds-input ds-select @(ViewData.ModelState["WardCode"]?.Errors.Count > 0 ? "input-error" : "")"
+                                id="wardSelect"
+                                onchange="updateWardName()" disabled>
                             <option value="">Phường / Xã</option>
                         </select>
                     </div>
-                    <span asp-validation-for="Province" class="field-error"></span>
-                    <span asp-validation-for="District" class="field-error"></span>
-                    <span asp-validation-for="Ward" class="field-error"></span>
+                    <span asp-validation-for="ProvinceId" class="field-error"></span>
+                    <span asp-validation-for="DistrictId" class="field-error"></span>
+                    <span asp-validation-for="WardCode" class="field-error"></span>
                 </div>
             </div>
 
-            <!-- Địa chỉ chi tiết -->
             <div class="form-row">
                 <label class="form-label-cell" asp-for="AddressDetail">
                     <span class="required-star">*</span>Chi tiết
@@ -563,7 +567,6 @@
                 </div>
             </div>
 
-            <!-- ── SECTION 3: Thanh toán ── -->
             <div class="section-rule">
                 <span class="section-rule-line"></span>
                 <span class="section-rule-label">03 — Phương thức thanh toán</span>
@@ -589,14 +592,13 @@
                 </div>
             </div>
 
-            <!-- ── Điều khoản ── -->
             <div class="ds-hr"></div>
 
             <div class="form-row">
                 <div class="form-label-cell" style="padding-top:.25rem"></div>
                 <div>
-                    <label class="check-row" asp-for="AgreedToTerms">
-                        <input asp-for="AgreedToTerms" type="checkbox" />
+                    <label class="check-row">
+                        <input asp-for="AgreedToTerms" type="checkbox" id="AgreedToTerms" />
                         <span class="check-text">
                             Tôi xác nhận tất cả thông tin đã cung cấp là chính xác và trung thực.
                             Tôi đã đọc và đồng ý với
@@ -610,7 +612,6 @@
                 </div>
             </div>
 
-            <!-- Footer -->
             <div class="form-footer">
                 <a asp-action="Index" asp-controller="Profile" class="btn-back">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -637,52 +638,233 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        // Char counter
+        let _submitting = false;
+
+        function showJsAlert(type, html) {
+            const area = document.getElementById('jsAlertArea');
+            const cls = type === 'error' ? 'validation-banner' : 'info-banner success';
+            area.innerHTML = `<div class="${cls}" role="alert" style="margin-bottom:1.5rem">${html}</div>`;
+            area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        document.getElementById('sellerRegForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            console.log('=== SUBMIT FIRED ===');
+            console.log('terms:', document.getElementById('AgreedToTerms')?.checked);
+            console.log('province:', document.getElementById('provinceSelect')?.value);
+            console.log('district:', document.getElementById('districtSelect')?.value);
+            console.log('ward:', document.getElementById('wardSelect')?.value);
+
+            if (_submitting) return;
+
+            const terms = document.getElementById('AgreedToTerms');
+            if (terms && !terms.checked) {
+                showJsAlert('error', '⚠️ Bạn cần đồng ý với điều khoản để tiếp tục.');
+                terms.focus();
+                return;
+            }
+
+            const provinceId = document.getElementById('provinceSelect').value;
+            const districtId = document.getElementById('districtSelect').value;
+            const wardCode   = document.getElementById('wardSelect').value;
+            if (!provinceId || !districtId || !wardCode) {
+                showJsAlert('error', '⚠️ Vui lòng chọn đầy đủ Tỉnh / Quận / Phường trước khi tiếp tục.');
+                return;
+            }
+
+            document.getElementById('jsAlertArea').innerHTML = '';
+            _submitting = true;
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Đang xử lý...`;
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(this);
+                const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                const headers = {};
+                if (token) headers['RequestVerificationToken'] = token.value;
+
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers,
+                    body: formData
+                });
+
+                // ── Bị logout trong lúc đang submit ──────────────────────
+                if (response.status === 401) {
+                    window.location.href = '/Auth/Login';
+                    return;
+                }
+
+                // Cookie auth redirect về trang login (302 → 200 trang login)
+                if (response.redirected && response.url.includes('/Auth/Login')) {
+                    window.location.href = '/Auth/Login';
+                    return;
+                }
+
+                const result = await response.json().catch(() => ({}));
+
+                if (response.ok) {
+                    const msg = result.message || 'Đăng ký gian hàng thành công!';
+                    showJsAlert('success', `✅ ${msg}`);
+                    setTimeout(() => { window.location.href = '/Seller/Profile'; }, 1800);
+                } else {
+                    let errHtml = '<strong>⚠️ Có lỗi xảy ra:</strong>';
+                    if (result.error) {
+                        errHtml += `<p style="margin:.4rem 0 0">${result.error}</p>`;
+                    } else if (result.errors) {
+                        const msgs = Object.values(result.errors).flat();
+                        errHtml += `<ul style="margin:.5rem 0 0 1.25rem">${msgs.map(m => `<li>${m}</li>`).join('')}</ul>`;
+                    }
+                    showJsAlert('error', errHtml);
+                }
+            } catch (err) {
+                console.error(err);
+                showJsAlert('error', '❌ Lỗi kết nối. Vui lòng thử lại sau.');
+            } finally {
+                submitBtn.innerHTML = originalHtml;
+                submitBtn.disabled = false;
+                _submitting = false;
+            }
+        });
+
         function updateCount(el, spanId) {
             document.getElementById(spanId).textContent = el.value.length;
         }
 
-        // Stub: thay bằng API gọi thật nếu có dữ liệu địa giới hành chính
-        function loadDistricts(province) {
-            const districtSelect = document.getElementById('districtSelect');
-            const wardSelect = document.getElementById('wardSelect');
-
-            districtSelect.innerHTML = '<option value="">Quận / Huyện</option>';
-            wardSelect.innerHTML = '<option value="">Phường / Xã</option>';
-
-            if (!province) return;
-
-            // TODO: thay bằng fetch('/api/districts?province=' + encodeURIComponent(province))
-            const mockData = {
-                'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Đống Đa', 'Cầu Giấy', 'Tây Hồ'],
-                'Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình'],
-                'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn'],
-                'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng'],
-            };
-
-            const districts = mockData[province] || [];
-            districts.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d;
-                opt.textContent = d;
-                districtSelect.appendChild(opt);
-            });
+        async function ghnFetch(url) {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            return Array.isArray(json) ? json : (json.data ?? json);
         }
 
-        districtSelect.addEventListener('change', function () {
-            const wardSelect = document.getElementById('wardSelect');
-            wardSelect.innerHTML = '<option value="">Phường / Xã</option>';
+        async function loadProvinces() {
+            const sel = document.getElementById('provinceSelect');
+            const initialProvinceId = '@Model?.ProvinceId';
 
-            if (!this.value) return;
+            sel.innerHTML = '<option value="">-- Đang tải tỉnh/thành... --</option>';
+            sel.disabled = true;
+            try {
+                const data = await ghnFetch('/api/seller/ghn/provinces');
+                sel.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố --</option>';
+                data.forEach(p => {
+                    sel.options[sel.options.length] = new Option(p.ProvinceName, p.ProvinceID);
+                });
+                sel.disabled = false;
 
-            // TODO: thay bằng fetch('/api/wards?district=' + encodeURIComponent(this.value))
-            const mockWards = ['Phường 1', 'Phường 2', 'Phường 3', 'Phường 4'];
-            mockWards.forEach(w => {
-                const opt = document.createElement('option');
-                opt.value = w;
-                opt.textContent = w;
-                wardSelect.appendChild(opt);
-            });
-        });
+                if (initialProvinceId) {
+                    sel.value = initialProvinceId;
+                    await loadDistricts();
+                }
+            } catch (err) {
+                console.error('loadProvinces:', err);
+                sel.innerHTML = '<option value="">-- Lỗi tải tỉnh/thành --</option>';
+            }
+        }
+
+        async function loadDistricts() {
+            const sel = document.getElementById('provinceSelect');
+            const provinceNameInput = document.getElementById('provinceName');
+            if (sel.selectedIndex > 0) {
+                provinceNameInput.value = sel.options[sel.selectedIndex].text;
+            } else {
+                provinceNameInput.value = '';
+            }
+
+            const provinceId = sel.value;
+            const districtSel = document.getElementById('districtSelect');
+            const wardSel = document.getElementById('wardSelect');
+            const initialDistrictId = '@Model?.DistrictId';
+
+            wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+            wardSel.disabled = true;
+            document.getElementById('wardName').value = '';
+
+            districtSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+            document.getElementById('districtName').value = '';
+
+            if (!provinceId) {
+                districtSel.disabled = true;
+                return;
+            }
+
+            districtSel.innerHTML = '<option value="">-- Đang tải... --</option>';
+            districtSel.disabled = true;
+
+            try {
+                const data = await ghnFetch(`/api/seller/ghn/districts?provinceId=${provinceId}`);
+                districtSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                data.forEach(d => {
+                    districtSel.options[districtSel.options.length] = new Option(d.DistrictName, d.DistrictID);
+                });
+                districtSel.disabled = false;
+
+                if (initialDistrictId && sel.value === '@Model?.ProvinceId') {
+                    districtSel.value = initialDistrictId;
+                    await loadWards();
+                }
+            } catch (err) {
+                console.error('loadDistricts:', err);
+                districtSel.innerHTML = '<option value="">-- Lỗi tải quận/huyện --</option>';
+            }
+        }
+
+        async function loadWards() {
+            const sel = document.getElementById('districtSelect');
+            const districtNameInput = document.getElementById('districtName');
+            if (sel.selectedIndex > 0) {
+                districtNameInput.value = sel.options[sel.selectedIndex].text;
+            } else {
+                districtNameInput.value = '';
+            }
+
+            const districtId = sel.value;
+            const wardSel = document.getElementById('wardSelect');
+            const initialWardCode = '@Model?.WardCode';
+
+            wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+            document.getElementById('wardName').value = '';
+
+            if (!districtId) {
+                wardSel.disabled = true;
+                return;
+            }
+
+            wardSel.innerHTML = '<option value="">-- Đang tải... --</option>';
+            wardSel.disabled = true;
+
+            try {
+                const data = await ghnFetch(`/api/seller/ghn/wards?districtId=${districtId}`);
+                wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                data.forEach(w => {
+                    wardSel.options[wardSel.options.length] = new Option(w.WardName, w.WardCode);
+                });
+                wardSel.disabled = false;
+
+                if (initialWardCode && sel.value === '@Model?.DistrictId') {
+                    wardSel.value = initialWardCode;
+                    updateWardName();
+                }
+            } catch (err) {
+                console.error('loadWards:', err);
+                wardSel.innerHTML = '<option value="">-- Lỗi tải phường/xã --</option>';
+            }
+        }
+
+        function updateWardName() {
+            const sel = document.getElementById('wardSelect');
+            const wardNameInput = document.getElementById('wardName');
+            if (sel.selectedIndex > 0) {
+                wardNameInput.value = sel.options[sel.selectedIndex].text;
+            } else {
+                wardNameInput.value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProvinces);
     </script>
 }
