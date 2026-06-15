@@ -41,6 +41,9 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? AverageRating { get; set; }
         public int? TotalReviews { get; set; }
 
+        public string? AvatarUrl { get; set; }
+        public string? CoverImageUrl { get; set; }
+
         // Products authored by this seller
         [MaxLength(20)]  public string? BankBin { get; set; }
         [MaxLength(50)]  public string? BankAccountNumber { get; set; }

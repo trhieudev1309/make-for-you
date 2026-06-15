@@ -1,4 +1,6 @@
-﻿namespace MakeForYou.BusinessLogic.DTOs
+﻿using Microsoft.AspNetCore.Http;
+
+namespace MakeForYou.BusinessLogic.DTOs
 {
     public class UpdateProfileRequest
     {
@@ -8,5 +10,7 @@
         public string? Bio { get; set; }
         public int? PriceRange { get; set; }
         public int? AvailabilityStatus { get; set; }
+        public IFormFile? Avatar { get; set; }
+        public IFormFile? Cover { get; set; }
     }
 }

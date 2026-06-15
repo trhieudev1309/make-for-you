@@ -51,7 +51,8 @@ namespace MakeForYou.Presentation.Pages.Seller
         public async Task<IActionResult> OnPostUpdateProfileAsync(
             string? FullName, string? Email,
             string? SkillDescription, string? Bio,
-            int? PriceRange, int? AvailabilityStatus)
+            int? PriceRange, int? AvailabilityStatus,
+            IFormFile? Avatar, IFormFile? Cover)
         {
             await _sellerService.UpdateProfileAsync(GetSellerId(), new UpdateProfileRequest
             {
@@ -60,7 +61,9 @@ namespace MakeForYou.Presentation.Pages.Seller
                 SkillDescription = SkillDescription,
                 Bio = Bio,
                 PriceRange = PriceRange,
-                AvailabilityStatus = AvailabilityStatus
+                AvailabilityStatus = AvailabilityStatus,
+                Avatar = Avatar,
+                Cover = Cover
             });
             TempData["Success"] = "Profile updated successfully.";
             TempData["ActiveTab"] = "profile";

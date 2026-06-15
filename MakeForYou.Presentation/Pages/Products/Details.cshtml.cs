@@ -31,6 +31,9 @@ namespace MakeForYou.Presentation.Pages.Products
         // danh sách sản phẩm liên quan / gợi ý
         public List<Product> RelatedProducts { get; set; } = new();
 
+        // nhận xét (kèm ảnh) của sản phẩm này
+        public List<Review> Reviews { get; set; } = new();
+
         // Customizations for this product
         public List<CustomizationGroupViewModel> Customizations { get; set; } = new();
 
@@ -57,6 +60,16 @@ namespace MakeForYou.Presentation.Pages.Products
             catch
             {
                 RelatedProducts = new List<Product>();
+            }
+
+            // Lấy nhận xét của sản phẩm này
+            try
+            {
+                Reviews = await _productRepo.GetProductReviewsAsync(id, 4);
+            }
+            catch
+            {
+                Reviews = new List<Review>();
             }
 
             // Load customizations for this product

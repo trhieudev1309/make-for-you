@@ -136,6 +136,16 @@ namespace MakeForYou.Repositories.Repository
             // đảm bảo không vượt quá số lượng yêu cầu
             return related.Take(count).ToList();
         }
+
+        public async Task<List<Review>> GetProductReviewsAsync(long productId, int take)
+        {
+            return await _context.Reviews
+                .Include(r => r.Buyer)
+                .Where(r => r.ProductId == productId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
     }
 
 }

@@ -469,8 +469,33 @@
     </div>
 
     <div id="tab-profile" class="sp-tab-panel active">
-        <form method="post" asp-page-handler="UpdateProfile">
+        <form method="post" asp-page-handler="UpdateProfile" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
+
+            <div class="sp-card sp-card-accent">
+                <h2 class="sp-section-title">Ảnh Đại Diện & Ảnh Bìa</h2>
+
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Ảnh đại diện</label>
+                        @if (!string.IsNullOrEmpty(Model.Seller?.AvatarUrl))
+                        {
+                            <img src="@Model.Seller.AvatarUrl" alt="Ảnh đại diện hiện tại"
+                                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:.5rem;" />
+                        }
+                        <input class="sp-input" type="file" name="Avatar" accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Ảnh bìa</label>
+                        @if (!string.IsNullOrEmpty(Model.Seller?.CoverImageUrl))
+                        {
+                            <img src="@Model.Seller.CoverImageUrl" alt="Ảnh bìa hiện tại"
+                                 style="width:100%;max-width:320px;aspect-ratio:16/5;border-radius:4px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:.5rem;" />
+                        }
+                        <input class="sp-input" type="file" name="Cover" accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+                </div>
+            </div>
 
             <div class="sp-card sp-card-accent">
                 <h2 class="sp-section-title">Danh Tính Nghệ Nhân</h2>

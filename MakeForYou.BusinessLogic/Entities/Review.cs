@@ -23,9 +23,16 @@ namespace MakeForYou.BusinessLogic.Entities
         [ForeignKey(nameof(SellerId))]
         public Seller Seller { get; set; } = null!;
 
+        public long? ProductId { get; set; }
+
+        [ForeignKey(nameof(ProductId))]
+        public Product? Product { get; set; }
+
         public int Rating { get; set; }
 
         public string? Comment { get; set; }
+
+        public string? ImageUrl { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

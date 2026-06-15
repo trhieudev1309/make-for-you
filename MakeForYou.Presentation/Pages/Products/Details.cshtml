@@ -329,6 +329,10 @@
                                     {
                                         @Model.Product.Seller.User.FullName.Substring(0,1).ToUpper()
                                     }
+                                    @if (!string.IsNullOrEmpty(Model.Product.Seller?.AvatarUrl))
+                                    {
+                                        <img src="@Model.Product.Seller.AvatarUrl" alt="" class="profile-avatar-img" loading="lazy" />
+                                    }
                                 </div>
                             </a>
                             <div class="profile-meta">
@@ -393,9 +397,9 @@
                         <h2 class="serif-title" style="font-size:1.25rem;margin:0;">Khách hàng nói gì về chúng tôi</h2>
                     </div>
                     <div class="small-muted">
-                        @if ((Model.Product.Seller?.TotalReviews ?? 0) > 0)
+                        @if (Model.Reviews.Any())
                         {
-                            <div>@Model.Product.Seller.TotalReviews nhận xét</div>
+                            <div>@Model.Reviews.Count nhận xét</div>
                         }
                         else
                         {
@@ -405,22 +409,33 @@
                 </div>
 
                 <div class="reviews-grid">
-                    @if (Model.Product.Seller?.TotalReviews > 0)
+                    @if (Model.Reviews.Any())
                     {
-                        <div class="review-card">
-                            <div class="review-quote">Kỹ nghệ chế tác tuyệt vời — tác phẩm được bọc gói rất cẩn thận, tinh xảo giống hệt mô tả. Rất khuyến khích trải nghiệm sản phẩm tại đây.</div>
-                            <div class="review-meta">
-                                <div class="small-muted">— Jane D.</div>
-                                <div class="small-muted">03/03/2026</div>
+                        @foreach (var review in Model.Reviews)
+                        {
+                            var hasPhoto = !string.IsNullOrEmpty(review.ImageUrl);
+                            <div class="review-card @(hasPhoto ? "has-photo" : "")">
+                                @if (hasPhoto)
+                                {
+                                    <div class="review-photo-wrap">
+                                        <img src="@review.ImageUrl" alt="Ảnh tác phẩm thực tế do khách hàng @(review.Buyer?.FullName ?? "khách hàng") chụp lại" class="review-photo" loading="lazy" />
+                                    </div>
+                                }
+                                <div class="review-body">
+                                    <div class="review-rating" aria-label="@review.Rating trên 5 sao">
+                                        @for (var i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                    </div>
+                                    <div class="review-quote">@review.Comment</div>
+                                    <div class="review-meta">
+                                        <div class="small-muted">— @(review.Buyer?.FullName ?? "Khách hàng")</div>
+                                        <div class="small-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="review-card">
-                            <div class="review-quote">Đường nét hoàn thiện rất đẹp và giao hàng nhanh chóng. Sẽ tiếp tục ủng hộ nghệ nhân vào lần tới.</div>
-                            <div class="review-meta">
-                                <div class="small-muted">— Alex S.</div>
-                                <div class="small-muted">15/02/2026</div>
-                            </div>
-                        </div>
+                        }
                     }
                     else
                     {
@@ -541,8 +556,8 @@
                 const selected = group.querySelector('input[type="radio"]:checked');
 
                 if (selected) {
-                    const groupTitle = group.closest('.customization-group-card')
-                        ?.querySelector('.form-label')
+                    const groupTitle = group.parentElement
+                        ?.querySelector('.fw-bold')
                         ?.innerText
                         ?.trim();
 

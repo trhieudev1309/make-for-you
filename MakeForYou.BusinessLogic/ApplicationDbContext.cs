@@ -94,6 +94,12 @@ namespace MakeForYou.BusinessLogic
                 .HasForeignKey(r => r.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Quotation -> Order
             modelBuilder.Entity<Quotation>()
                 .HasOne(q => q.Order)
