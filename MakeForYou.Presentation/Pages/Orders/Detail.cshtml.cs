@@ -7,6 +7,8 @@ using MakeForYou.BusinessLogic.Entities.Enums;
 using MakeForYou.BusinessLogic.Services;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -21,6 +23,9 @@ namespace MakeForYou.Presentation.Pages.Orders
         private readonly IPaymentService _paymentService;
         private readonly IPayoutService _payoutService;
         private readonly IGhnService _ghnService;
+        private readonly IWebHostEnvironment _env;
+
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
         public DetailModel(
             IOrderService orderService,
@@ -28,7 +33,8 @@ namespace MakeForYou.Presentation.Pages.Orders
             IQuotationService quotationService,
             IPaymentService paymentService,
             IPayoutService payoutService,
-            IGhnService ghnService)
+            IGhnService ghnService,
+            IWebHostEnvironment env)
         {
             _orderService = orderService;
             _db = db;
@@ -36,6 +42,7 @@ namespace MakeForYou.Presentation.Pages.Orders
             _paymentService = paymentService;
             _payoutService = payoutService;
             _ghnService = ghnService;
+            _env = env;
         }
 
         public Order? Order { get; set; }
@@ -111,7 +118,7 @@ namespace MakeForYou.Presentation.Pages.Orders
         }
 
         // Handler to receive feedback submissions
-        public async Task<IActionResult> OnPostFeedbackAsync(long id)
+        public async Task<IActionResult> OnPostFeedbackAsync(long id, IFormFile? FeedbackImage)
         {
             var buyerId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -148,8 +155,10 @@ namespace MakeForYou.Presentation.Pages.Orders
                 BuyerId = buyerId,
                 SellerId = order.SellerId,
                 OrderId = order.OrderId,
+                ProductId = order.OrderItems?.FirstOrDefault()?.ProductId,
                 Rating = FeedbackRating,
                 Comment = FeedbackComment ?? string.Empty,
+                ImageUrl = await TrySaveFeedbackImageAsync(FeedbackImage),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -336,6 +345,26 @@ namespace MakeForYou.Presentation.Pages.Orders
                 newPaymentCode, totalAmount, baseUrl, items);
 
             return Redirect(checkoutUrl);
+        }
+
+        // Saves an optional customer-uploaded review photo to wwwroot/uploads/reviews/
+        private async Task<string?> TrySaveFeedbackImageAsync(IFormFile? image)
+        {
+            if (image == null || image.Length == 0) return null;
+
+            var ext = Path.GetExtension(image.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(ext)) return null;
+
+            var folder = Path.Combine(_env.WebRootPath, "uploads", "reviews");
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var filePath = Path.Combine(folder, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await image.CopyToAsync(stream);
+
+            return $"/uploads/reviews/{fileName}";
         }
 
         // Matches the custom CSS badge classes in Detail.cshtml

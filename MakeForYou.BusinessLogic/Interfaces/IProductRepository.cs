@@ -18,5 +18,8 @@ namespace MakeForYou.BusinessLogic.Interfaces
 
         // Trả về danh sách sản phẩm liên quan (cùng danh mục > cùng nghệ nhân > gần đây)
         Task<List<Product>> GetRelatedProductsAsync(long productId, int count);
+
+        // Trả về các nhận xét (kèm ảnh) của một sản phẩm, mới nhất trước
+        Task<List<Review>> GetProductReviewsAsync(long productId, int take);
     }
 }
