@@ -137,7 +137,7 @@ namespace MakeForYou.BusinessLogic
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.Property(m => m.Message).IsRequired();
-                entity.Property(m => m.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(m => m.CreatedAt).HasDefaultValueSql("now()");
             });
 
             // CustomizationGroup -> Product relationship
