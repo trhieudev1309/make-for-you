@@ -176,12 +176,6 @@
             <header class="mb-5">
                 <div class="kicker">Tác phẩm thủ công</div>
                 <h1 class="serif-title">@Model.Product.Title</h1>
-                @if (!string.IsNullOrEmpty(Model.Product.Description))
-                {
-                    <p class="small-muted" style="max-width:70ch;">
-                        @(Model.Product.Description?.Length > 220 ? Model.Product.Description.Substring(0, 220) + "…" : Model.Product.Description)
-                    </p>
-                }
             </header>
 
             <div class="details-grid">

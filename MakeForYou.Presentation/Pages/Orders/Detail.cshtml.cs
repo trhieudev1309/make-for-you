@@ -126,7 +126,7 @@ namespace MakeForYou.Presentation.Pages.Orders
             var order = await _orderService.GetOrderDetailAsync(id, buyerId);
             if (order == null) return NotFound();
 
-            if ((OrderStatus)order.Status != OrderStatus.Completed)
+            if ((OrderStatus)order.Status != OrderStatus.Done)
             {
                 ModelState.AddModelError(string.Empty, "You can only leave feedback for completed orders.");
                 Order = order;
