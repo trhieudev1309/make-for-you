@@ -1,5 +1,9 @@
-﻿using MakeForYou.BusinessLogic.Entities;
+﻿using System.Data;
+using MakeForYou.BusinessLogic.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MakeForYou.BusinessLogic
 {
@@ -8,6 +12,74 @@ namespace MakeForYou.BusinessLogic
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         { }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await AssignMissingIdsAsync(cancellationToken);
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task AssignMissingIdsAsync(CancellationToken cancellationToken)
+        {
+            // EF Core assigns a temporary negative placeholder to ValueGeneratedOnAdd long PKs,
+            // so entry.Property(...).CurrentValue is NOT 0 even when the entity holds 0.
+            // Read and write via reflection directly on entry.Entity instead.
+            var pendingByTable = new Dictionary<string,
+                (string Column, List<(EntityEntry Entry, System.Reflection.PropertyInfo EntityProp)> Entries)>(
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var entry in ChangeTracker.Entries().Where(e => e.State == EntityState.Added))
+            {
+                var pk = entry.Metadata.FindPrimaryKey();
+                if (pk is null || pk.Properties.Count != 1) continue;
+
+                var pkProp = pk.Properties[0];
+                if (pkProp.ClrType != typeof(long)) continue;
+
+                var entityProp = entry.Entity.GetType().GetProperty(pkProp.Name);
+                if (entityProp == null) continue;
+
+                // Check the real value on the entity object (always 0 when unset)
+                if ((long)(entityProp.GetValue(entry.Entity) ?? 0L) != 0) continue;
+
+                var tableName = entry.Metadata.GetTableName()!;
+                var storeId = StoreObjectIdentifier.Table(tableName, entry.Metadata.GetSchema());
+                var column = pkProp.GetColumnName(storeId);
+
+                if (!pendingByTable.ContainsKey(tableName))
+                    pendingByTable[tableName] = (column, new());
+
+                pendingByTable[tableName].Entries.Add((entry, entityProp));
+            }
+
+            if (pendingByTable.Count == 0) return;
+
+            var conn = Database.GetDbConnection();
+            var wasOpen = conn.State == ConnectionState.Open;
+            if (!wasOpen) await conn.OpenAsync(cancellationToken);
+
+            try
+            {
+                foreach (var (tableName, (column, entries)) in pendingByTable)
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.Transaction = Database.CurrentTransaction?.GetDbTransaction();
+                    cmd.CommandText = $"SELECT COALESCE(MAX(\"{column}\"), 0) FROM \"{tableName}\"";
+                    var maxId = Convert.ToInt64(await cmd.ExecuteScalarAsync(cancellationToken));
+
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        var newId = maxId + 1 + i;
+                        // Set directly on the entity so EF picks up the correct value
+                        entries[i].EntityProp.SetValue(entries[i].Entry.Entity, newId);
+                    }
+                }
+            }
+            finally
+            {
+                if (!wasOpen) await conn.CloseAsync();
+            }
+        }
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Buyer> Buyers => Set<Buyer>();

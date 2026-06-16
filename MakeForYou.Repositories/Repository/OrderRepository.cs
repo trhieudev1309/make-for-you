@@ -49,22 +49,16 @@ namespace MakeForYou.Repositories.Repository
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var maxOrderId = await _context.Orders.MaxAsync(o => (long?)o.OrderId) ?? 0;
-                order.OrderId = maxOrderId + 1;
-
-                var maxItemId = await _context.Set<OrderItem>().MaxAsync(i => (long?)i.OrderItemId) ?? 0;
-
                 _context.Set<Order>().Add(order);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // AssignMissingIdsAsync sets order.OrderId here
 
-                for (int i = 0; i < items.Count; i++)
+                foreach (var item in items)
                 {
-                    items[i].OrderItemId = maxItemId + 1 + i;
-                    items[i].OrderId = order.OrderId;
-                    _context.Set<OrderItem>().Add(items[i]);
+                    item.OrderId = order.OrderId;
+                    _context.Set<OrderItem>().Add(item);
                 }
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // AssignMissingIdsAsync sets each OrderItemId here
                 await transaction.CommitAsync();
                 return order;
             }
