@@ -52,19 +52,7 @@ namespace MakeForYou.Presentation.Pages.Products
 
             // 5. LẤY SỐ ĐÃ BÁN CHO TỪNG SẢN PHẨM
             var productIds = Products.Select(p => p.ProductId);
-            var rawCounts = await _productRepo.GetSoldCountsAsync(productIds);
-            SoldCounts = Products.ToDictionary(
-                p => p.ProductId,
-                p =>
-                {
-                    rawCounts.TryGetValue(p.ProductId, out var count);
-                    if (count == 0)
-                    {
-                        var rng = new Random((int)(p.ProductId & 0x7FFFFFFF));
-                        return rng.Next(10, 31);
-                    }
-                    return count * 10;
-                });
+            SoldCounts = await _productRepo.GetSoldCountsAsync(productIds);
         }
     }
 }
