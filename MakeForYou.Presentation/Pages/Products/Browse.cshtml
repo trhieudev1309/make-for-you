@@ -53,6 +53,7 @@
 
     .btn-action { background: var(--mfy-bark); color: white; border-radius: 50px; padding: 8px 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.3s; }
     .btn-action:hover { background: var(--mfy-clay); color: white; box-shadow: 0 10px 20px rgba(200, 133, 90, 0.2); }
+    .sold-count-info { font-size: 0.78rem; color: #6B9E78; font-weight: 600; margin-bottom: 0; }
 
     /* --- Active Tags ─── */
     .active-tag { background: white; border: 1px solid var(--mfy-border); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; margin-right: 10px; display: inline-flex; align-items: center; gap: 8px; }
@@ -240,6 +241,7 @@
                                     </div>
                                     <h2 class="product-name">@p.Title</h2>
                                     <p class="seller-info">Bởi @p.Seller?.User?.FullName</p>
+                                    <p class="sold-count-info"><i class="bi bi-bag-check-fill me-1"></i>@Model.SoldCounts.GetValueOrDefault(p.ProductId) đã bán</p>
                                     <div class="price-section">
                                         <span class="price-val">@p.Price?.ToString("N0") đ</span>
                                         <a href="/Products/Details/@p.ProductId" class="btn-action shadow-sm">Chi tiết</a>

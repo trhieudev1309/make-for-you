@@ -21,5 +21,11 @@ namespace MakeForYou.BusinessLogic.Interfaces
 
         // Trả về các nhận xét (kèm ảnh) của một sản phẩm, mới nhất trước
         Task<List<Review>> GetProductReviewsAsync(long productId, int take);
+
+        // Đếm số lần được đặt hàng cho mỗi sản phẩm (dùng cho trang danh sách)
+        Task<Dictionary<long, int>> GetSoldCountsAsync(IEnumerable<long> productIds);
+
+        // Đếm số lần được đặt hàng cho một sản phẩm (dùng cho trang chi tiết)
+        Task<int> GetSoldCountAsync(long productId);
     }
 }

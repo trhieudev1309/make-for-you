@@ -27,6 +27,7 @@ namespace MakeForYou.Presentation.Pages.Products
 
         public Product? Product { get; set; }
         public int CartCount { get; set; }
+        public int SoldCount { get; set; }
 
         // danh sách sản phẩm liên quan / gợi ý
         public List<Product> RelatedProducts { get; set; } = new();
@@ -51,6 +52,18 @@ namespace MakeForYou.Presentation.Pages.Products
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             long? userId = !string.IsNullOrEmpty(userIdStr) ? long.Parse(userIdStr) : null;
             CartCount = await _cartService.GetTotalItemsCountAsync(userId);
+
+            // Tính số đã bán (x10, nếu bằng 0 thì random 10-30)
+            var rawCount = await _productRepo.GetSoldCountAsync(id);
+            if (rawCount == 0)
+            {
+                var rng = new Random((int)(id & 0x7FFFFFFF));
+                SoldCount = rng.Next(10, 31);
+            }
+            else
+            {
+                SoldCount = rawCount * 10;
+            }
 
             // Lấy sản phẩm liên quan bằng phương thức chuyên dụng
             try
