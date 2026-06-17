@@ -217,16 +217,15 @@
 </style>
 <body>
 
-	@* THANH PHÂN LOẠI *@
+	@* THANH PHÂN LOẠI - Dynamic from DB *@
 	<div class="quick-nav-wrapper d-none d-md-block">
 		<div class="container">
 			<nav class="quick-nav">
-				<a href="/Products?categoryId=1">Trang trí nhà cửa</a>
-				<a href="/Products?categoryId=2">Trang sức</a>
-				<a href="/Products?categoryId=3">Cổ điển</a>
-				<a href="/Products?categoryId=4">Gốm sứ</a>
-				<a href="/Products?categoryId=5">Tranh & Bản in</a>
-				<a href="/Products?categoryId=6">Quà tặng</a>
+				<a href="/Products">Tất cả</a>
+				@foreach (var cat in Model.Categories)
+				{
+					<a href="/Products?categoryId=@cat.CategoryId">@cat.Name</a>
+				}
 			</nav>
 		</div>
 	</div>
@@ -335,8 +334,8 @@
 				<span class="custom-tag">Dịch vụ thiết kế theo yêu cầu cao cấp</span>
 				<h2 class="display-5 fw-bold mb-4" style="font-family: var(--serif); letter-spacing: -0.01em;">Bạn chưa tìm thấy sản phẩm mong muốn?</h2>
 				<p class="opacity-75 mb-5 mx-auto fs-5" style="max-width: 700px;">Hãy kết nối trực tiếp cùng đội ngũ nghệ nhân xuất sắc của chúng tôi để tạo dựng nên tác phẩm độc bản mang đậm dấu ấn cá nhân. Toàn vẹn từ kích thước riêng biệt cho đến điêu khắc tên kỷ niệm.</p>
-				<a href="/CustomOrders/Create" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow">
-					Bắt đầu thiết kế ngay <i class="bi bi-stars ms-2 text-warning"></i>
+				<a href="/Products" class="btn btn-light rounded-pill px-5 py-3 fw-bold shadow">
+					Khám phá nghệ nhân ngay <i class="bi bi-stars ms-2 text-warning"></i>
 				</a>
 			</div>
 		</section>
@@ -353,9 +352,9 @@
 		</div>
 
 		<div class="row g-4 mb-5">
-			@if (Model.HomeData.FeaturedProducts != null && Model.HomeData.FeaturedProducts.Any())
+			@if (Model.Products != null && Model.Products.Any())
 			{
-				@foreach (var product in Model.HomeData.FeaturedProducts)
+				@foreach (var product in Model.Products)
 				{
 					<div class="col-6 col-md-4 col-lg-3">
 						@* BỌC CARD VÀO WRAPPER CHỐNG RUNG LẮC *@
@@ -381,6 +380,110 @@
 					</div>
 				}
 			}
+		</div>
+		@* ========================================= *@
+		@* DANH MỤC HÀNG THỦ CÔNG *@
+		@* ========================================= *@
+		@if (Model.Categories != null && Model.Categories.Any())
+		{
+			<div class="d-flex justify-content-between align-items-end mb-4 pt-3">
+				<div>
+					<h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.2rem;">Khám phá theo danh mục</h2>
+					<p class="text-muted">Tìm kiếm tác phẩm theo từng loại hàng thủ công đặc sắc.</p>
+				</div>
+			</div>
+			<div class="row g-3 mb-5">
+				@{
+					var catIcons = new[] { "bi-scissors", "bi-cup-hot", "bi-tree-fill", "bi-palette2", "bi-flower1" };
+					var catColors = new[] { "#FFF4EC", "#EEF5FF", "#F0FAF0", "#FDF4FF", "#FFF0F5" };
+					var catAccents = new[] { "#C8855A", "#4A7FCB", "#3A9B5A", "#9B5EC8", "#C85A8A" };
+					int ci = 0;
+				}
+				@foreach (var cat in Model.Categories)
+				{
+					var icon = catIcons[ci % catIcons.Length];
+					var bg = catColors[ci % catColors.Length];
+					var accent = catAccents[ci % catAccents.Length];
+					ci++;
+					<div class="col-6 col-md-4 col-lg" style="min-width:160px;">
+						<a href="/Products?categoryId=@cat.CategoryId" class="text-decoration-none d-block rounded-4 p-4 text-center category-card-link" style="background:@bg; border: 1px solid rgba(0,0,0,0.06); transition: 0.3s;">
+							<div class="mb-2" style="font-size:2rem; color:@accent;">
+								<i class="bi @icon"></i>
+							</div>
+							<div class="fw-bold" style="font-size:0.85rem; color:#2D2926; line-height:1.3;">@cat.Name</div>
+						</a>
+					</div>
+				}
+			</div>
+			<style>
+				.category-card-link:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+			</style>
+		}
+
+		@* ========================================= *@
+		@* NGHỆ NHÂN NỔI BẬT *@
+		@* ========================================= *@
+		@if (Model.HomeData.FeaturedArtisans != null && Model.HomeData.FeaturedArtisans.Any())
+		{
+			<div class="d-flex justify-content-between align-items-end mb-4 pt-3">
+				<div>
+					<h2 style="font-family: var(--serif); font-weight: 700; font-size: 2.2rem;">Nghệ nhân nổi bật</h2>
+					<p class="text-muted">Những nghệ nhân tài hoa được cộng đồng tin tưởng và yêu mến.</p>
+				</div>
+				<a href="/Products" class="text-decoration-none fw-bold border-bottom border-2 pb-1" style="color: var(--mfy-clay);">Xem tất cả</a>
+			</div>
+			<div class="row g-4 mb-5">
+				@foreach (var artisan in Model.HomeData.FeaturedArtisans)
+				{
+					<div class="col-6 col-md-3">
+						<a href="/Artisans/@artisan.SellerId" class="text-decoration-none artisan-card-link">
+							<div class="text-center p-4 bg-white rounded-4 border" style="border-color: var(--mfy-border) !important; transition:0.3s;">
+								@if (!string.IsNullOrEmpty(artisan.AvatarUrl))
+								{
+									<img src="@artisan.AvatarUrl" alt="@artisan.User?.FullName" class="rounded-circle mb-3 object-fit-cover" style="width:80px; height:80px;" />
+								}
+								else
+								{
+									<div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:80px; height:80px; background:var(--mfy-clay); color:white; font-size:1.5rem; font-family:var(--serif); font-weight:700;">
+										@((artisan.ShopName ?? artisan.User?.FullName ?? "?").Substring(0, 1))
+									</div>
+								}
+								<div class="fw-bold" style="font-family:var(--serif); font-size:1rem; color:#2D2926;">@(artisan.ShopName ?? artisan.User?.FullName)</div>
+								<div class="small text-muted mt-1 mb-2">@artisan.User?.FullName</div>
+								@if (artisan.AverageRating > 0)
+								{
+									<div class="small text-warning fw-bold"><i class="bi bi-star-fill me-1"></i>@artisan.AverageRating <span class="text-muted fw-normal">(@artisan.TotalReviews đánh giá)</span></div>
+								}
+							</div>
+						</a>
+					</div>
+				}
+			</div>
+			<style>
+				.artisan-card-link > div:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.09); border-color: var(--mfy-clay) !important; }
+			</style>
+		}
+
+		@* ========================================= *@
+		@* THỐNG KÊ NỀN TẢNG *@
+		@* ========================================= *@
+		<div class="row g-4 mb-5 py-4" style="border-top: 1px solid var(--mfy-border); border-bottom: 1px solid var(--mfy-border);">
+			<div class="col-6 col-md-3 text-center">
+				<div style="font-family:var(--serif); font-size:2.5rem; font-weight:700; color:var(--mfy-clay);">500+</div>
+				<div class="text-muted small mt-1">Tác phẩm thủ công</div>
+			</div>
+			<div class="col-6 col-md-3 text-center">
+				<div style="font-family:var(--serif); font-size:2.5rem; font-weight:700; color:var(--mfy-clay);">50+</div>
+				<div class="text-muted small mt-1">Nghệ nhân tài năng</div>
+			</div>
+			<div class="col-6 col-md-3 text-center">
+				<div style="font-family:var(--serif); font-size:2.5rem; font-weight:700; color:var(--mfy-clay);">@Model.Categories.Count</div>
+				<div class="text-muted small mt-1">Danh mục sản phẩm</div>
+			</div>
+			<div class="col-6 col-md-3 text-center">
+				<div style="font-family:var(--serif); font-size:2.5rem; font-weight:700; color:var(--mfy-clay);">4.9★</div>
+				<div class="text-muted small mt-1">Đánh giá trung bình</div>
+			</div>
 		</div>
 	</div>
 </body>
