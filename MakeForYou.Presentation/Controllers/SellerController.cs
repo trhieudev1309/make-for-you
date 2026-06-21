@@ -40,10 +40,16 @@ public class SellerController : ControllerBase
             return Forbid();
 
         var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var wasAlreadySetup = await _sellerService.IsSellerSetupAsync(userIdStr);
+
         var result = await _sellerService.RegisterSellerAsync(userIdStr, model);
 
         if (result.Success)
         {
+            // Editing an already-registered shop: just save the changes, don't re-create the GHN store.
+            if (wasAlreadySetup)
+                return Ok(new { message = "Cập nhật thông tin gian hàng thành công!" });
+
             if (long.TryParse(userIdStr, out var sellerId))
             {
                 try
@@ -58,7 +64,7 @@ public class SellerController : ControllerBase
                         DistrictId = model.DistrictId,
                     };
                     await _ghnStoreService.CreateStoreAsync(sellerId, ghnRequest);
-                    
+
                     return Ok(new { message = "Đăng ký gian hàng và liên kết GHN thành công!" });
                 }
                 catch (Exception ex)

@@ -20,10 +20,11 @@ namespace MakeForYou.BusinessLogic.ViewModels
         public string? ShopDescription { get; set; }
 
         // ── Thông tin liên hệ ────────────────────────────────────────────
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        // Optional: the Register form no longer collects this separately — it reuses
+        // PickupPhone as the seller's contact number (see SellerService.RegisterSellerAsync).
         [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
         [Display(Name = "Số điện thoại")]
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
 
         // ── Địa chỉ lấy hàng ─────────────────────────────────────────────
         [Required(ErrorMessage = "Vui lòng nhập họ tên người nhận")]
@@ -31,7 +32,7 @@ namespace MakeForYou.BusinessLogic.ViewModels
         public string PickupFullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại lấy hàng")]
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        [RegularExpression(@"^0[35789]\d{8}$", ErrorMessage = "Số điện thoại không hợp lệ (VD: 0912345678)")]
         [Display(Name = "Số điện thoại lấy hàng")]
         public string PickupPhone { get; set; } = string.Empty;
 
@@ -61,6 +62,16 @@ namespace MakeForYou.BusinessLogic.ViewModels
         [Required(ErrorMessage = "Vui lòng nhập địa chỉ chi tiết")]
         [Display(Name = "Địa chỉ chi tiết")]
         public string AddressDetail { get; set; } = string.Empty;
+
+        // ── Thông tin ngân hàng nhận tiền ─────────────────────────────────
+        [Display(Name = "Ngân hàng")]
+        public string? BankBin { get; set; }
+
+        [Display(Name = "Số tài khoản")]
+        public string? BankAccountNumber { get; set; }
+
+        [Display(Name = "Tên chủ tài khoản")]
+        public string? BankAccountName { get; set; }
 
         // ── Xác nhận điều khoản ──────────────────────────────────────────
         [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn cần đồng ý với điều khoản để tiếp tục")]

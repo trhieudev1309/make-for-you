@@ -114,9 +114,6 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             if (seller == null)
                 return new ServiceResult { Success = false, ErrorMessage = "Bạn chưa đăng ký tài khoản Seller" };
 
-            if (seller.ShopName != null)
-                return new ServiceResult { Success = false, ErrorMessage = "Bạn đã hoàn tất đăng ký gian hàng rồi" };
-
             seller.ShopName = model.ShopName;
             seller.ShopDescription = model.ShopDescription;
             seller.PickupFullName = model.PickupFullName;
@@ -125,14 +122,34 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             seller.District = model.District;
             seller.Ward = model.Ward;
             seller.AddressDetail = model.AddressDetail;
-            seller.AvailabilityStatus = 1;
+            seller.AvailabilityStatus ??= 1;
+
+            if (!string.IsNullOrWhiteSpace(model.BankBin) && !string.IsNullOrWhiteSpace(model.BankAccountNumber))
+            {
+                seller.BankBin = model.BankBin.Trim();
+                seller.BankAccountNumber = model.BankAccountNumber.Trim();
+                seller.BankAccountName = model.BankAccountName?.Trim();
+            }
+
+            // The Register form no longer collects a separate account phone number — it reuses
+            // the pickup contact phone, falling back to PhoneNumber only if a caller still sends it.
+            var phoneToSave = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber : model.PickupPhone;
 
             var user = await _dbContext.Users.FindAsync(id);
-            if (user != null && string.IsNullOrEmpty(user.Phone))
-                user.Phone = model.PhoneNumber;
+            if (user != null && !string.IsNullOrWhiteSpace(phoneToSave))
+                user.Phone = ToLocalPhoneFormat(phoneToSave);
 
             await _dbContext.SaveChangesAsync();
             return new ServiceResult { Success = true };
+        }
+
+        // The form submits only the subscriber number (a fixed "+84" prefix is shown next to the
+        // input), so re-add the leading 0 to match the local format ("0xxxxxxxxx") used everywhere
+        // else in the app (e.g. GhnService's default buyer phone, Auth/Register's phone field).
+        private static string ToLocalPhoneFormat(string phone)
+        {
+            phone = phone.Trim();
+            return phone.StartsWith("0") ? phone : "0" + phone;
         }
 
         // ── Private helpers ───────────────────────────────────────────────────────
