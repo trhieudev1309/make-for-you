@@ -136,6 +136,33 @@ namespace MakeForYou.Repositories.Repository
             // đảm bảo không vượt quá số lượng yêu cầu
             return related.Take(count).ToList();
         }
+
+        public async Task<List<Review>> GetProductReviewsAsync(long productId, int take)
+        {
+            return await _context.Reviews
+                .Include(r => r.Buyer)
+                .Where(r => r.ProductId == productId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<long, int>> GetSoldCountsAsync(IEnumerable<long> productIds)
+        {
+            var ids = productIds.ToList();
+            return await _context.OrderItems
+                .Where(oi => ids.Contains(oi.ProductId) && oi.Order.Status == 7)
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new { ProductId = g.Key, Count = g.Sum(oi => oi.Quantity) })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Count);
+        }
+
+        public async Task<int> GetSoldCountAsync(long productId)
+        {
+            return await _context.OrderItems
+                .Where(oi => oi.ProductId == productId && oi.Order.Status == 7)
+                .SumAsync(oi => (int?)oi.Quantity) ?? 0;
+        }
     }
 
 }

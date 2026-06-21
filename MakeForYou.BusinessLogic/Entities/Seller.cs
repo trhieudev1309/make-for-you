@@ -41,6 +41,9 @@ namespace MakeForYou.BusinessLogic.Entities
         public int? AverageRating { get; set; }
         public int? TotalReviews { get; set; }
 
+        public string? AvatarUrl { get; set; }
+        public string? CoverImageUrl { get; set; }
+
         /// <summary>
         /// GHN Shop ID liên kết với tài khoản GHN của seller.
         /// Nullable vì seller có thể chưa đăng ký GHN.

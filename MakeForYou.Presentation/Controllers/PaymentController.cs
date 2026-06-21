@@ -79,8 +79,9 @@ namespace MakeForYou.Presentation.Controllers
                         }
                         else
                         {
-                            // Initial checkout: validate against the cart / commission total.
-                            expectedAmount = orders.Sum(o => o.AgreedPrice ?? 0);
+                            // Initial checkout: validate against cart total PLUS shipping fee
+                            // (the checkout payment link amount = AgreedPrice + ShippingFee).
+                            expectedAmount = orders.Sum(o => (o.AgreedPrice ?? 0) + (o.ShippingFee ?? 0));
                         }
 
                         if (data.Amount < expectedAmount)

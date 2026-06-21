@@ -31,7 +31,10 @@ namespace MakeForYou.Presentation.Pages.Checkout
             try
             {
                 var status = await _paymentService.GetPaymentStatusAsync(orderCode);
-                IsSuccess = status == "PAID";
+                // PayOS SDK returns the status enum's .ToString() (e.g. "Paid"), which does
+                // not match the raw API string "PAID" with an ordinal comparison — that
+                // mismatch made every successful payment look unpaid on this page.
+                IsSuccess = string.Equals(status, "PAID", StringComparison.OrdinalIgnoreCase);
                 StatusMessage = IsSuccess
                     ? "Thanh toán thành công!"
                     : "Thanh toán chưa hoàn tất.";

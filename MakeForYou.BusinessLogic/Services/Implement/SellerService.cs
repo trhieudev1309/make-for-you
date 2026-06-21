@@ -4,6 +4,8 @@ using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
 using MakeForYou.BusinessLogic.ViewModels;
 using MakeForYou.Repositories.Interfaces;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
@@ -13,12 +15,16 @@ namespace MakeForYou.BusinessLogic.Services.Implement
         private readonly ISellerRepository _sellerRepo;
         private readonly IUserRepository _userRepo;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IWebHostEnvironment _env;
 
-        public SellerService(ISellerRepository sellerRepo, IUserRepository userRepo, ApplicationDbContext dbContext)
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+
+        public SellerService(ISellerRepository sellerRepo, IUserRepository userRepo, ApplicationDbContext dbContext, IWebHostEnvironment env)
         {
             _sellerRepo = sellerRepo;
             _userRepo = userRepo;
             _dbContext = dbContext;
+            _env = env;
         }
 
         public Task<MakeForYou.BusinessLogic.Entities.Seller?> GetProfileAsync(long sellerId) =>
@@ -33,6 +39,26 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             seller.Bio = request.Bio ?? seller.Bio;
             seller.PriceRange = request.PriceRange ?? seller.PriceRange;
             seller.AvailabilityStatus = request.AvailabilityStatus ?? seller.AvailabilityStatus;
+
+            if (request.Avatar != null && request.Avatar.Length > 0)
+            {
+                var url = await TrySaveProfileImageAsync(request.Avatar, prefix: $"avatar_{seller.SellerId}_{DateTime.UtcNow:yyyyMMddHHmmss}");
+                if (url != null)
+                {
+                    DeleteImageFile(seller.AvatarUrl);
+                    seller.AvatarUrl = url;
+                }
+            }
+
+            if (request.Cover != null && request.Cover.Length > 0)
+            {
+                var url = await TrySaveProfileImageAsync(request.Cover, prefix: $"cover_{seller.SellerId}_{DateTime.UtcNow:yyyyMMddHHmmss}");
+                if (url != null)
+                {
+                    DeleteImageFile(seller.CoverImageUrl);
+                    seller.CoverImageUrl = url;
+                }
+            }
 
             if (seller.User != null)
             {
@@ -58,6 +84,18 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             seller.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             await _userRepo.UpdateAsync(seller.User);
             return true;
+        }
+
+        public async Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName)
+        {
+            var seller = await _sellerRepo.GetWithDetailsAsync(sellerId);
+            if (seller == null) return;
+
+            seller.BankBin = bankBin?.Trim();
+            seller.BankAccountNumber = bankAccountNumber?.Trim();
+            seller.BankAccountName = bankAccountName?.Trim();
+
+            await _sellerRepo.UpdateAsync(seller);
         }
 
         public async Task<bool> IsSellerSetupAsync(string userId)
@@ -97,16 +135,38 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             return new ServiceResult { Success = true };
         }
 
-        public async Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName)
+        // ── Private helpers ───────────────────────────────────────────────────────
+
+        private async Task<string?> TrySaveProfileImageAsync(IFormFile image, string prefix)
         {
-            var seller = await _sellerRepo.GetWithDetailsAsync(sellerId);
-            if (seller == null) return;
+            var ext = Path.GetExtension(image.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(ext)) return null;
 
-            seller.BankBin = bankBin?.Trim();
-            seller.BankAccountNumber = bankAccountNumber?.Trim();
-            seller.BankAccountName = bankAccountName?.Trim();
+            var folder = Path.Combine(_env.WebRootPath, "uploads", "sellers");
+            Directory.CreateDirectory(folder);
 
-            await _sellerRepo.UpdateAsync(seller);
+            var fileName = $"{prefix}{ext}";
+            var filePath = Path.Combine(folder, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await image.CopyToAsync(stream);
+
+            return $"/uploads/sellers/{fileName}";
+        }
+
+        private void DeleteImageFile(string? relativeUrl)
+        {
+            if (string.IsNullOrEmpty(relativeUrl)) return;
+            try
+            {
+                var physicalPath = Path.Combine(_env.WebRootPath, relativeUrl.TrimStart('/'));
+                if (File.Exists(physicalPath))
+                    File.Delete(physicalPath);
+            }
+            catch
+            {
+                // Non-critical — file may have already been removed
+            }
         }
     }
 }

@@ -77,7 +77,24 @@
         .mfy-navbar {
             background-color: #fff;
             border-bottom: 1px solid #e8ddd0;
-            padding: 0.8rem 0;
+        }
+
+        /* Mobile collapsed nav separator */
+        #mainNav.show,
+        #mainNav.collapsing {
+            border-top: 1px solid #e8e2d9;
+        }
+
+        /* Nav links hover */
+        #mainNav .text-dark:hover {
+            color: var(--clay) !important;
+        }
+
+        @@media (max-width: 767.98px) {
+            .notif-menu {
+                width: 280px;
+                max-width: calc(100vw - 2rem);
+            }
         }
 
         .mfy-logo {
@@ -229,99 +246,124 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <header class="mfy-header shadow-sm bg-white">
-        <div class="container py-3 d-flex align-items-center justify-content-between">
-            <a href="/" class="mfy-logo">Make<span>For</span>You<div class="dot"></div></a>
+    <header>
+        <nav class="navbar navbar-expand-md bg-white mfy-navbar shadow-sm">
+            <div class="container py-2">
 
-            <div class="d-flex align-items-center gap-3">
-                <a href="/Products" class="text-decoration-none text-dark">Khám Phá</a>
-                
-                @if (isLoggedIn)
-                {
-                    <a href="/Chat" class="text-decoration-none text-dark" title="Messages">
-                        <i class="bi bi-chat-dots"></i> Tin Nhắn
+                @* Logo *@
+                <a href="/" class="navbar-brand mfy-logo py-0">Make<span>For</span>You</a>
+
+                @* Always-visible icons + hamburger toggler (order-md-last keeps them on the right on desktop) *@
+                <div class="d-flex align-items-center gap-2 order-md-last">
+                    @* Cart – single instance, always visible *@
+                    <a href="/Cart" class="position-relative text-dark p-1" title="Giỏ hàng">
+                        <i class="bi bi-bag-heart fs-5"></i>
+                        <span id="cartBadgeCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark"
+                              style="font-size: 0.5rem; padding: 0.35em 0.5em;">
+                            @cartCount
+                        </span>
                     </a>
-                }
+                    @* Hamburger – visible on mobile only *@
+                    <button class="navbar-toggler border-0 p-1 d-md-none" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#mainNav"
+                            aria-controls="mainNav" aria-expanded="false" aria-label="Mở menu">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+                </div>
 
-                @* Notification dropdown (site-wide) *@
-                @if (isLoggedIn)
-                {
-                    <div class="dropdown" id="notifDropdown">
-                        <button class="btn position-relative text-dark fs-5 ms-2" id="notifToggle" data-bs-toggle="dropdown" aria-expanded="false" type="button" title="Notifications" style="background:none; border:none;">
-                            <i class="bi bi-bell"></i>
-                            <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                  style="display:@(unreadCount > 0 ? "inline-block" : "none")">
-                                @unreadCount
-                            </span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow notif-menu" aria-labelledby="notifToggle" id="notifMenu">
-                            <li class="dropdown-header px-3 d-flex justify-content-between align-items-center">
-                                <strong>Notifications</strong>
-                                <small id="notifCountSmall" class="text-muted">@unreadCount new</small>
-                            </li>
-                            <li><hr class="dropdown-divider" /></li>
-                            <li class="px-3"><div class="small text-muted">Loading…</div></li>
-                        </ul>
+                @* Collapsible nav: links + bell + user menu *@
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center
+                                gap-1 gap-md-3 ms-md-auto py-3 py-md-0">
+
+                        <a href="/Products" class="text-decoration-none text-dark px-1 py-2 py-md-0">Khám Phá</a>
+
+                        @if (isLoggedIn)
+                        {
+                            <a href="/Chat" class="text-decoration-none text-dark px-1 py-2 py-md-0" title="Tin Nhắn">
+                                <i class="bi bi-chat-dots me-1"></i>Tin Nhắn
+                            </a>
+                        }
+
+                        @* Notification dropdown *@
+                        @if (isLoggedIn)
+                        {
+                            <div class="dropdown" id="notifDropdown">
+                                <button class="btn position-relative text-dark px-1 py-2 py-md-0" id="notifToggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false" type="button"
+                                        title="Thông báo" style="background:none; border:none;">
+                                    <i class="bi bi-bell fs-5"></i>
+                                    <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                          style="display:@(unreadCount > 0 ? "inline-block" : "none"); font-size: 0.55rem; padding: 0.35em 0.45em; min-width: 1.6rem; text-align: center;">
+                                        @unreadCount
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow notif-menu" aria-labelledby="notifToggle" id="notifMenu">
+                                    <li class="dropdown-header px-3 d-flex justify-content-between align-items-center">
+                                        <strong>Notifications</strong>
+                                        <small id="notifCountSmall" class="text-muted">@unreadCount new</small>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li class="px-3"><div class="small text-muted">Loading…</div></li>
+                                </ul>
+                            </div>
+                        }
+
+                        @* User account menu *@
+                        @if (isLoggedIn)
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3"
+                                        type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle me-1"></i>@name
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                    @if (User.IsInRole(nameof(UserRole.Seller)))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" href="/Seller/Profile">
+                                                <i class="bi bi-grid me-2"></i>Dashboard
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" href="/Profile">
+                                                <i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi
+                                            </a>
+                                        </li>
+                                    }
+                                    <li>
+                                        <a class="dropdown-item" href="/Orders">
+                                            <i class="bi bi-bag me-2"></i>My Orders
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form class="dropdown-item" method="post" action="/Auth/Logout">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Sign out
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex gap-2 flex-wrap mt-1 mt-md-0">
+                                <a href="/Auth/Login" class="btn btn-sm btn-outline-primary rounded-pill px-3">Sign in</a>
+                                <a href="/Auth/Register" class="btn btn-sm btn-primary rounded-pill px-3">Register</a>
+                            </div>
+                        }
+
                     </div>
-                }
+                </div>
 
-                @* Biểu tượng giỏ hàng với số lượng thực tế *@
-                <a href="/Cart" class="position-relative text-dark fs-5 ms-2">
-                    <i class="bi bi-bag-heart"></i>
-                    <span id="cartBadgeCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" 
-                          style="font-size: 0.5rem; padding: 0.35em 0.5em;">
-                        @cartCount
-                    </span>
-                </a>
-
-                @if (isLoggedIn)
-                {
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3"
-                                type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-1"></i>@name
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            @if (User.IsInRole(nameof(UserRole.Seller)))
-                            {
-                                <li>
-                                    <a class="dropdown-item" href="/Seller/Profile">
-                                        <i class="bi bi-grid me-2"></i>Dashboard
-                                    </a>
-                                </li>
-                            }
-                            else
-                            {
-                                <li>
-                                    <a class="dropdown-item" href="/Buyer/Dashboard">
-                                        <i class="bi bi-grid me-2"></i>Dashboard
-                                    </a>
-                                </li>
-                            }
-                            <li>
-                                <a class="dropdown-item" href="/Orders">
-                                    <i class="bi bi-bag me-2"></i>My Orders
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider" /></li>
-                            <li>
-                                <form class="dropdown-item" method="post" action="/Auth/Logout">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Sign out
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                }
-                else
-                {
-                    <a href="/Auth/Login" class="btn btn-sm btn-outline-primary rounded-pill px-3">Sign in</a>
-                    <a href="/Auth/Register" class="btn btn-sm btn-primary rounded-pill px-3">Register</a>
-                }
             </div>
-        </div>
+        </nav>
     </header>
 
     <main role="main">
@@ -357,27 +399,25 @@
                     <div class="col-6 col-md-2 footer-links">
                         <h6 class="serif-heading">Cửa hàng</h6>
                         <a href="/Products">Tất cả sản phẩm</a>
-                        <a href="/Collections">Bộ sưu tập</a>
-                        <a href="/Seller/Apply">Bán hàng cùng chúng tôi</a>
-                        <a href="/GiftCards">Phiếu quà tặng</a>
+                        <a href="/Seller/Register">Bán hàng cùng chúng tôi</a>
+                        <a href="/Orders">Đơn hàng của tôi</a>
+                        <a href="/Cart">Giỏ hàng</a>
                     </div>
 
                     <div class="col-6 col-md-2 footer-links">
                         <h6 class="serif-heading">Hỗ trợ</h6>
-                        <a href="/Help/Shipping">Vận chuyển</a>
-                        <a href="/Help/Returns">Đổi trả &amp; Hoàn tiền</a>
-                        <a href="/Help/FAQ">Câu hỏi thường gặp</a>
-                        <a href="/Orders/Track">Theo dõi đơn hàng</a>
+                        <a href="/Chat">Nhắn tin nghệ nhân</a>
+                        <a href="/Profile">Tài khoản của tôi</a>
+                        <a href="/Auth/Register">Đăng ký</a>
+                        <a href="/Auth/Login">Đăng nhập</a>
                     </div>
 
                     <div class="col-12 col-md-4 footer-links">
-                        <h6 class="serif-heading">Công ty</h6>
+                        <h6 class="serif-heading">Nền tảng</h6>
                         <div class="d-flex flex-column mb-2">
-                            <a href="/About">Về chúng tôi</a>
-                            <a href="/Contact">Liên hệ</a>
-                            <a href="/Legal/Privacy">Chính sách bảo mật</a>
-                            <a href="/Legal/Terms">Điều khoản dịch vụ</a>
-                            <a href="/Careers">Tuyển dụng</a>
+                            <a href="/Seller/Register">Trở thành nghệ nhân</a>
+                            <a href="/Products">Khám phá tác phẩm</a>
+                            <a href="/Auth/ForgotPassword">Quên mật khẩu</a>
                         </div>
 
                         <div class="d-flex align-items-center mt-3 payment-icons">
@@ -396,10 +436,9 @@
             <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
                 <div class="mb-2 mb-md-0 text-muted">&copy; 2026 MakeForYou. Bản quyền &copy; 2026 MakeForYou. Bảo lưu mọi quyền.</div>
                 <div class="d-flex align-items-center">
-                    <a href="/Legal/Privacy" class="text-muted me-3">Bảo mật</a>
-                    <a href="/Legal/Terms" class="text-muted me-3">Điều khoản</a>
-                    <a href="/Sitemap" class="text-muted me-3">Sơ đồ trang</a>
-                    <div class="text-muted d-none d-md-block">Được làm bằng cả trái tim</div>
+                    <a href="/Profile" class="text-muted me-3">Tài khoản</a>
+                    <a href="/Seller/Register" class="text-muted me-3">Bán hàng</a>
+                    <div class="text-muted d-none d-md-block">Được làm bằng cả trái tim ❤</div>
                 </div>
             </div>
         </div>

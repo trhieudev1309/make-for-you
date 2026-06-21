@@ -21,11 +21,11 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             _client = new PayOSClient(new PayOSOptions
             {
                 ClientId = config["PayOS:Pay_ClientId"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ClientId is not configured."),
+                   ?? throw new InvalidOperationException("PayOS:Pay_ClientId is not configured."),
                 ApiKey = config["PayOS:Pay_ApiKey"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ApiKey is not configured."),
+                   ?? throw new InvalidOperationException("PayOS:Pay_ApiKey is not configured."),
                 ChecksumKey = config["PayOS:Pay_ChecksumKey"]
-                    ?? throw new InvalidOperationException("PayOS:Pay_ChecksumKey is not configured.")
+                   ?? throw new InvalidOperationException("PayOS:Pay_ChecksumKey is not configured.")
             });
         }
 
@@ -67,6 +67,10 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 return (false, "Nghệ nhân chưa cài đặt thông tin tài khoản ngân hàng.");
             }
 
+            // Payout includes the agreed price PLUS the shipping fee — the seller fronts
+            // the shipment cost via GHN, so it must be reimbursed alongside the order amount.
+            var payoutAmount = order.AgreedPrice.Value + (order.ShippingFee ?? 0);
+
             var referenceId = $"MFY-{orderId}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
             var idempotencyKey = Guid.NewGuid().ToString();
 
@@ -76,13 +80,13 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             var payoutRequest = new PayoutRequest
             {
                 ReferenceId = referenceId,
-                Amount = order.AgreedPrice.Value,
+                Amount = payoutAmount,
                 Description = desc,
                 ToBin = seller.BankBin,
                 ToAccountNumber = seller.BankAccountNumber
             };
 
-            _logger.LogInformation("Initiating payout for order {OrderId}: sellerId={SellerId}, amount={Amount}", orderId, order.SellerId, order.AgreedPrice.Value);
+            _logger.LogInformation("Initiating payout for order {OrderId}: sellerId={SellerId}, amount={Amount}", orderId, order.SellerId, payoutAmount);
 
             try
             {
@@ -92,8 +96,8 @@ namespace MakeForYou.BusinessLogic.Services.Implement
                 order.PayoutReferenceId = result?.Id ?? referenceId;
                 await _db.SaveChangesAsync();
 
-                _logger.LogInformation("Payout successful for order {OrderId}: referenceId={ReferenceId}, amount={Amount}", orderId, order.PayoutReferenceId, order.AgreedPrice.Value);
-                return (true, $"Đã chuyển {order.AgreedPrice.Value:N0} VNĐ cho nghệ nhân thành công.");
+                _logger.LogInformation("Payout successful for order {OrderId}: referenceId={ReferenceId}, amount={Amount}", orderId, order.PayoutReferenceId, payoutAmount);
+                return (true, $"Đã chuyển {payoutAmount:N0} VNĐ cho nghệ nhân thành công.");
             }
             catch (Exception ex)
             {

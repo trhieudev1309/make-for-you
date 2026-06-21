@@ -452,6 +452,17 @@
 
     <div class="sp-tabs">
         <button class="sp-tab active" data-tab="profile"   onclick="switchTab('profile',   this)">Hồ Sơ</button>
+        <button class="sp-tab"        data-tab="products"  onclick="switchTab('products',  this)">
+            Sản Phẩm
+            @if (Model.Products.Any())
+            {
+                <span style="display:inline-flex;align-items:center;justify-content:center;
+                             width:18px;height:18px;border-radius:50%;background:var(--accent);
+                             color:#fff;font-size:.6rem;margin-left:.35rem;font-family:var(--mono);">
+                    @Model.Products.Count
+                </span>
+            }
+        </button>
         <button class="sp-tab"        data-tab="portfolio" onclick="switchTab('portfolio', this)">Danh Mục</button>
         <button class="sp-tab"        data-tab="posts"     onclick="switchTab('posts',     this)">
             Bài Đăng
@@ -469,8 +480,33 @@
     </div>
 
     <div id="tab-profile" class="sp-tab-panel active">
-        <form method="post" asp-page-handler="UpdateProfile">
+        <form method="post" asp-page-handler="UpdateProfile" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
+
+            <div class="sp-card sp-card-accent">
+                <h2 class="sp-section-title">Ảnh Đại Diện & Ảnh Bìa</h2>
+
+                <div class="sp-row">
+                    <div class="sp-field">
+                        <label class="sp-label-field">Ảnh đại diện</label>
+                        @if (!string.IsNullOrEmpty(Model.Seller?.AvatarUrl))
+                        {
+                            <img src="@Model.Seller.AvatarUrl" alt="Ảnh đại diện hiện tại"
+                                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:.5rem;" />
+                        }
+                        <input class="sp-input" type="file" name="Avatar" accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+                    <div class="sp-field">
+                        <label class="sp-label-field">Ảnh bìa</label>
+                        @if (!string.IsNullOrEmpty(Model.Seller?.CoverImageUrl))
+                        {
+                            <img src="@Model.Seller.CoverImageUrl" alt="Ảnh bìa hiện tại"
+                                 style="width:100%;max-width:320px;aspect-ratio:16/5;border-radius:4px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:.5rem;" />
+                        }
+                        <input class="sp-input" type="file" name="Cover" accept=".jpg,.jpeg,.png,.webp" />
+                    </div>
+                </div>
+            </div>
 
             <div class="sp-card sp-card-accent">
                 <h2 class="sp-section-title">Danh Tính Nghệ Nhân</h2>
@@ -524,6 +560,86 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    <!-- ══ TAB: PRODUCTS ══ -->
+    <div id="tab-products" class="sp-tab-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+            <div>
+                <h2 style="font-family:var(--serif);font-size:1.4rem;font-weight:400;margin:0 0 .2rem;">Sản Phẩm Của Tôi</h2>
+                <p style="font-size:.85rem;color:var(--fg-muted);margin:0;">Quản lý, chỉnh sửa và cập nhật trạng thái sản phẩm.</p>
+            </div>
+            <a asp-page="/Seller/Create" class="sp-btn" style="height:38px;padding:0 1.25rem;font-size:.85rem;">
+                <i class="bi bi-plus-lg"></i> Tạo tác phẩm mới
+            </a>
+        </div>
+
+        @if (!Model.Products.Any())
+        {
+            <div style="text-align:center;padding:3rem 0;color:var(--fg-muted);">
+                <i class="bi bi-box-seam" style="font-size:2.5rem;display:block;margin-bottom:.75rem;opacity:.4;"></i>
+                <p style="font-family:var(--serif);font-size:1.1rem;margin-bottom:.25rem;color:var(--fg);">Chưa có sản phẩm nào</p>
+                <p style="font-size:.875rem;">Nhấn <strong>Tạo tác phẩm mới</strong> để đăng bán sản phẩm đầu tiên.</p>
+            </div>
+        }
+        else
+        {
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;margin-bottom:1.5rem;">
+                @foreach (var product in Model.Products)
+                {
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:box-shadow .2s;">
+                        <div style="position:relative;aspect-ratio:4/3;background:var(--muted);overflow:hidden;">
+                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                            {
+                                <img src="@product.ImageUrl" alt="@product.Title"
+                                     style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--border);">
+                                    <i class="bi bi-image" style="font-size:2rem;"></i>
+                                </div>
+                            }
+                            <span style="position:absolute;top:8px;left:8px;font-size:.6rem;font-family:var(--mono);
+                                         letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:3px;
+                                         background:@(product.Status == 1 ? "rgba(30,122,69,.85)" : "rgba(100,100,100,.75)");color:#fff;">
+                                @(product.Status == 1 ? "Đang bán" : "Tạm ẩn")
+                            </span>
+                        </div>
+                        <div style="padding:.75rem;">
+                            <div style="font-size:.65rem;color:var(--accent);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">
+                                @product.Category?.Name
+                            </div>
+                            <div style="font-family:var(--serif);font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.3rem;">
+                                @product.Title
+                            </div>
+                            <div style="font-size:.875rem;font-weight:700;color:var(--fg);margin-bottom:.75rem;">
+                                @product.Price?.ToString("N0") đ
+                            </div>
+                            <div style="display:flex;gap:.5rem;">
+                                <a href="/Seller/Edit/@product.ProductId"
+                                   style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+                                          height:32px;border-radius:3px;border:1px solid var(--border);
+                                          font-size:.72rem;font-family:var(--mono);text-decoration:none;
+                                          color:var(--fg);transition:all .15s;background:transparent;">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a href="/Products/Details/@product.ProductId" target="_blank"
+                                   style="display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+                                          height:32px;padding:0 .75rem;border-radius:3px;border:1px solid var(--border);
+                                          font-size:.72rem;font-family:var(--mono);text-decoration:none;
+                                          color:var(--fg-muted);transition:all .15s;background:transparent;">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <p style="font-family:var(--mono);font-size:.62rem;color:var(--border);text-align:right;letter-spacing:.08em;">
+                @Model.Products.Count SẢN PHẨM
+            </p>
+        }
     </div>
 
     <div id="tab-portfolio" class="sp-tab-panel">
@@ -584,8 +700,8 @@
                         <input class="sp-input" type="text" name="Title" placeholder="Tên của tác phẩm này" />
                     </div>
                     <div class="sp-field">
-                        <label class="sp-label-field">Đường dẫn hình ảnh</label>
-                        <input class="sp-input" type="url" name="ImageUrl" placeholder="https://..." />
+                        <label class="sp-label-field">Hình ảnh</label>
+                        <input class="sp-input" type="file" name="ImageFile" accept=".jpg,.jpeg,.png,.webp" />
                     </div>
                 </div>
 

@@ -41,11 +41,11 @@ public class AdminOrdersModel : PageModel
 
     public static string StatusLabel(int status) => status switch
     {
-        0  => "Chờ xác nhận",
-        1  => "Đã xác nhận",
+        0  => "Chờ thanh toán",
+        1  => "Đã thanh toán",
         2  => "Đã báo giá",
         3  => "Đang thực hiện",
-        4  => "Hoàn thành",
+        4  => "Hoàn thành sản phẩm",
         5  => "Đang giao hàng",
         6  => "Đã giao hàng",
         7  => "Đã xong",

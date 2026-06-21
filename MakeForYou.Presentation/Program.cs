@@ -10,13 +10,14 @@ using MakeForYou.BusinessLogic.Services.Interfaces;
 using MakeForYou.Repositories.Interfaces;
 using MakeForYou.Repositories.Repository;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── Razor Pages ───────────────────────────────────────────────────────────────
 builder.Services.AddRazorPages()
@@ -58,9 +59,8 @@ builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IQuotationService, QuotationService>();
 
 
+builder.Services.AddHttpClient<IGhnService, GhnService>();
 builder.Services.AddHttpClient<IGhnLocationService, GhnLocationService>();
-
-builder.Services.AddScoped<ISellerService, SellerService>();
 // SignalR
 builder.Services.AddSignalR();
 
@@ -137,6 +137,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -185,24 +190,5 @@ app.MapPost("/api/notifications/markreadall", async (HttpContext http, INotifica
 
     return Results.Ok();
 }).RequireAuthorization();
-
-
-// ── TEMP: SCRUM-41 smoke test — REMOVE before merge ──────────────────────────
-app.MapGet("/dev/ghn-ping", async (IGhnApiClient ghn) =>
-{
-    try
-    {
-        var doc = await ghn.GetAsync("/shiip/public-api/master-data/province");
-        var first = doc.RootElement
-            .GetProperty("data")[0]
-            .GetProperty("ProvinceName")
-            .GetString();
-        return Results.Ok(new { status = "OK", firstProvince = first });
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem(ex.Message);
-    }
-});
 
 app.Run();
