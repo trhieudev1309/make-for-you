@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -46,6 +46,17 @@ namespace MakeForYou.BusinessLogic.ViewModels
         [Required(ErrorMessage = "Vui lòng chọn phường / xã")]
         [Display(Name = "Phường / Xã")]
         public string Ward { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng chọn tỉnh / thành phố hợp lệ")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn tỉnh / thành phố")]
+        public int ProvinceId { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng chọn quận / huyện hợp lệ")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn quận / huyện")]
+        public int DistrictId { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng chọn phường / xã hợp lệ")]
+        public string WardCode { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập địa chỉ chi tiết")]
         [Display(Name = "Địa chỉ chi tiết")]

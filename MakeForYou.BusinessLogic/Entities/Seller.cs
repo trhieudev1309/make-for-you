@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MakeForYou.BusinessLogic.Entities
@@ -43,6 +43,12 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public string? AvatarUrl { get; set; }
         public string? CoverImageUrl { get; set; }
+
+        /// <summary>
+        /// GHN Shop ID liên kết với tài khoản GHN của seller.
+        /// Nullable vì seller có thể chưa đăng ký GHN.
+        /// </summary>
+        public int? GhnShopId { get; set; }
 
         // Products authored by this seller
         [MaxLength(20)]  public string? BankBin { get; set; }

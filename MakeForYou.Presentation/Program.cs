@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using MakeForYou.BusinessLogic;                           // ApplicationDbContext
+using MakeForYou.BusinessLogic;
 using MakeForYou.BusinessLogic.Hubs;
 using MakeForYou.BusinessLogic.Implement;
 using MakeForYou.BusinessLogic.Interfaces;
@@ -15,69 +15,51 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
+// ── Razor Pages ───────────────────────────────────────────────────────────────
 builder.Services.AddRazorPages()
     .AddRazorPagesOptions(options =>
     {
-        options.Conventions.ConfigureFilter(
-            new IgnoreAntiforgeryTokenAttribute());
+        options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
     });
 
-// Add Controllers for API endpoints
 builder.Services.AddControllers();
-
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-// Repository & service registrations
+// ── Repository & service registrations ───────────────────────────────────────
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
 builder.Services.AddScoped<IHomeService, HomeService>();
-
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
 builder.Services.AddScoped<IAuthService, AuthService>();
-
 builder.Services.AddScoped<IEmailService, EmailService>();
-
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
-
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
-
 builder.Services.AddScoped<IUserService, UserService>();
-
-
-
-// Notification DI
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IChatService, ChatService>();
-
 builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IQuotationService, QuotationService>();
-
 builder.Services.AddScoped<ISellerRepository, SellerRepository>();
 builder.Services.AddScoped<ISellerService, SellerService>();
-
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<PortfolioService, PortfolioService>();
 
 builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
 builder.Services.AddScoped<IQuotationService, QuotationService>();
 
-builder.Services.AddScoped<ISellerService, SellerService>();
 
+builder.Services.AddHttpClient<IGhnService, GhnService>();
 builder.Services.AddHttpClient<IGhnLocationService, GhnLocationService>();
 // SignalR
 builder.Services.AddSignalR();
@@ -91,8 +73,29 @@ builder.Services.AddScoped<IPayoutService, PayoutService>();
 builder.Services.AddScoped<ISellerPostRepository, SellerPostRepository>();
 builder.Services.AddScoped<ISellerPostService, SellerPostService>();
 
-builder.Configuration.GetSection("Email"); // Ensure email section read
+// ── GHN ───────────────────────────────────────────────────────────────────────
+// 1. Bind GhnOptions from appsettings.json → "Ghn" section
+builder.Services.Configure<GhnOptions>(
+    builder.Configuration.GetSection(GhnOptions.SectionName));
 
+// 2. Register typed HttpClient for IGhnApiClient
+//    GhnApiClient sets BaseAddress, Token, and ShopId headers in its constructor.
+builder.Services.AddHttpClient<IGhnApiClient, GhnApiClient>();
+
+// 3. Keep the named "GHN" client for GhnStoreService (existing code — no headers
+//    set here; GhnStoreService reads Token from IConfiguration itself).
+builder.Services.AddHttpClient("GHN", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// 4. GhnStoreService (existing store-management service)
+builder.Services.AddScoped<IGhnStoreService, GhnStoreService>();
+
+// ── SignalR ───────────────────────────────────────────────────────────────────
+builder.Services.AddSignalR();
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opts =>
     {
@@ -103,14 +106,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         opts.SlidingExpiration = true;
     });
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization();
 
-builder.Services.AddHttpClient<IGhnService, GhnService>();
+// ─────────────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
 
-// Apply pending EF Core migrations at startup (creates database if it doesn't exist)
+// Apply pending EF Core migrations at startup
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -129,7 +131,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -143,27 +144,21 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers(); // Added for API controller routing
+app.MapControllers();
 
-// Map the hubs
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapHub<MakeForYou.BusinessLogic.Hubs.ChatHub>("/hubs/chat");
 
-// Minimal API endpoints for notifications (used by layout dropdown; require authentication)
+// ── Notification minimal APIs ─────────────────────────────────────────────────
 app.MapGet("/api/notifications", async (HttpContext http, INotificationService notificationService) =>
 {
-    var user = http.User;
-    var idClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var idClaim = http.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(idClaim) || !long.TryParse(idClaim, out var userId))
         return Results.Unauthorized();
 
@@ -177,24 +172,21 @@ app.MapGet("/api/notifications", async (HttpContext http, INotificationService n
         n.IsRead,
         CreatedAt = n.CreatedAt
     });
-
     return Results.Ok(payload);
 }).RequireAuthorization();
 
 app.MapPost("/api/notifications/markreadall", async (HttpContext http, INotificationService notificationService) =>
 {
-    var user = http.User;
-    var idClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var idClaim = http.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(idClaim) || !long.TryParse(idClaim, out var userId))
         return Results.Unauthorized();
 
     var notes = await notificationService.GetUserNotificationsAsync(userId);
-    var unread = notes?.Where(n => !n.IsRead).ToList() ?? new List<MakeForYou.BusinessLogic.Entities.Notification>();
+    var unread = notes?.Where(n => !n.IsRead).ToList()
+                 ?? new List<MakeForYou.BusinessLogic.Entities.Notification>();
 
     foreach (var n in unread)
-    {
         await notificationService.MarkAsReadAsync(n.NotificationId);
-    }
 
     return Results.Ok();
 }).RequireAuthorization();
