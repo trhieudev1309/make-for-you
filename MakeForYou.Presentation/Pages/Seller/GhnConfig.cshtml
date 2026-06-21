@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model MakeForYou.Presentation.Pages.Seller.GhnConfigModel
 @{
     ViewData["Title"] = "Liên kết cửa hàng GHN – MakeForYou";
@@ -474,7 +474,7 @@
         sel.innerHTML = '<option value="">-- Đang tải tỉnh/thành... --</option>';
         sel.disabled = true;
         try {
-            const data = await ghnProxy('?handler=Provinces');
+            const data = await ghnProxy('/api/seller/ghn/provinces');
             sel.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố --</option>';
             data.forEach(p => {
                 sel.options[sel.options.length] = new Option(p.ProvinceName, p.ProvinceID);
@@ -503,7 +503,7 @@
         districtSel.disabled = true;
 
         try {
-            const data = await ghnProxy(`?handler=Districts&provinceId=${provinceId}`);
+            const data = await ghnProxy(`/api/seller/ghn/districts?provinceId=${provinceId}`);
             districtSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
             data.forEach(d => {
                 districtSel.options[districtSel.options.length] = new Option(d.DistrictName, d.DistrictID);
@@ -529,7 +529,7 @@
 
         try {
             // WardCode is a STRING — use w.WardCode not w.WardID
-            const data = await ghnProxy(`?handler=Wards&districtId=${districtId}`);
+            const data = await ghnProxy(`/api/seller/ghn/wards?districtId=${districtId}`);
             wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
             data.forEach(w => {
                 wardSel.options[wardSel.options.length] = new Option(w.WardName, w.WardCode);

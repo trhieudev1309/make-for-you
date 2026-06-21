@@ -1,7 +1,10 @@
 ﻿using MakeForYou.BusinessLogic.DTOs;
+using MakeForYou.BusinessLogic.Entities.DTOs.Respond;
 using MakeForYou.BusinessLogic.Interfaces;
 using MakeForYou.BusinessLogic.Services.Interfaces;
+using MakeForYou.BusinessLogic.ViewModels;
 using MakeForYou.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace MakeForYou.BusinessLogic.Services.Implement
 {
@@ -9,11 +12,13 @@ namespace MakeForYou.BusinessLogic.Services.Implement
     {
         private readonly ISellerRepository _sellerRepo;
         private readonly IUserRepository _userRepo;
+        private readonly ApplicationDbContext _dbContext;
 
-        public SellerService(ISellerRepository sellerRepo, IUserRepository userRepo)
+        public SellerService(ISellerRepository sellerRepo, IUserRepository userRepo, ApplicationDbContext dbContext)
         {
             _sellerRepo = sellerRepo;
             _userRepo = userRepo;
+            _dbContext = dbContext;
         }
 
         public Task<MakeForYou.BusinessLogic.Entities.Seller?> GetProfileAsync(long sellerId) =>
@@ -53,6 +58,43 @@ namespace MakeForYou.BusinessLogic.Services.Implement
             seller.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             await _userRepo.UpdateAsync(seller.User);
             return true;
+        }
+
+        public async Task<bool> IsSellerSetupAsync(string userId)
+        {
+            if (!long.TryParse(userId, out var id)) return false;
+            return await _dbContext.Sellers
+                .AnyAsync(s => s.SellerId == id && s.ShopName != null);
+        }
+
+        public async Task<ServiceResult> RegisterSellerAsync(string userId, SellerRegisterViewModel model)
+        {
+            if (!long.TryParse(userId, out var id))
+                return new ServiceResult { Success = false, ErrorMessage = "User không hợp lệ" };
+
+            var seller = await _dbContext.Sellers.FindAsync(id);
+            if (seller == null)
+                return new ServiceResult { Success = false, ErrorMessage = "Bạn chưa đăng ký tài khoản Seller" };
+
+            if (seller.ShopName != null)
+                return new ServiceResult { Success = false, ErrorMessage = "Bạn đã hoàn tất đăng ký gian hàng rồi" };
+
+            seller.ShopName = model.ShopName;
+            seller.ShopDescription = model.ShopDescription;
+            seller.PickupFullName = model.PickupFullName;
+            seller.PickupPhone = model.PickupPhone;
+            seller.Province = model.Province;
+            seller.District = model.District;
+            seller.Ward = model.Ward;
+            seller.AddressDetail = model.AddressDetail;
+            seller.AvailabilityStatus = 1;
+
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user != null && string.IsNullOrEmpty(user.Phone))
+                user.Phone = model.PhoneNumber;
+
+            await _dbContext.SaveChangesAsync();
+            return new ServiceResult { Success = true };
         }
 
         public async Task UpdateBankInfoAsync(long sellerId, string? bankBin, string? bankAccountNumber, string? bankAccountName)
