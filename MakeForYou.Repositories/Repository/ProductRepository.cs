@@ -19,6 +19,7 @@ namespace MakeForYou.Repositories.Repository
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Seller).ThenInclude(s => s.User)
+                .Include(p => p.Images)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(count)
                 .ToListAsync();
@@ -39,6 +40,7 @@ namespace MakeForYou.Repositories.Repository
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Seller).ThenInclude(s => s.User)
+                .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
         }
 
@@ -48,6 +50,7 @@ namespace MakeForYou.Repositories.Repository
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Seller).ThenInclude(s => s.User)
+                .Include(p => p.Images)
                 .AsQueryable();
 
             // Nếu có từ khóa, phải lọc gắt gao
@@ -72,8 +75,8 @@ namespace MakeForYou.Repositories.Repository
         {
             return await _context.Sellers
                 .Include(s => s.User)
-                .Include(s => s.Products)
-                    .ThenInclude(p => p.Category)
+                .Include(s => s.Products).ThenInclude(p => p.Category)
+                .Include(s => s.Products).ThenInclude(p => p.Images)
                 .Include(s => s.PortfolioItems)
                 .FirstOrDefaultAsync(s => s.SellerId == id);
         }
@@ -95,6 +98,7 @@ namespace MakeForYou.Repositories.Repository
                 var sameCategory = await _context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Include(p => p.Images)
                     .Where(p => p.ProductId != productId && p.CategoryId == current.CategoryId)
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(count)
@@ -110,6 +114,7 @@ namespace MakeForYou.Repositories.Repository
                 var sameSeller = await _context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Include(p => p.Images)
                     .Where(p => !existingIds.Contains(p.ProductId) && p.SellerId == current.SellerId)
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(count - related.Count)
@@ -125,6 +130,7 @@ namespace MakeForYou.Repositories.Repository
                 var recent = await _context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Seller).ThenInclude(s => s.User)
+                    .Include(p => p.Images)
                     .Where(p => !existingIds.Contains(p.ProductId))
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(count - related.Count)

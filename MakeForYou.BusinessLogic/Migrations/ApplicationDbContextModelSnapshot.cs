@@ -490,6 +490,35 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.ProductImage", b =>
+                {
+                    b.Property<long>("ProductImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProductImageId"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("ProductImageId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
+                });
+
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Quotation", b =>
                 {
                     b.Property<long>("QuotationId")
@@ -905,6 +934,17 @@ namespace MakeForYou.BusinessLogic.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.ProductImage", b =>
+                {
+                    b.HasOne("MakeForYou.BusinessLogic.Entities.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Quotation", b =>
                 {
                     b.HasOne("MakeForYou.BusinessLogic.Entities.Order", "Order")
@@ -1004,6 +1044,8 @@ namespace MakeForYou.BusinessLogic.Migrations
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Product", b =>
                 {
                     b.Navigation("CustomizationGroups");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("MakeForYou.BusinessLogic.Entities.Seller", b =>

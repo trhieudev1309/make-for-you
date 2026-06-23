@@ -155,6 +155,12 @@
         border-color: var(--mfy-bark, #2D2926);
         transform: translateY(-1px);
     }
+
+    /* Product gallery */
+    .product-image-lg { width: 100%; height: 420px; object-fit: cover; border-radius: 12px; display:block; }
+    .product-thumbs .product-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+    .product-thumbs .product-thumb:hover { transform: scale(1.03); }
+    .product-thumbs .product-thumb.active { border-color: var(--mfy-clay, #C8855A); }
 </style>
 
 <div class="serif-scope">
@@ -182,18 +188,41 @@
                 <!-- left & right columns unchanged -->
                 <div class="left-column">
                     <div class="product-hero-card">
+                        @{
+                            var mainImage = Model.Product.Images?.FirstOrDefault(i => i.IsPrimary)?.Url
+                                           ?? Model.Product.Images?.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Url
+                                           ?? Model.Product.ImageUrl;
+                        }
+
                         <button type="button" class="btn btn-link p-0 text-reset w-100" data-bs-toggle="modal" data-bs-target="#productImageModal" aria-label="Xem ảnh phóng to">
-                            @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                            @if (!string.IsNullOrEmpty(mainImage))
                             {
-                                <img src="@Model.Product.ImageUrl" alt="Hình ảnh của @Model.Product.Title" loading="lazy" class="product-image-lg" />
+                                <img id="productMainImage" src="@mainImage" alt="Hình ảnh của @Model.Product.Title" loading="lazy" class="product-image-lg" />
                             }
                             else
                             {
-                                <div class="product-image-lg" style="display:flex;align-items:center;justify-content:center;background:#f3f1ee;color:var(--serif-muted);">
+                                <div id="productMainImage" class="product-image-lg" style="display:flex;align-items:center;justify-content:center;background:#f3f1ee;color:var(--serif-muted);">
                                     <span class="small-caps">Không có hình ảnh</span>
                                 </div>
                             }
                         </button>
+
+                        @* Thumbnails gallery *@
+                        @if (Model.Product.Images != null && Model.Product.Images.Any())
+                        {
+                            <div class="product-thumbs mt-2 d-flex gap-2">
+                                @foreach (var img in Model.Product.Images.OrderBy(i => i.DisplayOrder))
+                                {
+                                    <img src="@img.Url" loading="lazy" class="product-thumb" data-url="@img.Url" alt="Thumb" onclick="setMainImage(this)" />
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                        {
+                            <div class="product-thumbs mt-2 d-flex gap-2">
+                                <img src="@Model.Product.ImageUrl" loading="lazy" class="product-thumb" data-url="@Model.Product.ImageUrl" alt="Thumb" onclick="setMainImage(this)" />
+                            </div>
+                        }
                     </div>
 
                     <section>
@@ -402,8 +431,9 @@
 
                                 @* Entire card links to product details *@
                                 <a href="/Products/Details/@p.ProductId" class="text-decoration-none text-reset" aria-label="@p.Title">
-                                    <div class="related-thumb" aria-hidden="true">
-                                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/placeholder.png" : p.ImageUrl)" alt="@p.Title" loading="lazy" />
+                                        <div class="related-thumb" aria-hidden="true">
+                                        @{ var relatedImg = p.Images?.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Url ?? p.ImageUrl; }
+                                        <img src="@(string.IsNullOrEmpty(relatedImg) ? "/images/placeholder.png" : relatedImg)" alt="@p.Title" loading="lazy" />
                                     </div>
 
                                     <div class="related-body">
@@ -463,9 +493,16 @@
             <div class="modal-body px-4 pt-3 pb-2">
                 @* Product mini-preview *@
                 <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background: #fafaf8; border: 1px solid #eee;">
-                    @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
+                    @{
+                        var cartThumb = Model.Product != null ?
+                            (Model.Product.Images?.FirstOrDefault(i => i.IsPrimary)?.Url
+                             ?? Model.Product.Images?.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Url
+                             ?? Model.Product.ImageUrl)
+                            : null;
+                    }
+                    @if (!string.IsNullOrEmpty(cartThumb))
                     {
-                        <img src="@Model.Product.ImageUrl" alt="@Model.Product.Title"
+                        <img src="@cartThumb" alt="@Model.Product.Title"
                              style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" />
                     }
                     <div>
@@ -539,11 +576,18 @@
 <div class="modal fade" id="productImageModal" tabindex="-1" aria-labelledby="productImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="background:transparent;border:none;">
-            <div class="modal-body p-0 text-center">
-                @if (Model.Product != null && !string.IsNullOrEmpty(Model.Product.ImageUrl))
-                {
-                    <img src="@Model.Product.ImageUrl" alt="Hình ảnh phóng to của @Model.Product.Title" style="max-width: 100%; border-radius: 12px;" />
-                }
+                <div class="modal-body p-0 text-center">
+                    @{
+                        var modalImg = Model.Product != null ?
+                            (Model.Product.Images?.FirstOrDefault(i => i.IsPrimary)?.Url
+                             ?? Model.Product.Images?.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Url
+                             ?? Model.Product.ImageUrl)
+                            : null;
+                    }
+                    @if (!string.IsNullOrEmpty(modalImg))
+                    {
+                        <img id="productImageModalImg" src="@modalImg" alt="Hình ảnh phóng to của @Model.Product.Title" style="max-width: 100%; border-radius: 12px;" />
+                    }
             </div>
         </div>
     </div>
@@ -669,5 +713,32 @@
 
             cards.forEach(c => io.observe(c));
         })();
+
+        // Gallery helpers
+        function setMainImage(el) {
+            try {
+                const url = el.dataset.url;
+                const main = document.getElementById('productMainImage');
+                if (main && url) main.src = url;
+
+                document.querySelectorAll('.product-thumb').forEach(t => t.classList.remove('active'));
+                el.classList.add('active');
+
+                const modalImg = document.getElementById('productImageModalImg');
+                if (modalImg && url) modalImg.src = url;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Ensure modal uses current main image when opened
+        var imageModalEl = document.getElementById('productImageModal');
+        if (imageModalEl) {
+            imageModalEl.addEventListener('show.bs.modal', function () {
+                const main = document.getElementById('productMainImage');
+                const modalImg = document.getElementById('productImageModalImg');
+                if (main && modalImg) modalImg.src = main.src;
+            });
+        }
     </script>
 }

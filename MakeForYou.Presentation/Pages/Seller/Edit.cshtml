@@ -36,7 +36,7 @@
         <p class="text-muted">Cập nhật thông tin chi tiết cho sản phẩm của bạn.</p>
     </div>
 
-    <form method="post" enctype="multipart/form-data" novalidate>
+    <form method="post" enctype="multipart/form-data" id="productEditForm" novalidate>
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="ProductId" />
 
@@ -76,22 +76,26 @@
                     </select>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Hình ảnh (thay ảnh mới — tuỳ chọn)</label>
-                    <input asp-for="UploadedImage" type="file" class="form-control shadow-sm" accept="image/*"
-                           onchange="previewNewImage(this)" />
-                    @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
-                    {
-                        <div class="mt-2 d-flex align-items-start gap-2">
-                            <img src="@Model.CurrentImageUrl" id="imgPreview" alt="Ảnh hiện tại" class="rounded"
-                                 style="height:100px; object-fit:cover;" />
-                            <small class="text-muted pt-1">Ảnh hiện tại. Tải lên ảnh mới để thay thế.</small>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label fw-bold">Ảnh sản phẩm (thư viện)</label>
+                    <div class="mb-2">
+                        <input id="newImagesInput" name="NewImages" type="file" class="form-control shadow-sm" accept="image/*" multiple />
+                    </div>
+
+                    <div id="imageGallery" class="d-flex flex-wrap gap-2 align-items-start">
+                        @* Thumbnails rendered by client-side script *@
+                    </div>
+
+                    <input type="hidden" id="imagesJson" name="ImagesJson" />
+                    <small class="text-muted d-block mt-2">Bạn có thể kéo/thay đổi thứ tự, xóa ảnh hoặc chọn ảnh chính. Xem trước chính xác ở phía dưới.</small>
+
+                    <div class="mt-3">
+                        <div class="small-caps mb-1">Xem trước trang chi tiết sản phẩm</div>
+                        <div id="previewDetail" style="max-width:420px;border:1px solid #eee;padding:12px;border-radius:8px;">
+                            <img id="previewMain" src="@(Model.CurrentImages.FirstOrDefault()?.Url ?? Model.CurrentImageUrl ?? "/images/placeholder.png")" style="width:100%;height:220px;object-fit:cover;border-radius:8px;display:block;" />
+                            <div id="previewThumbs" class="d-flex gap-2 mt-2"></div>
                         </div>
-                    }
-                    else
-                    {
-                        <img id="imgPreview" src="" alt="" class="mt-2 rounded" style="max-height:100px; display:none; object-fit:cover;" />
-                    }
+                    </div>
                 </div>
 
                 <div class="col-md-12 mb-3">
@@ -165,14 +169,168 @@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
-        function previewNewImage(input) {
-            const img = document.getElementById('imgPreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => { img.src = e.target.result; img.style.display = 'block'; };
-                reader.readAsDataURL(input.files[0]);
-            }
+        // --- Image gallery management ---
+        let imagesState = [];
+        const newInput = document.getElementById('newImagesInput');
+        const galleryEl = document.getElementById('imageGallery');
+        const imagesJsonEl = document.getElementById('imagesJson');
+        const previewMain = document.getElementById('previewMain');
+        const previewThumbs = document.getElementById('previewThumbs');
+        const productForm = document.getElementById('productEditForm');
+        let accumulatedFiles = [];
+
+
+        // Load existing images from server-side model
+        (function loadExistingImages() {
+            try {
+                const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CurrentImages.Select(i => new { Id = i.ProductImageId, Url = i.Url, DisplayOrder = i.DisplayOrder, IsPrimary = i.IsPrimary })));
+                imagesState = data.map(d => ({ id: d.Id, url: d.Url, deleted: false, isPrimary: d.IsPrimary, displayOrder: d.DisplayOrder, fileIndex: null, isNew: false }));
+                renderGallery();
+            } catch (e) { console.error('loadExistingImages', e); }
+        })();
+
+        function renderGallery() {
+            // sort by displayOrder
+            imagesState.sort((a,b) => (a.displayOrder||0) - (b.displayOrder||0));
+            // normalize display order sequentially
+            let order = 0;
+            imagesState.forEach(i => { if (!i.deleted) i.displayOrder = order++; });
+            galleryEl.innerHTML = '';
+            previewThumbs.innerHTML = '';
+            imagesState.forEach((img, idx) => {
+                if (img.deleted) return;
+                const wrap = document.createElement('div');
+                wrap.className = 'position-relative';
+                wrap.style.width = '100px';
+                wrap.style.height = '100px';
+
+                const el = document.createElement('img');
+                el.src = img.url || '/images/placeholder.png';
+                el.style.width = '100%';
+                el.style.height = '100%';
+                el.style.objectFit = 'cover';
+                el.style.borderRadius = '6px';
+                el.dataset.index = idx;
+                el.title = img.isPrimary ? 'Ảnh chính' : '';
+                wrap.appendChild(el);
+
+                const btns = document.createElement('div');
+                btns.style.position = 'absolute';
+                btns.style.right = '6px';
+                btns.style.top = '6px';
+                btns.style.display = 'flex';
+                btns.style.flexDirection = 'column';
+                btns.style.gap = '4px';
+
+                const del = document.createElement('button');
+                del.className = 'btn btn-sm btn-outline-danger';
+                del.style.padding = '2px 6px';
+                del.innerHTML = '<i class="bi bi-trash"></i>';
+                del.onclick = () => { markDeleted(idx); };
+                btns.appendChild(del);
+
+                const up = document.createElement('button');
+                up.className = 'btn btn-sm btn-light';
+                up.style.padding = '2px 6px';
+                up.innerHTML = '<i class="bi bi-arrow-up"></i>';
+                up.onclick = () => { moveUp(idx); };
+                btns.appendChild(up);
+
+                const down = document.createElement('button');
+                down.className = 'btn btn-sm btn-light';
+                down.style.padding = '2px 6px';
+                down.innerHTML = '<i class="bi bi-arrow-down"></i>';
+                down.onclick = () => { moveDown(idx); };
+                btns.appendChild(down);
+
+                const star = document.createElement('button');
+                star.className = 'btn btn-sm ' + (img.isPrimary ? 'btn-clay' : 'btn-light');
+                star.style.padding = '2px 6px';
+                star.title = 'Chọn làm ảnh chính';
+                star.innerHTML = '<i class="bi bi-star-fill"></i>';
+                star.onclick = () => { setPrimary(idx); };
+                btns.appendChild(star);
+
+                wrap.appendChild(btns);
+                galleryEl.appendChild(wrap);
+
+                // preview thumbs
+                const p = document.createElement('img');
+                p.src = img.url || '/images/placeholder.png';
+                p.style.width = '60px';
+                p.style.height = '40px';
+                p.style.objectFit = 'cover';
+                p.style.borderRadius = '4px';
+                if (img.isPrimary) p.style.border = '2px solid #C8855A';
+                previewThumbs.appendChild(p);
+            });
         }
+
+        function markDeleted(idx) {
+            const it = imagesState[idx];
+            if (!it) return;
+            it.deleted = true;
+            renderGallery();
+        }
+
+        function moveUp(idx) {
+            if (idx <= 0) return;
+            const a = imagesState[idx-1];
+            const b = imagesState[idx];
+            const tmp = a.displayOrder; a.displayOrder = b.displayOrder; b.displayOrder = tmp;
+            renderGallery();
+        }
+
+        function moveDown(idx) {
+            if (idx >= imagesState.length-1) return;
+            const a = imagesState[idx+1];
+            const b = imagesState[idx];
+            const tmp = a.displayOrder; a.displayOrder = b.displayOrder; b.displayOrder = tmp;
+            renderGallery();
+        }
+
+        function setPrimary(idx) {
+            imagesState.forEach(i => i.isPrimary = false);
+            imagesState[idx].isPrimary = true;
+            renderGallery();
+        }
+
+        newInput && newInput.addEventListener('change', function () {
+            const files = Array.from(this.files || []);
+            files.forEach((f) => {
+                // add to accumulatedFiles and use its index
+                accumulatedFiles.push(f);
+                const fileIndex = accumulatedFiles.length - 1;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const maxOrder = imagesState.reduce((m, it) => Math.max(m, it.displayOrder || 0), -1);
+                    imagesState.push({ id: 0, url: e.target.result, deleted: false, isPrimary: false, displayOrder: maxOrder + 1, fileIndex: fileIndex, isNew: true });
+                    renderGallery();
+                };
+                reader.readAsDataURL(f);
+            });
+        });
+
+        // Before submit, rebuild file input with accumulated files and serialize images state
+        productForm.addEventListener('submit', function (ev) {
+            // Rebuild the FormData with accumulated files to ensure they post correctly
+            if (accumulatedFiles.length > 0) {
+                try {
+                    const dt = new DataTransfer();
+                    accumulatedFiles.forEach(f => dt.items.add(f));
+                    newInput.files = dt.files;
+                } catch (e) {
+                    // DataTransfer not supported; files will be posted as-is
+                    console.warn('DataTransfer not supported', e);
+                }
+            }
+
+            // prepare payload
+            const payload = imagesState.map(i => ({ id: i.id || 0, deleted: !!i.deleted, displayOrder: i.displayOrder || 0, isPrimary: !!i.isPrimary, fileIndex: (i.isNew ? i.fileIndex : null) }));
+            imagesJsonEl.value = JSON.stringify(payload);
+            console.log(imagesJsonEl);
+        });
+
 
         let groupCounter = 0;
         let optionCounter = {};
@@ -268,7 +426,7 @@
             } catch (e) { console.error('Error loading customizations', e); }
         })();
 
-        document.querySelector('form').addEventListener('submit', serializeCustomizations);
+        document.getElementById('productEditForm').addEventListener('submit', serializeCustomizations);
         document.addEventListener('change', e => {
             if (['group-title','group-display-order','option-value','option-display-order'].some(c => e.target.classList.contains(c)))
                 serializeCustomizations();

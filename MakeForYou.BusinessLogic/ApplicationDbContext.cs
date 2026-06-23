@@ -92,6 +92,7 @@ namespace MakeForYou.BusinessLogic
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Category> Categories => Set<Category>();
+        public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
         public DbSet<CartItem> CartItems { get; set; }
 
@@ -217,6 +218,13 @@ namespace MakeForYou.BusinessLogic
                 .HasOne(cg => cg.Product)
                 .WithMany(p => p.CustomizationGroups)
                 .HasForeignKey(cg => cg.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Product -> ProductImage relationship (one-to-many)
+            modelBuilder.Entity<ProductImage>()
+                .HasOne(pi => pi.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // CustomizationOption -> CustomizationGroup relationship

@@ -27,6 +27,9 @@ namespace MakeForYou.BusinessLogic.Entities
 
         public string? ImageUrl { get; set; }
 
+        // New: support multiple images per product
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
         public int? Price { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
